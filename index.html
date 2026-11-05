@@ -65,7 +65,7 @@ body{
 .eyebrow::before{content:"";width:28px;height:1px;background:currentColor;opacity:.7}
 h1{
   margin:0;font-weight:300;line-height:.86;letter-spacing:-.045em;
-  font-size:clamp(3.2rem,10vw,7.4rem);text-wrap:balance;
+  font-size:clamp(3rem,7.5vw,6.6rem);text-wrap:balance;
   text-shadow:0 0 40px rgba(255,150,70,.25);
 }
 h1 .san{
@@ -411,7 +411,7 @@ window.LaboPanel = (() => {
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
   const scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2(0x1a110b, 0.035);
+  scene.fog = new THREE.FogExp2(0x140d08, 0.042);
   const camera = new THREE.PerspectiveCamera(52, 1, 0.05, 260);
 
   const rand = (a, b) => a + Math.random() * (b - a);
@@ -419,10 +419,12 @@ window.LaboPanel = (() => {
   const V = (x, y, z) => new THREE.Vector3(x, y, z);
 
   /* Le sous-sol vu de face */
-  const RX = 7.5, ZB = -4.6, ZF = 10, RH = 4.6;   // demi-largeur, mur du fond, mur avant, hauteur
+  const RX = 9.5, ZB = -4.6, ZF = 10, RH = 4.6;   // demi-largeur, mur du fond, mur avant, hauteur
   const STREET = RH + 3.4;
-  const EYE = V(0, 1.65, 6.6), EYE_P = V(0, 1.8, 9.2);
-  const LOOK = V(0, 1.5, -2.2);
+  const EYE = V(0, 1.75, 8.6), EYE_P = V(0, 1.85, 9.2);
+  const LOOK = V(0, 1.35, -2.2);
+  const PLAT = 0.2;                                   // estrade sous la bobine
+  const CXo = -7.7, CWo = 1.3, CD = 5, CH = 2.6;      // couloir du fond
 
   /* ---------- Textures dessinées ---------- */
   const fontsReady = (document.fonts && document.fonts.load)
@@ -656,7 +658,8 @@ window.LaboPanel = (() => {
   const D = ZF - ZB, CZ = (ZF + ZB) / 2;
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(RX * 2, D), matFloor); floor.rotation.x = -Math.PI / 2; floor.position.z = CZ; room.add(floor);
   const ceil = new THREE.Mesh(new THREE.PlaneGeometry(RX * 2, D), matCeil); ceil.rotation.x = Math.PI / 2; ceil.position.set(0, RH, CZ); room.add(ceil);
-  const back = new THREE.Mesh(new THREE.PlaneGeometry(RX * 2, RH), matBack); back.position.set(0, RH / 2, ZB); room.add(back);
+  const bShape = new THREE.Shape([[-RX, 0], [CXo - CWo / 2, 0], [CXo - CWo / 2, CH], [CXo + CWo / 2, CH], [CXo + CWo / 2, 0], [RX, 0], [RX, RH], [-RX, RH]].map(([x, y]) => new THREE.Vector2(x, y)));
+  const back = new THREE.Mesh(new THREE.ShapeGeometry(bShape), M({ map: brickTex([1 / 8, 1 / 4]), roughness: 0.92 })); back.position.set(0, 0, ZB); room.add(back);
   const fShape = new THREE.Shape([[-RX, 0], [-0.8, 0], [-0.8, 2.45], [0.8, 2.45], [0.8, 0], [RX, 0], [RX, RH], [-RX, RH]].map(([x, y]) => new THREE.Vector2(x, y)));
   const front = new THREE.Mesh(new THREE.ShapeGeometry(fShape), M({ map: wallTex([0.2, 0.2]), roughness: 0.95 })); front.position.set(0, 0, ZF); front.rotation.y = Math.PI; room.add(front);
   const left = new THREE.Mesh(new THREE.PlaneGeometry(D, RH), matSide); left.position.set(-RX, RH / 2, CZ); left.rotation.y = Math.PI / 2; room.add(left);
@@ -692,11 +695,11 @@ window.LaboPanel = (() => {
     const s = glowSprite(pivot, 0, -drop - 0.13, 0, 1.2, 0xffb46b, 0.35);
     bulbs.push({ pivot, s, ph: rand(0, 10), swing: i === 0 ? 0.06 : 0.012 });
   });
-  scene.add(new THREE.HemisphereLight(0x7a5f4a, 0x120c08, 0.45));
+  scene.add(new THREE.HemisphereLight(0x7a5f4a, 0x120c08, 0.14));
 
   // lumière principale (ombres)
-  const key = new THREE.SpotLight(0xffb070, 260, 0, 0.95, 0.85, 2);
-  key.position.set(0.5, RH - 0.15, 2.2); key.target.position.set(0, 0, -2); scene.add(key, key.target);
+  const key = new THREE.SpotLight(0xffb070, 210, 0, 0.5, 0.7, 2);
+  key.position.set(0.3, RH - 0.15, 0.4); key.target.position.set(0, PLAT, -2.7); scene.add(key, key.target);
   key.castShadow = true; key.shadow.mapSize.set(small ? 512 : 1024, small ? 512 : 1024); key.shadow.bias = -0.0005; key.shadow.radius = 4;
 
   /* ---------- Soupirail et rayon de lumière ---------- */
@@ -748,10 +751,10 @@ window.LaboPanel = (() => {
   const neonMat = new THREE.MeshBasicMaterial({ map: neonTex, transparent: true, depthWrite: false, color: new THREE.Color(2.4, 2.4, 2.4), blending: THREE.AdditiveBlending });
   const neon = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 0.77), neonMat); neon.position.set(-0.2, 3.75, ZB + 0.04); scene.add(neon);
   box(2.3, 0.04, 0.04, matDark, -0.2, 3.38, ZB + 0.06, scene);
-  const neonLight = new THREE.PointLight(0xff9a50, 6, 5, 2); neonLight.position.set(-0.2, 3.7, ZB + 0.6); scene.add(neonLight);
+  const neonLight = new THREE.PointLight(0xff9a50, 6, 5, 2); neonLight.position.set(-0.2, 3.7, ZB + 0.6);
 
   /* ---------- Bobine Tesla ---------- */
-  const COIL = V(0, 0, -2.7), CS = 0.78;
+  const COIL = V(0, PLAT, -2.7), CS = 0.78;
   const coil = new THREE.Group(); coil.position.copy(COIL); coil.scale.setScalar(CS); scene.add(coil);
   const copperTex = canvasTex(16, 512, (g) => { for (let y = 0; y < 512; y += 4) { g.fillStyle = '#e09a62'; g.fillRect(0, y, 16, 3); g.fillStyle = '#4a2410'; g.fillRect(0, y + 3, 16, 1); } }, { repeat: [1, 2] });
   const matCopper = M({ map: copperTex, metalness: 0.75, roughness: 0.3, envMapIntensity: 1.2 });
@@ -764,7 +767,7 @@ window.LaboPanel = (() => {
   cyl(0.44, 0.44, 0.1, matChrome, 0, 3.8, 0, coil, 48);
   cyl(0.08, 0.1, 0.5, matChrome, 0, 4.0, 0, coil, 16);
   const toroid = new THREE.Mesh(new THREE.TorusGeometry(0.85, 0.3, 32, 96), matChrome); toroid.rotation.x = Math.PI / 2; toroid.position.y = 4.15; coil.add(toroid);
-  const TOP_Y = 4.15 * CS, TOROID_R = 1.15 * CS;
+  const TOP_Y = PLAT + 4.15 * CS, TOROID_R = 1.15 * CS;
   blob(coil, 0, 0, 4.2, 4.2, 0.9);
   const hazardTex = canvasTex(1024, 1024, (g, w) => {
     const c = w / 2, r1 = c * 2.55 / 2.8, r2 = c * 2.75 / 2.8, n = 72;
@@ -781,12 +784,12 @@ window.LaboPanel = (() => {
   hazard.rotation.x = -Math.PI / 2; hazard.position.set(0, 0.008, 0); coil.add(hazard);
   const pylons = [];
   [-2.4, 2.4].forEach(dx => {
-    const g = new THREE.Group(); g.position.set(COIL.x + dx * 0.95, 0, COIL.z + 0.5); g.scale.setScalar(CS); scene.add(g);
+    const g = new THREE.Group(); g.position.set(COIL.x + dx * 0.95, PLAT, COIL.z + 0.5); g.scale.setScalar(CS); scene.add(g);
     cyl(0.38, 0.46, 0.28, matDark, 0, 0.14, 0, g);
     cyl(0.06, 0.06, 2.4, matChrome, 0, 1.5, 0, g, 12);
     for (let k = 0; k < 5; k++) cyl(0.16, 0.16, 0.05, matBlack, 0, 0.6 + k * 0.3, 0, g, 20);
     const s = new THREE.Mesh(new THREE.SphereGeometry(0.3, 28, 16), matChrome); s.position.set(0, 2.85, 0); g.add(s);
-    pylons.push(V(g.position.x, 2.85 * CS, g.position.z));
+    pylons.push(V(g.position.x, PLAT + 2.85 * CS, g.position.z));
     blob(g, 0, 0, 1.2, 1.2, 0.8);
   });
   const haloMat = new THREE.SpriteMaterial({ map: glowTex, color: 0x5fb8ff, transparent: true, opacity: 0.4, depthWrite: false, blending: THREE.AdditiveBlending });
@@ -865,6 +868,68 @@ window.LaboPanel = (() => {
     speckle(c, w, h, 3000, 0.1, 0.25); tornEdges(c, w, h);
   }, 0.6, 0.6 * 1.0, -1.9, 1.5, ZB + 0.012, 0, -0.02);
 
+  /* ---------- Relief : piliers, pilastres, estrade, couloir, premier plan ---------- */
+  const deco = new THREE.Group(); scene.add(deco);
+  const matPillar = M({ map: wallTex([0.6, 2.2]), roughness: 0.95, color: 0xa29a90 });
+  [[-7.0, -0.6], [7.0, -0.6], [-7.0, 4.4], [7.0, 4.4]].forEach(([x, z]) => {
+    box(0.6, RH, 0.6, matPillar, x, RH / 2, z, deco);
+    box(0.8, 0.25, 0.8, matConcrete, x, RH - 0.12, z, deco);   // chapiteau
+    box(0.66, 0.5, 0.66, M({ map: paintTex('#2b2a27', '80,50,30', '200,180,150'), roughness: 0.8 }), x, 0.25, z, deco); // bas noirci
+    blob(deco, x, z, 1.6, 1.6, 0.8);
+  });
+  // pilastres en brique contre le mur du fond
+  const matPier = M({ map: brickTex([0.075, RH / 4]), roughness: 0.92 });
+  [-8.55, -6.85, -2.9, 6.9].forEach(x => box(0.5, RH, 0.32, matPier, x, RH / 2, ZB + 0.16, deco));
+  // estrade en béton sous la bobine
+  box(5.4, PLAT, 4.8, M({ map: wallTex([1.2, 1]), roughness: 0.85, color: 0x8a847c }), COIL.x, PLAT / 2, COIL.z + 0.15, deco);
+  [[0, 2.55, 5.5, 0.06], [0, -2.25, 5.5, 0.06]].forEach(([dx, dz, w, d]) => box(w, 0.05, d, matSteel, COIL.x + dx, PLAT + 0.005, COIL.z + dz, deco));
+  // couloir sombre au fond à gauche
+  const cMat = M({ map: wallTex([1, 0.6]), roughness: 0.95, color: 0x7a736b });
+  const cL = new THREE.Mesh(new THREE.PlaneGeometry(CD, CH), cMat); cL.position.set(CXo - CWo / 2, CH / 2, ZB - CD / 2); cL.rotation.y = Math.PI / 2; deco.add(cL);
+  const cR = new THREE.Mesh(new THREE.PlaneGeometry(CD, CH), cMat); cR.position.set(CXo + CWo / 2, CH / 2, ZB - CD / 2); cR.rotation.y = -Math.PI / 2; deco.add(cR);
+  const cE = new THREE.Mesh(new THREE.PlaneGeometry(CWo, CH), cMat); cE.position.set(CXo, CH / 2, ZB - CD); deco.add(cE);
+  const cF = new THREE.Mesh(new THREE.PlaneGeometry(CWo, CD), matFloor); cF.rotation.x = -Math.PI / 2; cF.position.set(CXo, 0.001, ZB - CD / 2); deco.add(cF);
+  const cC = new THREE.Mesh(new THREE.PlaneGeometry(CWo, CD), matCeil); cC.rotation.x = Math.PI / 2; cC.position.set(CXo, CH, ZB - CD / 2); deco.add(cC);
+  [cL, cR, cE, cF, cC].forEach(m => { m.receiveShadow = true; });
+  const cb = new THREE.Mesh(new THREE.SphereGeometry(0.06, 12, 8), matBulb); cb.position.set(CXo, CH - 0.35, ZB - CD + 0.9); deco.add(cb);
+  deco.add(bar(V(CXo, CH, ZB - CD + 0.9), V(CXo, CH - 0.3, ZB - CD + 0.9), 0.006, matRubber));
+  glowSprite(deco, CXo, CH - 0.35, ZB - CD + 0.9, 1.1, 0xffb46b, 0.45);
+  const corridorLight = new THREE.PointLight(0xffa060, 5, 6, 2); corridorLight.position.set(CXo, CH - 0.5, ZB - CD + 1.0); scene.add(corridorLight);
+  box(0.5, 0.5, 0.45, M({ color: 0x6e5338, roughness: 0.9 }), CXo + 0.3, 0.25, ZB - CD + 1.6, deco);
+  cyl(0.26, 0.26, 0.8, M({ map: paintTex('#2e4d6a', '130,70,30', '200,200,200'), metalness: 0.5, roughness: 0.6 }), CXo - 0.3, 0.4, ZB - CD + 2.4, deco, 20);
+  // panneau « SORTIE » vert au-dessus du couloir
+  const exitTex = canvasTex(512, 192, (c, w, h) => { c.fillStyle = '#0d5a2c'; c.fillRect(0, 0, w, h); c.fillStyle = '#e9fff0'; c.textAlign = 'center'; c.font = '500 96px Geist, Arial, sans-serif'; c.fillText('SORTIE', w / 2 + 30, 128); c.beginPath(); c.moveTo(70, 96); c.lineTo(120, 56); c.lineTo(120, 136); c.closePath(); c.fill(); }, { text: true });
+  const exitSign = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.26), new THREE.MeshBasicMaterial({ map: exitTex, color: new THREE.Color(1.6, 1.6, 1.6) })); exitSign.position.set(CXo, CH + 0.3, ZB + 0.34); deco.add(exitSign);
+  box(0.74, 0.3, 0.06, matDark, CXo, CH + 0.3, ZB + 0.3, deco);
+  glowSprite(deco, CXo, CH + 0.3, ZB + 0.5, 1.2, 0x40ff90, 0.18);
+  // conduit d'aération au plafond
+  box(1.0, 0.5, ZF - ZB - 1, M({ map: paintTex('#6d7072', '90,60,30', '230,230,230'), metalness: 0.7, roughness: 0.45 }), 5.4, RH - 0.55, (ZF + ZB) / 2 + 0.5, deco);
+  for (let z = ZB + 1.5; z < ZF; z += 2.2) box(1.06, 0.56, 0.06, matSteel, 5.4, RH - 0.55, z, deco);
+  // premier plan : caisses, fût, chaîne, et la blouse de San au portemanteau
+  const crateW = M({ map: woodTex, roughness: 0.85 });
+  box(1.1, 0.8, 0.9, crateW, -3.9, 0.4, 4.9, deco).rotation.y = 0.3;
+  box(0.9, 0.6, 0.8, crateW, -3.8, 1.1, 4.8, deco).rotation.y = -0.15;
+  const tarp = softBox(0.9, 0.7, 0.7, 0.15, M({ color: 0x2f3a33, roughness: 0.95 }), -4.9, 0.35, 5.5, deco); tarp.rotation.y = 0.5;
+  cyl(0.3, 0.3, 0.95, M({ map: paintTex('#7a2b1d', '60,30,15', '220,160,120'), metalness: 0.5, roughness: 0.55 }), -2.7, 0.475, 5.6, deco, 24);
+  cyl(0.31, 0.31, 0.04, matDark, -2.7, 0.97, 5.6, deco, 24); cyl(0.31, 0.31, 0.04, matDark, -2.7, 0.3, 5.6, deco, 24);
+  blob(deco, -3.6, 5.1, 3.4, 2.2, 0.8);
+  // portemanteau avec blouse blanche
+  const rack = new THREE.Group(); rack.position.set(3.2, 0, 5.2); rack.rotation.y = -0.6; deco.add(rack);
+  [0, 2.1, 4.2].forEach(a => rack.add(bar(V(Math.cos(a) * 0.3, 0.01, Math.sin(a) * 0.3), V(0, 0.25, 0), 0.015, matDark)));
+  rack.add(bar(V(0, 0.2, 0), V(0, 1.85, 0), 0.02, matDark));
+  [0, 1.6, 3.2, 4.8].forEach(a => rack.add(bar(V(0, 1.75, 0), V(Math.cos(a) * 0.18, 1.85, Math.sin(a) * 0.18), 0.012, matDark)));
+  const coatMat = M({ color: 0xe9e4da, roughness: 0.85 });
+  const coat = softBox(0.5, 0.95, 0.2, 0.08, coatMat, 0.14, 1.25, 0.05, rack); coat.rotation.set(0.05, 0.3, 0.04);
+  softBox(0.12, 0.6, 0.12, 0.05, coatMat, 0.38, 1.3, 0.1, rack).rotation.z = 0.08;
+  softBox(0.12, 0.6, 0.12, 0.05, coatMat, -0.1, 1.3, 0.0, rack).rotation.z = -0.06;
+  const badge = new THREE.Mesh(new THREE.PlaneGeometry(0.12, 0.05), new THREE.MeshBasicMaterial({ map: canvasTex(256, 96, (c, w, h) => { c.fillStyle = '#f3efe6'; c.fillRect(0, 0, w, h); c.fillStyle = '#1b1b1b'; c.font = '500 56px Geist, Arial, sans-serif'; c.fillText('SAN', 20, 70); c.fillStyle = '#e07b2c'; c.fillRect(196, 18, 40, 60); }, { text: true }) }));
+  badge.position.set(0.0, 0.25, 0.105); coat.add(badge);
+  blob(deco, 3.2, 5.2, 1.2, 1.2, 0.7);
+  // chaîne qui pend au premier plan
+  deco.add(bar(V(1.5, RH, 6.4), V(1.5, 3.2, 6.4), 0.012, matChain));
+  const hook = new THREE.Mesh(new THREE.TorusGeometry(0.06, 0.012, 6, 16, Math.PI * 1.4), matSteel); hook.position.set(1.5, 3.14, 6.4); hook.rotation.z = 2.0; deco.add(hook);
+  deco.traverse(o => { if (o.isMesh && o.material && !o.material.transparent && o.material.type === 'MeshStandardMaterial') { o.castShadow = true; o.receiveShadow = true; } });
+
   /* ---------- Les coins cliquables ---------- */
   const plaqueTex = (eyebrow, name) => canvasTex(1024, 330, (g, w, h) => {
     g.beginPath(); g.roundRect(8, 8, w - 16, h - 16, 26);
@@ -889,6 +954,8 @@ window.LaboPanel = (() => {
 
   var tvMat, recLight;
   var fairyLights = [], marquee = [], leds = [];
+  const matShade = M({ color: 0x2f4a3a, metalness: 0.5, roughness: 0.5, side: THREE.DoubleSide });
+  const lampBeamMat = beamMat.clone(); lampBeamMat.uniforms.uColor.value = new THREE.Color(0.75, 0.45, 0.2);
   const spots = [];
   let hovered = null, selectedSpot = null, focusSpot = null, lastFocusSpot = null, focusGoal = 0, focusT = 0;
   const hitMat = new THREE.MeshBasicMaterial({ visible: false });
@@ -899,17 +966,26 @@ window.LaboPanel = (() => {
     const rotY = o.rotY !== undefined ? o.rotY : Math.atan2(EYE.x - x, EYE.z - z) * 0.85;
     g.rotation.y = rotY; scene.add(g);
     build(g);
-    const plW = o.plW || 1.5, plH = plW * 330 / 1024;
+    const plW = o.plW || 1.85, plH = plW * 330 / 1024;
     const plGroup = new THREE.Group(); plGroup.position.set(o.plaqueX || 0, o.plaqueY, o.plaqueZ || 0.2); g.add(plGroup);
     const pl = new THREE.Mesh(new THREE.PlaneGeometry(plW, plH), new THREE.MeshBasicMaterial({ map: plaqueTex(o.eyebrow, o.label), transparent: true, color: new THREE.Color(1.15, 1.15, 1.15) }));
     plGroup.add(pl);
     [-plW * 0.41, plW * 0.41].forEach(cx => plGroup.add(bar(V(cx, plH / 2 - 0.04, -0.01), V(cx, RH - o.plaqueY, -0.01), 0.006, matChain)));
-    const light = new THREE.PointLight(0xffb06a, o.light, 7, 2); light.position.set(...o.lightPos); g.add(light);
+    // lampe d'atelier suspendue au-dessus de l'objet, avec son cône de lumière
+    const lampY = RH - 0.95, lz = o.lampZ !== undefined ? o.lampZ : 0.75, tg = o.lightTarget || [0, 0, 0.1];
+    g.add(bar(V(0, RH, lz), V(0, lampY + 0.12, lz), 0.008, matRubber));
+    const shade = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.3, 0.24, 24, 1, true), matShade); shade.position.set(0, lampY, lz); g.add(shade);
+    const lbulb = new THREE.Mesh(new THREE.SphereGeometry(0.06, 12, 8), matBulb); lbulb.position.set(0, lampY - 0.06, lz); g.add(lbulb);
+    glowSprite(g, 0, lampY - 0.08, lz, 0.9, 0xffb46b, 0.4);
+    const light = new THREE.SpotLight(0xffb06a, o.light * 11, 0, 0.62, 0.7, 2); light.position.set(0, lampY - 0.06, lz); light.target.position.set(...tg); g.add(light, light.target);
+    const cone = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 1.3, lampY - 0.1, 32, 1, true), lampBeamMat);
+    cone.position.set(0, (lampY - 0.1) / 2, lz); cone.renderOrder = 4; g.add(cone);
     const ringMat = new THREE.MeshBasicMaterial({ map: ringTex, color: new THREE.Color(1.6, 0.95, 0.5), transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false });
     const ring = new THREE.Mesh(new THREE.PlaneGeometry(o.ring * 2, o.ring * 2), ringMat); ring.rotation.x = -Math.PI / 2; ring.position.set(0, 0.02, o.ringZ || 0); g.add(ring);
     const hit = new THREE.Mesh(new THREE.BoxGeometry(...o.hit), hitMat); hit.position.set(0, o.hit[1] / 2, o.hitZ || 0); g.add(hit);
     const spot = { id, g, x, z, f: V(Math.sin(rotY), 0, Math.cos(rotY)), pl, light, baseLight: o.light, ring, ringMat, hover: 0, phase: spots.length * 1.3,
       focusDist: o.focusDist || 3.4, focusY: o.focusY || 1.7, targetY: o.targetY || 1.0, hitMesh: hit };
+    light.intensity = o.light * 11; spot.baseLight = o.light * 11;
     hit.userData.spot = spot; spots.push(spot);
     return spot;
   }
@@ -1059,7 +1135,7 @@ window.LaboPanel = (() => {
   });
 
   // Atelier · Logiciels : le tableau électrique, relié à la bobine
-  addSpot('logiciels', 2.2, ZB + 0.01, { eyebrow: 'Atelier', label: 'Logiciels', rotY: 0, plW: 1.3, plaqueY: 3.85, plaqueZ: 0.35, light: 4, lightPos: [0, 3.2, 1.2], ring: 1.3, ringZ: 1.0, hit: [3.0, 3.6, 1.2], hitZ: 0.4, targetY: 2.3, focusY: 2.35, focusDist: 3.0 }, g => {
+  addSpot('logiciels', 2.2, ZB + 0.01, { eyebrow: 'Atelier', label: 'Logiciels', rotY: 0, plW: 1.5, lampZ: 1.3, lightTarget: [0, 2.3, 0.3], plaqueY: 3.85, plaqueZ: 0.35, light: 4, lightPos: [0, 3.2, 1.2], ring: 1.3, ringZ: 1.0, hit: [3.0, 3.6, 1.2], hitZ: 0.4, targetY: 2.3, focusY: 2.35, focusDist: 3.0 }, g => {
     const cab = M({ map: paintTex('#59605d', '110,60,25', '200,200,190'), metalness: 0.55, roughness: 0.55 });
     const SW = 2.8, SH = 1.65, CY = 2.45;
     box(SW, SH, 0.26, cab, 0, CY, 0.13, g);
@@ -1216,7 +1292,7 @@ window.LaboPanel = (() => {
   sconce.rotation.z = Math.PI / 2; sconce.position.set(SW2 - 0.02, 4.4, S0 + 3.4); stairs.add(sconce);
   for (let i = 0; i < 3; i++) box(0.02, 0.2, 0.02, matDark, SW2 - 0.07, 4.4, S0 + 3.32 + i * 0.08, stairs);
   glowSprite(stairs, SW2 - 0.15, 4.4, S0 + 3.4, 1.0, 0xffb46b, 0.4);
-  const sconceLight = new THREE.PointLight(0xffa860, 4, 6, 2); sconceLight.position.set(SW2 - 0.3, 4.4, S0 + 3.4); scene.add(sconceLight);
+  const sconceLight = new THREE.PointLight(0xffa860, 4, 6, 2); sconceLight.position.set(SW2 - 0.3, 4.4, S0 + 3.4);
   // la lumière chaude du labo qui déborde par la porte
   const doorLight = new THREE.PointLight(0xffa860, 10, 7, 2); doorLight.position.set(0, 1.9, ZF - 0.9); scene.add(doorLight);
   glowSprite(stairs, 0, 1.2, ZF - 0.3, 2.6, 0xffa060, 0.22);
@@ -1323,7 +1399,7 @@ window.LaboPanel = (() => {
       arc.start(vA, vB, 0.12, rand(0.2, 0.42), 0);
     } else {
       const th = rand(0, TAU); rimPoint(th, vA);
-      vB.set(COIL.x + Math.cos(th) * 2.07, 0.02, COIL.z + Math.sin(th) * 2.07);
+      vB.set(COIL.x + Math.cos(th) * 2.07, PLAT + 0.02, COIL.z + Math.sin(th) * 2.07);
       arc.start(vA, vB, 0.1, rand(0.15, 0.3), 0);
     }
   }
@@ -1382,7 +1458,7 @@ window.LaboPanel = (() => {
     W = canvas.clientWidth || innerWidth; H = canvas.clientHeight || innerHeight;
     renderer.setSize(W, H, false);
     portrait = W / H < 0.9;
-    camera.aspect = W / H; camera.fov = portrait ? 70 : 52;
+    camera.aspect = W / H; camera.fov = portrait ? 72 : 50;
     camera.updateProjectionMatrix();
     const pw = Math.round(W * PR), ph = Math.round(H * PR);
     rtScene.setSize(pw, ph); rtA.setSize(pw >> 1, ph >> 1); rtB.setSize(pw >> 1, ph >> 1); rtC.setSize(pw >> 2, ph >> 2); rtD.setSize(pw >> 2, ph >> 2);
