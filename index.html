@@ -180,6 +180,18 @@ body.project-open .intro,body.project-open .nav,body.project-open .hint{opacity:
   .panel{border-left:0}
   .panel-inner{padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px))}
 }
+.carousel{display:none}
+.cbtn{pointer-events:auto;cursor:pointer;border-radius:12px;border:1px solid rgba(255,180,102,.42);background:linear-gradient(180deg,rgba(255,170,90,.2),rgba(110,55,20,.14));color:var(--amber);font:400 1.6rem/1 var(--display);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);min-height:58px}
+.cmain{pointer-events:auto;cursor:pointer;display:grid;grid-template-columns:1fr auto;align-items:center;gap:3px 10px;text-align:left;padding:10px 14px;border-radius:12px;border:1px solid rgba(255,180,102,.6);background:linear-gradient(180deg,rgba(255,170,90,.28),rgba(110,55,20,.2));color:var(--ink);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:0 0 24px rgba(255,140,50,.2);min-width:0}
+.ceb{grid-column:1;font-family:var(--mono);font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--amber)}
+.cname{grid-column:1 / -1;font:400 1.05rem/1.2 var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.cgo{grid-column:2;grid-row:1;justify-self:end;font-family:var(--mono);font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--amber)}
+.cbtn:focus-visible,.cmain:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+@media (max-width:640px){
+  .nav{display:none}
+  .carousel{display:grid;grid-template-columns:52px minmax(0,1fr) 52px;gap:8px;transition:opacity .5s,visibility .5s}
+  body.project-open .carousel{opacity:0;visibility:hidden}
+}
 @media (max-height:560px) and (min-width:641px){ .lede{display:none} }
 @media (prefers-reduced-motion:no-preference){
   .intro>*{animation:rise 1.4s cubic-bezier(.2,.7,.2,1) both}
@@ -229,6 +241,11 @@ body.project-open .intro,body.project-open .nav,body.project-open .hint{opacity:
           <button class="chip quiet" type="button" data-project="setup">Mon setup<span class="go" aria-hidden="true">→</span></button>
         </div>
       </nav>
+      <div class="carousel" id="carousel">
+        <button class="cbtn" id="cPrev" type="button" aria-label="Objet précédent">‹</button>
+        <button class="cmain" id="cOpen" type="button"><span class="ceb" id="cEb">Projet 01</span><span class="cname" id="cName">Garçon Printemps</span><span class="cgo">Ouvrir →</span></button>
+        <button class="cbtn" id="cNext" type="button" aria-label="Objet suivant">›</button>
+      </div>
       <div class="ctl-row">
         <div class="hint"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 8h12M2 8l3-3M2 8l3 3M14 8l-3-3M14 8l-3 3" stroke="#b3a495" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span id="hintText">Clique sur un objet ou glisse pour regarder</span></div>
         <button class="btn" id="pause" type="button" aria-pressed="false"><span class="dot"></span><span id="pauseLabel">Mettre en pause</span></button>
@@ -358,6 +375,15 @@ window.LaboPanel = (() => {
     const id = location.hash.slice(1);
     if (PROJECTS[id]) { if (id !== current) open(id); } else if (current) close();
   });
+  const CAROUSEL = [['setup', 'Atelier', 'Mon setup'], ['garcon-printemps', 'Projet 01', 'Garçon Printemps'], ['logiciels', 'Atelier', 'Logiciels'], ['leila', 'Projet 02', 'Leila'], ['photomathon', 'Projet 03', 'Photomathon']];
+  let ci = 1;
+  function showC(move) { const [id, eb, name] = CAROUSEL[ci]; $('cEb').textContent = eb; $('cName').textContent = name; if (move && window.LaboView) window.LaboView.look(id); }
+  $('cPrev').addEventListener('click', () => { ci = (ci + CAROUSEL.length - 1) % CAROUSEL.length; showC(true); });
+  $('cNext').addEventListener('click', () => { ci = (ci + 1) % CAROUSEL.length; showC(true); });
+  $('cOpen').addEventListener('click', () => open(CAROUSEL[ci][0], { trigger: $('cOpen') }));
+  listeners.push(id => { const k = CAROUSEL.findIndex(c => c[0] === id); if (k >= 0) { ci = k; showC(false); } });
+  showC(false);
+  if (matchMedia('(max-width: 640px)').matches) $('hintText').textContent = 'Flèches ou glisse pour regarder';
   const start = location.hash.slice(1);
   if (PROJECTS[start]) open(start);
   return { open, close, current: () => current, onChange: f => listeners.push(f) };
@@ -863,7 +889,7 @@ window.LaboPanel = (() => {
   var tvMat, recLight;
   var fairyLights = [], marquee = [], leds = [];
   const spots = [];
-  let hovered = null, focusSpot = null, lastFocusSpot = null, focusGoal = 0, focusT = 0;
+  let hovered = null, selectedSpot = null, focusSpot = null, lastFocusSpot = null, focusGoal = 0, focusT = 0;
   const hitMat = new THREE.MeshBasicMaterial({ visible: false });
   const ringTex = canvasTex(256, 256, (g) => { g.beginPath(); g.arc(128, 128, 118, 0, TAU); g.strokeStyle = '#fff'; g.lineWidth = 6; g.stroke(); });
 
@@ -888,9 +914,9 @@ window.LaboPanel = (() => {
   }
 
   // 01 · Garçon Printemps : le canapé en cuir, la tondeuse et un carré de printemps qui pousse dans la cave
-  addSpot('garcon-printemps', -3.2, -1.7, { eyebrow: 'Projet 01', label: 'Garçon Printemps', plaqueY: 2.75, plaqueZ: -0.4, light: 5, lightPos: [0.9, 1.6, 0.6], ring: 1.6, hit: [3.0, 2.6, 3.4], hitZ: -0.6, targetY: 0.8, focusDist: 3.6, focusY: 1.6 }, g => {
+  addSpot('garcon-printemps', -3.2, -1.7, { eyebrow: 'Projet 01', label: 'Garçon Printemps', plaqueY: 2.75, plaqueZ: -0.4, light: 5, lightPos: [0.9, 1.6, 0.6], ring: 1.6, hit: [3.0, 2.6, 3.4], hitZ: -0.6, targetY: 0.9, focusDist: 5.6, focusY: 2.3 }, g => {
     // canapé contre le mur du fond
-    const sofa = new THREE.Group(); sofa.position.set(-0.3, 0, -1.95); sofa.rotation.y = 0.05; g.add(sofa);
+    const sofa = new THREE.Group(); sofa.position.set(-1.55, 0, -1.9); sofa.rotation.y = 0.25; g.add(sofa);
     softBox(2.3, 0.4, 0.9, 0.08, matLeather, 0, 0.3, 0, sofa);
     softBox(1.08, 0.2, 0.78, 0.08, matLeather, -0.55, 0.58, 0.05, sofa);
     softBox(1.08, 0.2, 0.78, 0.08, matLeather, 0.55, 0.58, 0.05, sofa);
@@ -908,7 +934,7 @@ window.LaboPanel = (() => {
       c.fillStyle = '#2c3a55'; c.save(); c.translate(w / 2, h / 2); c.rotate(Math.PI / 4); c.fillRect(-34, -34, 68, 68); c.restore();
       blotches(c, w, h, 30, '30,20,15', 0.4, 0.05, 0.2); speckle(c, w, h, 9000, 0.12, 0.25);
     });
-    const rug = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 1.7), M({ map: rugTex, roughness: 1 })); rug.rotation.x = -Math.PI / 2; rug.position.set(-0.2, 0.006, -0.85); g.add(rug);
+    const rug = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 1.7), M({ map: rugTex, roughness: 1 })); rug.rotation.x = -Math.PI / 2; rug.position.set(-1.1, 0.006, -0.9); g.add(rug);
     // carré d'herbe avec quelques fleurs
     const dirt = new THREE.Mesh(new THREE.CircleGeometry(1.05, 40), M({ color: 0x2b1f16, roughness: 1 })); dirt.rotation.x = -Math.PI / 2; dirt.position.set(0.2, 0.012, 0.25); g.add(dirt);
     const bladeGeo = new THREE.ConeGeometry(0.02, 0.28, 3); bladeGeo.translate(0, 0.14, 0);
@@ -943,7 +969,7 @@ window.LaboPanel = (() => {
     const decal = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 0.075), new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false,
       map: canvasTex(512, 128, (c, w) => { c.textAlign = 'center'; c.fillStyle = '#efe6cf'; c.font = '500 50px Geist, Arial, sans-serif'; c.fillText('Garçon Printemps', w / 2, 82); }, { text: true }) }));
     decal.rotation.set(-Math.PI / 2, 0, Math.PI); decal.position.set(0, 0.157, -0.34); mower.add(decal);
-    mower.scale.setScalar(2.0); mower.position.set(0.25, 0.27, 0.35); mower.rotation.y = 2.6;
+    mower.scale.setScalar(2.0); mower.position.set(0.25, 0.27, 0.35); mower.rotation.y = 2.6; g.userData.mower = mower;
     blob(g, 0.2, 0.3, 2.6, 2.6, 0.5);
   });
 
@@ -962,7 +988,7 @@ window.LaboPanel = (() => {
     tag.position.set(0, 0, 0.335); c1.add(tag);
     const orange = M({ color: 0xff5a14, roughness: 0.45 });
     const white = M({ color: 0xf2f0ea, roughness: 0.3, emissive: 0x332d25 });
-    const cone = new THREE.Group(); cone.position.set(0.05, 0.92, 0.02); cone.rotation.set(0.04, 0.4, -0.05); g.add(cone);
+    const cone = new THREE.Group(); cone.position.set(0.05, 0.92, 0.02); cone.rotation.set(0.04, 0.4, -0.05); g.add(cone); g.userData.cone = cone;
     box(0.62, 0.05, 0.62, M({ color: 0x1a1a1a, roughness: 0.8 }), 0, 0.025, 0, cone);
     cyl(0.05, 0.27, 0.92, orange, 0, 0.51, 0, cone, 32);
     const rAt = y => 0.27 - 0.22 * ((y - 0.05) / 0.92);
@@ -978,7 +1004,7 @@ window.LaboPanel = (() => {
     for (let i = 0; i < 4; i++) { const c = cyl(0.075, 0.05, 0.16, cup, rand(-1.1, 1.1), 0.08, rand(0.5, 1.1), g, 16); if (i % 2) { c.rotation.z = Math.PI / 2; c.position.y = 0.065; c.rotation.y = rand(0, TAU); } }
     const c3 = cyl(0.065, 0.065, 0.2, canMats[1], 0.3, 1.02, 0.2, g, 16); c3.scale.y = 0.6;
     // enceinte de soirée
-    const spk = box(0.42, 0.62, 0.36, matBlack, -0.95, 0.31, -0.3, g); spk.rotation.y = 0.4;
+    const spk = box(0.42, 0.62, 0.36, matBlack, -0.95, 0.31, -0.3, g); spk.rotation.y = 0.4; g.userData.spk = spk;
     [0.12, -0.1].forEach((y, i) => { const cone2 = new THREE.Mesh(new THREE.CircleGeometry(i ? 0.13 : 0.07, 24), M({ color: 0x2a2a2a, roughness: 0.4, metalness: 0.3 })); cone2.position.set(0, y, 0.181); spk.add(cone2); });
     // guirlande
     const bulbCols = [0xffb066, 0xff6a5a, 0xffe08a, 0x7fd0ff].map(c => new THREE.MeshBasicMaterial({ color: new THREE.Color(c).multiplyScalar(3) }));
@@ -1006,7 +1032,7 @@ window.LaboPanel = (() => {
     const curtain = new THREE.Mesh(cGeo, M({ map: curtainTex, roughness: 0.95 })); curtain.position.set(0.38, 1.2, 0.68); g.add(curtain);
     g.userData.curtain = curtain;
     box(0.86, 0.03, 0.03, matChrome, 0.38, 2.14, 0.69, g);
-    const leak = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 0.08), new THREE.MeshBasicMaterial({ color: new THREE.Color(4, 2.6, 1.3) })); leak.position.set(0.38, 0.235, 0.66); g.add(leak);
+    const leak = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 0.08), new THREE.MeshBasicMaterial({ color: new THREE.Color(4, 2.6, 1.3) })); leak.position.set(0.38, 0.235, 0.66); g.add(leak); g.userData.leak = leak;
     const infoTex = canvasTex(256, 512, (c, w, h) => {
       c.fillStyle = '#1b1411'; c.fillRect(0, 0, w, h); c.strokeStyle = '#c9a06a'; c.lineWidth = 3; c.strokeRect(14, 14, w - 28, h - 28);
       c.fillStyle = '#e8d6bb'; c.textAlign = 'center'; c.font = '500 30px "Geist Mono", monospace'; c.fillText('4 POSES', w / 2, 80);
@@ -1016,7 +1042,7 @@ window.LaboPanel = (() => {
     }, { text: true });
     const info = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 1.0), M({ map: infoTex, roughness: 0.6 })); info.position.set(-0.45, 1.45, 0.656); g.add(info);
     const stripTex = canvasTex(64, 256, (c, w) => { c.fillStyle = '#e9e2d6'; c.fillRect(0, 0, w, 256); for (let i = 0; i < 4; i++) { const gr = c.createLinearGradient(0, 8 + i * 62, 0, 62 + i * 62); gr.addColorStop(0, '#5b5550'); gr.addColorStop(1, '#2b2725'); c.fillStyle = gr; c.fillRect(6, 8 + i * 62, w - 12, 54); } });
-    const strip = new THREE.Mesh(new THREE.PlaneGeometry(0.11, 0.44), M({ map: stripTex, roughness: 0.7, side: THREE.DoubleSide })); strip.position.set(-0.45, 0.62, 0.68); strip.rotation.x = -0.12; g.add(strip);
+    const strip = new THREE.Mesh(new THREE.PlaneGeometry(0.11, 0.44), M({ map: stripTex, roughness: 0.7, side: THREE.DoubleSide })); strip.position.set(-0.45, 0.62, 0.68); strip.rotation.x = -0.12; g.add(strip); g.userData.strip = strip; strip.scale.y = 0.12; strip.position.y = 0.84 - 0.22 * 0.12;
     box(1.84, 0.46, 0.24, matDark, 0, 2.72, 0.1, g);
     const signTex = canvasTex(1024, 256, (c, w) => {
       c.fillStyle = '#140d09'; c.fillRect(0, 0, w, 256); c.textAlign = 'center'; c.font = '500 112px Geist, Arial, sans-serif';
@@ -1032,7 +1058,7 @@ window.LaboPanel = (() => {
   });
 
   // Atelier · Logiciels : le tableau électrique, relié à la bobine
-  addSpot('logiciels', 2.2, ZB + 0.01, { eyebrow: 'Atelier', label: 'Logiciels', rotY: 0, plW: 1.3, plaqueY: 3.85, plaqueZ: 0.35, light: 4, lightPos: [0, 3.2, 1.2], ring: 1.3, ringZ: 1.0, hit: [3.0, 3.6, 1.2], hitZ: 0.4, targetY: 2.2, focusY: 2.2, focusDist: 4.4 }, g => {
+  addSpot('logiciels', 2.2, ZB + 0.01, { eyebrow: 'Atelier', label: 'Logiciels', rotY: 0, plW: 1.3, plaqueY: 3.85, plaqueZ: 0.35, light: 4, lightPos: [0, 3.2, 1.2], ring: 1.3, ringZ: 1.0, hit: [3.0, 3.6, 1.2], hitZ: 0.4, targetY: 2.3, focusY: 2.35, focusDist: 3.0 }, g => {
     const cab = M({ map: paintTex('#59605d', '110,60,25', '200,200,190'), metalness: 0.55, roughness: 0.55 });
     const SW = 2.8, SH = 1.65, CY = 2.45;
     box(SW, SH, 0.26, cab, 0, CY, 0.13, g);
@@ -1064,8 +1090,10 @@ window.LaboPanel = (() => {
     for (let i = 0; i < 6; i++) {
       const x = x0 + cw * (i + 0.5);
       box(0.2, 0.42, 0.07, leverMat, x, CY + 0.12, 0.3, g);
-      g.add(bar(V(x, CY + 0.04, 0.34), V(x, CY + 0.36, 0.54), 0.017, matChrome));
-      const knob = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.14, 12), knobMat); knob.position.set(x, CY + 0.38, 0.56); knob.rotation.z = Math.PI / 2; g.add(knob);
+      const piv = new THREE.Group(); piv.position.set(x, CY + 0.04, 0.34); g.add(piv);
+      piv.add(bar(V(0, 0, 0), V(0, 0.32, 0.2), 0.017, matChrome));
+      const knob = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.14, 12), knobMat); knob.position.set(0, 0.34, 0.22); knob.rotation.z = Math.PI / 2; piv.add(knob);
+      (g.userData.levers = g.userData.levers || []).push(piv);
       const l = new THREE.Mesh(new THREE.SphereGeometry(0.03, 12, 8), new THREE.MeshBasicMaterial({ color: new THREE.Color(5, 2.8, 1) })); l.position.set(x, CY + 0.47, 0.29); g.add(l);
       g.userData.leds.push({ m: l, ph: rand(0, 10) });
     }
@@ -1091,18 +1119,18 @@ window.LaboPanel = (() => {
     // petite télé cathodique qui montre une photo de Garçon Printemps
     const tv = new THREE.Group(); tv.position.set(-0.75, 1.02, -0.15); tv.rotation.y = 0.25; g.add(tv);
     softBox(0.62, 0.5, 0.5, 0.05, M({ color: 0x2b2824, roughness: 0.6 }), 0, 0.25, 0, tv);
-    tvMat = new THREE.ShaderMaterial({ uniforms: { tMap: { value: gpTex }, uTime: { value: 0 } },
+    tvMat = new THREE.ShaderMaterial({ uniforms: { tMap: { value: gpTex }, uTime: { value: 0 }, uGlitch: { value: 0 } },
       vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
-      fragmentShader: `uniform sampler2D tMap; uniform float uTime; varying vec2 vUv;
+      fragmentShader: `uniform sampler2D tMap; uniform float uTime; uniform float uGlitch; varying vec2 vUv;
         float h(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233))) * 43758.5453); }
-        void main(){ vec2 uv = vUv; uv.x += sin(uv.y * 40.0 + uTime * 3.0) * 0.002;
+        void main(){ vec2 uv = vUv; uv.x += sin(uv.y * 40.0 + uTime * 3.0) * 0.002 + uGlitch * (h(vec2(floor(uv.y * 24.0), floor(uTime * 20.0))) - 0.5) * 0.14;
           vec3 c = texture2D(tMap, uv).rgb; c = pow(c, vec3(2.2));
           c *= 0.75 + 0.25 * sin(vUv.y * 420.0); c += (h(vUv * 300.0 + uTime) - 0.5) * 0.08;
           float v = smoothstep(0.75, 0.3, length(vUv - 0.5)); gl_FragColor = vec4(c * v * 1.6, 1.0); }` });
     const screen = new THREE.Mesh(new THREE.PlaneGeometry(0.46, 0.36), tvMat); screen.position.set(-0.03, 0.27, 0.252); tv.add(screen);
     glowSprite(tv, 0, 0.27, 0.35, 0.9, 0xbcd0ff, 0.22);
     const gear = new THREE.Group(); gear.position.set(0.25, 1.02, 0.1); gear.scale.setScalar(2.6); g.add(gear);
-    const gim = new THREE.Group(); gear.add(gim);
+    const gim = new THREE.Group(); gear.add(gim); g.userData.gim = gim;
     [0, 2.1, 4.2].forEach(a => gim.add(bar(V(Math.cos(a) * 0.08, 0, Math.sin(a) * 0.08), V(0, 0.06, 0), 0.006, matBlack)));
     cyl(0.022, 0.022, 0.2, matBlack, 0, 0.16, 0, gim, 16);
     box(0.05, 0.05, 0.05, matDark, 0, 0.28, 0, gim);
@@ -1381,7 +1409,7 @@ window.LaboPanel = (() => {
     oPos.set(eye.x + curHX * 0.35, eye.y + breathe - curHY * 0.12, eye.z);
     const yaw = curYaw - curHX * 0.12, pitch = curPitch - curHY * 0.06;
     const L = eye.z - LOOK.z;
-    oTgt.set(oPos.x + Math.sin(yaw) * L, LOOK.y + (portrait ? -0.85 : 0) + pitch * L, oPos.z - Math.cos(yaw) * L);
+    oTgt.set(oPos.x + Math.sin(yaw) * L, LOOK.y + (portrait ? -0.45 : 0) + pitch * L, oPos.z - Math.cos(yaw) * L);
   }
   function placeCamera(t, dt) {
     rest(t, dt);
@@ -1399,9 +1427,225 @@ window.LaboPanel = (() => {
       const e = focusT * focusT * (3 - 2 * focusT);
       camera.position.lerp(fPos, e); target.lerp(fTgt, e);
     }
+    if (shake > 0.001) { camera.position.x += (Math.random() - 0.5) * shake; camera.position.y += (Math.random() - 0.5) * shake; }
     camera.lookAt(target);
     front.visible = camera.position.z < ZF - 0.1;
   }
+
+  /* ---------- Réactions quand on ouvre un objet ---------- */
+  let shake = 0, party = 0, overrideLeds = false;
+  scene.updateMatrixWorld(true);
+  const spotById = id => spots.find(s => s.id === id);
+  const smooth = t => t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t);
+  const angLerp = (a, b, t) => { const d = ((b - a + Math.PI) % TAU + TAU) % TAU - Math.PI; return a + d * t; };
+  // bouffées : fumée, poussière, étincelles
+  const puffTex = radial('rgba(255,255,255,0.6)');
+  const puffs = Array.from({ length: 48 }, () => {
+    const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: puffTex, color: 0xcfc3b4, transparent: true, opacity: 0, depthWrite: false }));
+    s.visible = false; scene.add(s); return { s, life: 0, age: 0, v: V(0, 0, 0), size: 1, add: false };
+  });
+  function puff(p, v, size, life, color, glow) {
+    const f = puffs.find(x => x.age >= x.life); if (!f) return;
+    f.s.position.copy(p); f.v.copy(v); f.size = size; f.life = life; f.age = 0; f.s.visible = true;
+    f.s.material.color.set(color || 0xcfc3b4); if (glow) f.s.material.color.multiplyScalar(3);
+    f.s.material.blending = glow ? THREE.AdditiveBlending : THREE.NormalBlending;
+  }
+  function updatePuffs(dt) {
+    puffs.forEach(f => {
+      if (f.age >= f.life) { f.s.visible = false; return; }
+      f.age += dt; const u = Math.min(1, f.age / f.life);
+      f.s.position.addScaledVector(f.v, dt); f.v.multiplyScalar(Math.max(0, 1 - dt * 1.5));
+      const sc = f.size * (0.4 + u); f.s.scale.set(sc, sc, 1); f.s.material.opacity = (1 - u) * 0.55;
+    });
+  }
+
+  // le pan de mur en briques qui explose puis se reconstruit
+  const HX = -3.45, HW = 1.9;
+  const brickMats = [0x7a3a26, 0x8c4a30, 0x6a3020].map(c => M({ color: c, roughness: 0.9, emissive: 0xff8a40, emissiveIntensity: 0 }));
+  const brickGeo = new THREE.BoxGeometry(0.232, 0.11, 0.14);
+  const bricks = [];
+  for (let r = 0; r < 15; r++) for (let c = 0; c < 8; c++) {
+    const x = HX - HW / 2 + 0.12 + c * 0.24 + (r % 2 ? 0.12 : 0), y = 0.06 + r * 0.117;
+    if (x > HX + HW / 2 - 0.08) continue;
+    const m = new THREE.Mesh(brickGeo, brickMats[(r * 7 + c * 3) % 3]); m.position.set(x, y, ZB + 0.075); m.visible = false; m.castShadow = true; scene.add(m);
+    const dx = (x - HX) / 0.95, dy = (y - 0.78) / 0.82;
+    bricks.push({ m, home: m.position.clone(), inHole: dx * dx + dy * dy < 1, flying: false, v: V(0, 0, 0), w: V(0, 0, 0), from: V(0, 0, 0), fromR: new THREE.Euler(), delay: 0 });
+  }
+  const holeTex = canvasTex(256, 256, (c, w, h) => {
+    const gr = c.createRadialGradient(w / 2, h / 2, 10, w / 2, h / 2, w / 2); gr.addColorStop(0, '#000'); gr.addColorStop(0.8, '#0b0603'); gr.addColorStop(1, '#1a0f08');
+    c.fillStyle = gr; c.beginPath();
+    for (let i = 0; i <= 26; i++) { const a = i / 26 * TAU, r = (w / 2 - 6) * (0.8 + Math.random() * 0.14); c.lineTo(w / 2 + Math.cos(a) * r, h / 2 + Math.sin(a) * r * 0.95); }
+    c.fill();
+  });
+  const hole = new THREE.Mesh(new THREE.PlaneGeometry(1.95, 1.7), new THREE.MeshBasicMaterial({ map: holeTex, transparent: true, depthWrite: false }));
+  hole.position.set(HX, 0.8, ZB + 0.006); hole.visible = false; scene.add(hole);
+  const wallShow = v => { bricks.forEach(b => { b.m.visible = v; }); hole.visible = v; };
+  function wallBreak() {
+    wallShow(true);
+    bricks.forEach(b => {
+      b.m.position.copy(b.home); b.m.rotation.set(0, 0, 0); b.flying = b.inHole;
+      if (b.inHole) { b.v.set(rand(-1.6, 1.6), rand(0.4, 2.6), rand(1.4, 4.2)); b.w.set(rand(-8, 8), rand(-8, 8), rand(-8, 8)); }
+    });
+    for (let i = 0; i < 18; i++) puff(V(HX + rand(-0.7, 0.7), rand(0.15, 1.4), ZB + 0.3), V(rand(-1, 1), rand(0, 0.8), rand(0.6, 2.2)), rand(0.6, 1.3), rand(1.4, 2.4), 0xb8a894);
+    shake = 0.14;
+  }
+  function wallPhysics(dt) {
+    bricks.forEach(b => {
+      if (!b.flying) return;
+      b.v.y -= 9.8 * dt; b.m.position.addScaledVector(b.v, dt);
+      b.m.rotation.x += b.w.x * dt; b.m.rotation.y += b.w.y * dt; b.m.rotation.z += b.w.z * dt;
+      if (b.m.position.y < 0.06) { b.m.position.y = 0.06; b.v.y *= -0.3; b.v.x *= 0.55; b.v.z *= 0.55; b.w.multiplyScalar(0.45); if (Math.abs(b.v.y) < 0.35) b.v.y = 0; }
+    });
+  }
+  function wallGather() { bricks.forEach(b => { b.from.copy(b.m.position); b.fromR.copy(b.m.rotation); b.flying = false; b.delay = b.inHole ? rand(0, 0.6) : 0; }); }
+  function wallAssemble(u) {
+    bricks.forEach(b => {
+      if (!b.inHole) return;
+      const k = smooth((u * 1.8 - b.delay) / 1.1);
+      b.m.position.lerpVectors(b.from, b.home, k); b.m.position.y += Math.sin(Math.PI * k) * 0.55;
+      b.m.rotation.set(b.fromR.x * (1 - k), b.fromR.y * (1 - k), b.fromR.z * (1 - k));
+    });
+    brickMats.forEach(m => { m.emissiveIntensity = Math.sin(Math.PI * Math.min(1, u)) * 0.6; });
+  }
+
+  // un arc de la bobine vers un point précis
+  function zap(p) { const arc = free(); if (!arc) return; rimPoint(Math.atan2(p.z - COIL.z, p.x - COIL.x), vA); arc.start(vA, p, 0.1, rand(0.25, 0.4), 0); strikes++; }
+
+  const events = {};
+  let activeEvent = null;
+  function triggerEvent(id) {
+    const e = events[id]; if (!e) return;
+    if (activeEvent && activeEvent !== e) activeEvent.stop();
+    activeEvent = e; e.t = 0; if (e.start) e.start();
+    requestRender();
+  }
+  function updateEvents(dt) {
+    shake *= Math.exp(-dt * 6); if (shake < 0.001) shake = 0;
+    updatePuffs(dt); wallPhysics(dt);
+    if (activeEvent) { activeEvent.t += dt; if (activeEvent.run(activeEvent.t, dt) === false) { activeEvent.stop(); activeEvent = null; } }
+  }
+  const anyBusy = () => !!activeEvent || shake > 0 || puffs.some(p => p.age < p.life);
+
+  // Garçon Printemps : la tondeuse démarre, défonce le mur, recule… et le mur se reconstruit tout seul
+  {
+    const g = spotById('garcon-printemps').g, mower = g.userData.mower;
+    const start = mower.position.clone(), r0 = mower.rotation.y;
+    const tgt = g.worldToLocal(V(HX, 0, ZB + 0.72)); tgt.y = start.y;
+    const dir = tgt.clone().sub(start), face = Math.atan2(dir.x, dir.z);
+    const into = tgt.clone().addScaledVector(dir.clone().normalize(), 0.2);
+    const ex = V(0, 0, 0);
+    let broke = false, gathered = false;
+    events['garcon-printemps'] = {
+      start() { broke = false; gathered = false; },
+      stop() { mower.position.copy(start); mower.rotation.set(0, r0, 0); wallShow(false); brickMats.forEach(m => { m.emissiveIntensity = 0; }); },
+      run(t) {
+        if (t < 0.6) { mower.rotation.y = angLerp(r0, face, smooth(t / 0.6)); mower.rotation.z = Math.sin(t * 60) * 0.015; }
+        else if (t < 1.35) { const u = (t - 0.6) / 0.75; mower.rotation.y = face; mower.position.lerpVectors(start, tgt, u * u); mower.rotation.z = Math.sin(t * 70) * 0.02; }
+        else if (t < 1.6) { if (!broke) { broke = true; wallBreak(); } mower.position.lerpVectors(tgt, into, Math.sin(Math.PI * (t - 1.35) / 0.25)); }
+        else if (t < 2.1) { mower.position.copy(tgt); mower.rotation.z = 0; }
+        else if (t < 3.5) { mower.position.lerpVectors(tgt, start, smooth((t - 2.1) / 1.4)); mower.rotation.z = Math.sin(t * 50) * 0.012; }
+        else if (t < 4.0) { mower.position.copy(start); mower.rotation.z = 0; mower.rotation.y = angLerp(face, r0, smooth((t - 3.5) / 0.5)); }
+        else mower.rotation.y = r0;
+        if (t < 3.5 && Math.random() < 0.4) { mower.localToWorld(ex.set(0, 0.22, -0.18)); puff(ex, V(rand(-0.2, 0.2), 0.5, rand(-0.2, 0.2)), 0.22, 1.0, 0x7d756c); }
+        if (t > 3.7 && t < 5.7) {
+          if (!gathered) { gathered = true; wallGather(); }
+          wallAssemble((t - 3.7) / 2.0);
+          if (Math.random() < 0.45) puff(V(HX + rand(-0.8, 0.8), rand(0.1, 1.5), ZB + 0.25), V(0, rand(0.2, 0.5), 0.15), rand(0.12, 0.22), 0.8, 0xffb060, true);
+        }
+        return t < 5.9;
+      }
+    };
+  }
+
+  // Leila : la soirée démarre, l'enceinte cogne, la guirlande s'affole et le cône fait un salto
+  {
+    const s = spotById('leila'), g = s.g, cone = g.userData.cone, spk = g.userData.spk;
+    const c0 = cone.position.clone(), cr = cone.rotation.clone(), col0 = s.light.color.clone();
+    events.leila = {
+      stop() { cone.position.copy(c0); cone.rotation.copy(cr); spk.scale.set(1, 1, 1); s.light.color.copy(col0); party = 0; },
+      run(t) {
+        party = t < 4.2 ? 1 : Math.max(0, 1 - (t - 4.2) * 2);
+        const beat = Math.pow(Math.abs(Math.sin(t * Math.PI * 2.1)), 6);
+        spk.scale.setScalar(1 + beat * 0.07 * party);
+        if (t < 4.2) s.light.color.setHSL((t * 0.35) % 1, 0.9, 0.6); else s.light.color.lerp(col0, 0.15);
+        if (t > 0.5 && t < 1.7) {
+          const u = (t - 0.5) / 1.2;
+          cone.position.set(c0.x, c0.y + Math.sin(Math.PI * u) * 1.1, c0.z);
+          cone.rotation.set(cr.x + Math.sin(TAU * u) * 0.5, cr.y + smooth(u) * TAU, cr.z);
+        } else { cone.position.copy(c0); cone.rotation.copy(cr); }
+        if (t > 1.68 && t < 1.74) shake = Math.max(shake, 0.04);
+        if (t < 4.2 && Math.random() < 0.08) puff(V(s.x + rand(-1, 1), rand(1.6, 2.6), s.z + rand(-0.6, 0.6)), V(0, 0.1, 0), 0.1, 0.6, [0xff6a5a, 0xffe08a, 0x7fd0ff][Math.floor(rand(0, 3))], true);
+        return t < 4.8;
+      }
+    };
+  }
+
+  // Photomathon : quatre flashs derrière le rideau, puis la bande de photos sort
+  {
+    const g = spotById('photomathon').g, strip = g.userData.strip, curtain = g.userData.curtain, leak = g.userData.leak;
+    const flashL = new THREE.PointLight(0xfff4e8, 0, 6, 2); flashL.position.set(0.3, 1.5, 1.0); g.add(flashL);
+    const leakCol = leak.material.color.clone();
+    const setStrip = k => { strip.scale.y = 0.12 + 0.88 * k; strip.position.y = 0.84 - 0.22 * strip.scale.y; };
+    events.photomathon = {
+      start() { setStrip(0); },
+      stop() { flashL.intensity = 0; leak.material.color.copy(leakCol); curtain.rotation.z = 0; curtain.scale.x = 1; setStrip(1); },
+      run(t) {
+        let f = 0;
+        [0.9, 1.6, 2.3, 3.0].forEach(ft => { const d = t - ft; if (d > 0 && d < 0.4) f = Math.max(f, Math.exp(-d * 12)); });
+        flashL.intensity = f * 30; leak.material.color.copy(leakCol).multiplyScalar(1 + f * 5);
+        const sway = t < 3.6 ? 1 : 0;
+        curtain.scale.x = 1 - 0.04 * (0.5 + 0.5 * Math.sin(t * 3)) * sway; curtain.rotation.z = Math.sin(t * 2.2) * 0.015 * sway;
+        if (t > 3.5) setStrip(smooth((t - 3.5) / 1.3));
+        return t < 5.0;
+      }
+    };
+  }
+
+  // Logiciels : les interrupteurs basculent un par un, la bobine envoie du courant au tableau, tout se rallume
+  {
+    const g = spotById('logiciels').g, levers = g.userData.levers, ledArr = g.userData.leds;
+    const tips = levers.map(p => p.localToWorld(V(0, 0.34, 0.22)));
+    let zapped = 0;
+    events.logiciels = {
+      start() { zapped = 0; overrideLeds = true; },
+      stop() { levers.forEach(p => { p.rotation.x = 0; }); overrideLeds = false; },
+      run(t) {
+        levers.forEach((p, i) => {
+          const down = smooth((t - i * 0.12) / 0.25), up = smooth((t - 2.1 - i * 0.14) / 0.3);
+          p.rotation.x = 2.1 * (down - up);
+          const on = !(down > 0.5 && up < 0.5);
+          ledArr[i].m.material.color.setRGB(on ? 5 : 0.3, on ? 2.8 : 0.15, on ? 1 : 0.05);
+        });
+        if (t > 1.0 && zapped < 6 && t > 1.0 + zapped * 0.16) { zap(tips[zapped]); zapped++; shake = Math.max(shake, 0.02); }
+        return t < 3.4;
+      }
+    };
+  }
+
+  // Setup : la télé grésille et le stabilisateur fait un panoramique complet
+  {
+    const g = spotById('setup').g, gim = g.userData.gim;
+    events.setup = {
+      stop() { gim.rotation.y = 0; if (tvMat) tvMat.uniforms.uGlitch.value = 0; },
+      run(t) {
+        gim.rotation.y = smooth(t / 3.2) * TAU;
+        if (tvMat) tvMat.uniforms.uGlitch.value = t < 0.9 ? 1 - t / 0.9 : 0;
+        if (recLight) recLight.visible = true;
+        return t < 3.4;
+      }
+    };
+  }
+
+  // sur téléphone : les flèches tournent la tête vers l'objet choisi
+  window.LaboView = {
+    look(id) {
+      const s = spotById(id); if (!s) return;
+      selectedSpot = s;
+      const eye = portrait ? EYE_P : EYE;
+      dragYaw = Math.max(-yawMax(), Math.min(yawMax(), Math.atan2(s.x - eye.x, eye.z - s.z)));
+      dragPitch = 0; requestRender();
+    }
+  };
 
   /* ---------- Boucle ---------- */
   let running = !reduced, raf = 0, last = performance.now(), time = 12, spawnClock = 0;
@@ -1412,7 +1656,7 @@ window.LaboPanel = (() => {
   function animateSpots(t, realDt) {
     const k = 1 - Math.exp(-realDt * 8);
     spots.forEach(s => {
-      s.hover += ((hovered === s || focusSpot === s ? 1 : 0) - s.hover) * k;
+      s.hover += ((hovered === s || focusSpot === s || selectedSpot === s ? 1 : 0) - s.hover) * k;
       const ph = (t * 0.35 + s.phase * 0.27) % 1;
       s.ring.scale.setScalar(0.55 + ph * 0.6);
       s.ringMat.opacity = (1 - ph) * (0.3 + 0.45 * s.hover);
@@ -1424,9 +1668,9 @@ window.LaboPanel = (() => {
   function animateLife(t, dt) {
     bulbs.forEach(b => { b.pivot.rotation.z = Math.sin(t * 0.9 + b.ph) * b.swing; b.pivot.rotation.x = Math.sin(t * 0.7 + b.ph * 2) * b.swing * 0.6; b.s.material.opacity = 0.33 + 0.03 * Math.sin(t * 6 + b.ph); });
     leaves.forEach(l => { l.l.rotation.z = l.base + Math.sin(t * 0.8 + l.ph) * 0.06; });
-    fairyLights.forEach(f => { const v = 0.55 + 0.45 * (0.5 + 0.5 * Math.sin(t * 1.4 + f.ph)); f.m.material.color.copy(f.base).multiplyScalar(v); });
+    fairyLights.forEach(f => { const v = 0.55 + 0.45 * (0.5 + 0.5 * Math.sin(t * (1.4 + party * 11) + f.ph)); f.m.material.color.copy(f.base).multiplyScalar(v); });
     marquee.forEach((b, i) => { const v = 0.45 + 0.55 * (0.5 + 0.5 * Math.sin(t * 2.2 - (i >> 1) * 0.55)); b.material.color.setRGB(6 * v, 3.6 * v, 1.6 * v); });
-    leds.forEach(l => { const on = Math.sin(t * 0.9 + l.ph) > -0.6; l.m.material.color.setRGB(on ? 5 : 0.4, on ? 2.8 : 0.2, on ? 1 : 0.1); });
+    if (!overrideLeds) leds.forEach(l => { const on = Math.sin(t * 0.9 + l.ph) > -0.6; l.m.material.color.setRGB(on ? 5 : 0.4, on ? 2.8 : 0.2, on ? 1 : 0.1); });
     jarGlows.forEach((j, i) => { j.material.color.setRGB(...jarCols[i % 4].map(v => v * (0.85 + 0.15 * Math.sin(t * 1.1 + i)))); });
     if (recLight) recLight.visible = Math.sin(t * 3.2) > 0;
     if (tvMat) tvMat.uniforms.uTime.value = t;
@@ -1473,6 +1717,7 @@ window.LaboPanel = (() => {
         rateEl.textContent = strikesWindow.reduce((s, v) => s + v, 0);
       }
     }
+    updateEvents(dt);
     animateSpots(time, dt);
     focusT += (focusGoal - focusT) * (1 - Math.exp(-dt * 2.4));
     if (Math.abs(focusGoal - focusT) < 0.0015) focusT = focusGoal;
@@ -1481,7 +1726,7 @@ window.LaboPanel = (() => {
     haloMat.opacity = 0.2 + lightLevel * 0.3;
     arcs.forEach(a => { if (a.alive) a.face(camera.position); });
     renderAll();
-    const settling = introT < 1 || focusT !== focusGoal || spots.some(s => Math.abs(s.hover - (hovered === s || focusSpot === s ? 1 : 0)) > 0.01);
+    const settling = introT < 1 || anyBusy() || focusT !== focusGoal || spots.some(s => Math.abs(s.hover - (hovered === s || focusSpot === s || selectedSpot === s ? 1 : 0)) > 0.01);
     if (running || dragging || settling || Math.abs(dragYaw - curYaw) > 1e-3 || Math.abs(hoverX - curHX) > 1e-3) raf = requestAnimationFrame(frame);
   }
   function requestRender() { if (!raf) { last = performance.now(); raf = requestAnimationFrame(frame); } }
@@ -1491,7 +1736,8 @@ window.LaboPanel = (() => {
     pauseBtn.setAttribute('aria-pressed', running ? 'false' : 'true');
     pauseLabel.textContent = running ? 'Mettre en pause' : 'Lancer l’animation';
   }
-  function endIntro() { introT = 1; streetLight.intensity = 0; outside.visible = false; sky.visible = false; setLabel(); requestRender(); }
+  let introEnded = false;
+  function endIntro() { if (!introEnded && portrait && !window.LaboPanel.current()) setTimeout(() => window.LaboView.look('garcon-printemps'), 50); introEnded = true; introT = 1; streetLight.intensity = 0; outside.visible = false; sky.visible = false; setLabel(); requestRender(); }
   function setRunning(on) {
     running = on; setLabel();
     if (on) { arcs.forEach(a => { if (a.life > 1e8) a.life = a.age + 0.25; }); requestRender(); }
@@ -1503,6 +1749,7 @@ window.LaboPanel = (() => {
     if (s && introT < 1) endIntro();
     focusSpot = s; if (s) lastFocusSpot = s;
     focusGoal = s && !reduced ? 1 : 0;
+    if (s && !reduced) triggerEvent(s.id);
     requestRender();
   }
   window.LaboPanel.onChange(applyFocus);
