@@ -639,7 +639,7 @@ window.LaboPanel = (() => {
         gl_FragColor = vec4(col, 1.0);
       }`
   });
-  const sky = new THREE.Mesh(new THREE.SphereGeometry(120, 48, 24), skyMat); sky.renderOrder = -10; scene.add(sky);
+  const sky = new THREE.Mesh(new THREE.SphereGeometry(120, 48, 24), skyMat); sky.renderOrder = -10;
 
   /* ---------- Reflets ---------- */
   const pmrem = new THREE.PMREMGenerator(renderer);
@@ -657,7 +657,8 @@ window.LaboPanel = (() => {
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(RX * 2, D), matFloor); floor.rotation.x = -Math.PI / 2; floor.position.z = CZ; room.add(floor);
   const ceil = new THREE.Mesh(new THREE.PlaneGeometry(RX * 2, D), matCeil); ceil.rotation.x = Math.PI / 2; ceil.position.set(0, RH, CZ); room.add(ceil);
   const back = new THREE.Mesh(new THREE.PlaneGeometry(RX * 2, RH), matBack); back.position.set(0, RH / 2, ZB); room.add(back);
-  const front = new THREE.Mesh(new THREE.PlaneGeometry(RX * 2, RH), matFront); front.position.set(0, RH / 2, ZF); front.rotation.y = Math.PI; room.add(front); front.visible = false;
+  const fShape = new THREE.Shape([[-RX, 0], [-0.8, 0], [-0.8, 2.45], [0.8, 2.45], [0.8, 0], [RX, 0], [RX, RH], [-RX, RH]].map(([x, y]) => new THREE.Vector2(x, y)));
+  const front = new THREE.Mesh(new THREE.ShapeGeometry(fShape), M({ map: wallTex([0.2, 0.2]), roughness: 0.95 })); front.position.set(0, 0, ZF); front.rotation.y = Math.PI; room.add(front);
   const left = new THREE.Mesh(new THREE.PlaneGeometry(D, RH), matSide); left.position.set(-RX, RH / 2, CZ); left.rotation.y = Math.PI / 2; room.add(left);
   const right = new THREE.Mesh(new THREE.PlaneGeometry(D, RH), matSide); right.position.set(RX, RH / 2, CZ); right.rotation.y = -Math.PI / 2; room.add(right);
   [floor, ceil, back, front, left, right].forEach(m => { m.receiveShadow = true; m.userData.noCast = true; });
@@ -1160,47 +1161,74 @@ window.LaboPanel = (() => {
     o.castShadow = true; o.receiveShadow = true;
   });
 
-  /* ---------- Vue en coupe : rue, terre, tuyaux ---------- */
-  const outside = new THREE.Group(); scene.add(outside);
-  const CUT_Z = ZF + 0.05, CW = 44, CY0 = -7, CY1 = STREET;
-  const cutTex = canvasTex(2560, Math.round(2560 * (CY1 - CY0) / CW), (g, w, h) => {
-    const X = x => (x + CW / 2) / CW * w, Y = y => (CY1 - y) / (CY1 - CY0) * h;
-    const layer = (y0, y1, col) => { g.fillStyle = col; g.fillRect(0, Y(y0), w, Y(y1) - Y(y0)); };
-    layer(CY1, CY1 - 0.25, '#3b3a3c'); layer(CY1 - 0.25, CY1 - 0.7, '#6b5a44'); layer(CY1 - 0.7, RH + 0.6, '#3a2a1f'); layer(RH + 0.6, CY0, '#2c1f17');
-    const gr = g.createLinearGradient(0, Y(-1), 0, h); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(0,0,0,0.9)'); g.fillStyle = gr; g.fillRect(0, Y(-1), w, h - Y(-1));
-    speckle(g, w, h, 50000, 0.1, 0.3);
-    for (let i = 0; i < 220; i++) { const x = Math.random() * w, y = Y(rand(-6, CY1 - 0.3)), r = rand(3, 14); g.fillStyle = `rgba(${Math.round(rand(90, 150))},${Math.round(rand(80, 120))},${Math.round(rand(70, 100))},0.8)`; g.beginPath(); g.ellipse(x, y, r, r * rand(0.5, 0.9), rand(0, 3), 0, TAU); g.fill(); }
-    g.strokeStyle = 'rgba(20,12,8,0.6)'; g.lineWidth = 2;
-    for (let i = 0; i < 26; i++) { let x = Math.random() * w, y = Y(CY1 - 0.8), a = Math.PI / 2 + rand(-0.4, 0.4); g.beginPath(); g.moveTo(x, y); for (let k = 0; k < 12; k++) { a += rand(-0.4, 0.4); x += Math.cos(a) * 9; y += Math.sin(a) * 9; g.lineTo(x, y); } g.stroke(); }
-    g.fillStyle = '#77706a'; g.fillRect(X(-RX - 0.4), Y(RH + 0.6), X(RX + 0.4) - X(-RX - 0.4), Y(-0.5) - Y(RH + 0.6));
-    [[-15, 6.4, 0.45], [-9.5, 6.0, 0.3], [9, 6.6, 0.24], [14, 6.2, 0.5], [17, 2.5, 0.36], [-18, 1.8, 0.3]].forEach(([x, y, r]) => {
-      g.beginPath(); g.arc(X(x), Y(y), r / CW * w, 0, TAU); g.fillStyle = '#7d7f80'; g.fill();
-      g.beginPath(); g.arc(X(x), Y(y), r * 0.8 / CW * w, 0, TAU); g.fillStyle = '#0d0b0a'; g.fill();
-    });
-    for (let i = 0; i < 7; i++) { g.beginPath(); g.arc(X(1 + (i % 4) * 0.22), Y(6.5 + Math.floor(i / 4) * 0.22), 0.1 / CW * w, 0, TAU); g.fillStyle = ['#c43', '#222', '#d9a21b', '#3a6', '#222', '#c43', '#246'][i]; g.fill(); }
-    g.clearRect(X(-RX), Y(RH), X(RX) - X(-RX), Y(0) - Y(RH));
+  /* ---------- Cage d'escalier qui descend au labo ---------- */
+  const stairs = new THREE.Group(); scene.add(stairs);
+  const SW2 = 0.95, STEPS = 14, RISE = 5.0 / STEPS, RUN = 0.5, S0 = ZF + 0.6, STOP = S0 + STEPS * RUN, TOPZ = STOP + 2.2;
+  const stepTop = z => Math.max(0, Math.min(STEPS, Math.floor((z - S0) / RUN) + 1)) * RISE * (z > S0 ? 1 : 0);
+  const matStep = M({ map: wallTex([1, 0.3]), roughness: 0.9, color: 0x9a948c });
+  const matStairWall = M({ map: wallTex([2, 2]), roughness: 0.95 });
+  const nosing = M({ map: paintTex('#b8901e', '60,40,20', '30,25,20'), metalness: 0.5, roughness: 0.6 });
+  for (let i = 0; i < STEPS; i++) {
+    const hgt = (i + 1) * RISE, z = S0 + (i + 0.5) * RUN;
+    box(SW2 * 2, hgt, RUN, matStep, 0, hgt / 2, z, stairs);
+    box(SW2 * 2, 0.025, 0.05, nosing, 0, hgt + 0.012, z - RUN / 2 + 0.025, stairs);
+    box(SW2 * 2, 0.14, RUN + 0.02, matConcrete, 0, hgt + 2.55, z, stairs); // plafond en escalier
+  }
+  box(SW2 * 2, 5.0, TOPZ - STOP, matStep, 0, 2.5, (STOP + TOPZ) / 2, stairs);       // palier du haut
+  box(SW2 * 2, 0.14, TOPZ - STOP, matConcrete, 0, 5.0 + 2.6, (STOP + TOPZ) / 2, stairs);
+  box(SW2 * 2, 0.14, S0 - ZF, matConcrete, 0, 2.55, (ZF + S0) / 2, stairs);
+  [-SW2, SW2].forEach((x, k) => {
+    const w = new THREE.Mesh(new THREE.PlaneGeometry(TOPZ - ZF, 8), matStairWall);
+    w.position.set(x, 4, (ZF + TOPZ) / 2); w.rotation.y = k ? -Math.PI / 2 : Math.PI / 2; stairs.add(w);
   });
-  const cut = new THREE.Mesh(new THREE.PlaneGeometry(CW, CY1 - CY0), M({ map: cutTex, roughness: 1, emissive: 0xffffff, emissiveMap: cutTex, emissiveIntensity: 0.3, alphaTest: 0.5 }));
-  cut.position.set(0, (CY0 + CY1) / 2, CUT_Z); outside.add(cut);
-  const paveTex = canvasTex(512, 512, (g, w, h) => {
-    g.fillStyle = '#4a4847'; g.fillRect(0, 0, w, h);
-    for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++) { g.fillStyle = `rgba(${rand(0, 1) > 0.5 ? '255,255,255' : '0,0,0'},${rand(0.02, 0.08)})`; g.fillRect(x * 64 + 2, y * 64 + 2, 60, 60); }
-    g.strokeStyle = 'rgba(0,0,0,.5)'; g.lineWidth = 3; for (let i = 0; i <= 8; i++) { g.beginPath(); g.moveTo(i * 64, 0); g.lineTo(i * 64, h); g.moveTo(0, i * 64); g.lineTo(w, i * 64); g.stroke(); }
-    speckle(g, w, h, 6000, 0.08, 0.2); blotches(g, w, h, 10, '0,0,0', 0.25, 0.05, 0.15);
-  }, { repeat: [CW / 4, 6 / 4] });
-  const walk = new THREE.Mesh(new THREE.PlaneGeometry(CW, 6), M({ map: paveTex, roughness: 0.8 })); walk.rotation.x = -Math.PI / 2; walk.position.set(0, STREET, CUT_Z - 3); outside.add(walk);
-  const asphaltTex = canvasTex(512, 512, (g, w, h) => { g.fillStyle = '#1f1e1f'; g.fillRect(0, 0, w, h); speckle(g, w, h, 20000, 0.1, 0.2); g.fillStyle = 'rgba(230,225,210,.55)'; g.fillRect(0, 250, w * 0.55, 12); }, { repeat: [CW / 8, 40 / 8] });
-  const road = new THREE.Mesh(new THREE.PlaneGeometry(CW, 40), M({ map: asphaltTex, roughness: 0.75, metalness: 0.1 })); road.rotation.x = -Math.PI / 2; road.position.set(0, STREET - 0.12, CUT_Z - 26); outside.add(road);
-  box(CW, 0.14, 0.25, matConcrete, 0, STREET - 0.05, CUT_Z - 6, outside);
-  const grateTex = canvasTex(256, 256, (g, w, h) => { g.fillStyle = '#5fb8ff'; g.fillRect(0, 0, w, h); g.fillStyle = '#111'; for (let i = 0; i < 9; i++) g.fillRect(0, i * 29, w, 14); g.strokeStyle = '#222'; g.lineWidth = 16; g.strokeRect(0, 0, w, h); });
-  const grate = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 1.0), new THREE.MeshBasicMaterial({ map: grateTex, color: new THREE.Color(1.8, 1.8, 1.8) })); grate.rotation.x = -Math.PI / 2; grate.position.set(2.5, STREET + 0.01, CUT_Z - 1.6); outside.add(grate);
-  const lampX = -5.5, lampZ = CUT_Z - 2.2;
-  cyl(0.08, 0.1, 4.6, matDark, lampX, STREET + 2.3, lampZ, outside, 12);
-  outside.add(bar(V(lampX, STREET + 4.5, lampZ), V(lampX + 1.0, STREET + 4.6, lampZ), 0.05, matDark));
-  box(0.6, 0.14, 0.3, matDark, lampX + 1.1, STREET + 4.55, lampZ, outside);
-  const lampGlow = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.22), new THREE.MeshBasicMaterial({ color: new THREE.Color(6, 4, 2), side: THREE.DoubleSide })); lampGlow.rotation.x = Math.PI / 2; lampGlow.position.set(lampX + 1.1, STREET + 4.47, lampZ); outside.add(lampGlow);
-  const streetLight = new THREE.PointLight(0xffa860, 40, 0, 2); streetLight.position.set(lampX + 1.1, STREET + 4.2, lampZ); scene.add(streetLight);
-  [[-9.5, 6.0, 0.3], [9, 6.6, 0.24], [14, 6.2, 0.5]].forEach(([x, y, r]) => { const p = cyl(r, r, 0.4, matPipe, x, y, CUT_Z + 0.2, outside, 24); p.rotation.x = Math.PI / 2; });
+  const endWall = new THREE.Mesh(new THREE.PlaneGeometry(SW2 * 2, 8), matStairWall); endWall.position.set(0, 4, TOPZ); endWall.rotation.y = Math.PI; stairs.add(endWall);
+  // porte de service fermée en haut
+  box(1.0, 2.1, 0.06, M({ map: paintTex('#3c4a45', '120,60,25', '200,200,190'), metalness: 0.6, roughness: 0.5 }), 0, 5.0 + 1.05, TOPZ - 0.04, stairs);
+  // rampe
+  const rail = bar(V(-SW2 + 0.08, 0.95, S0), V(-SW2 + 0.08, 5.0 + 0.95, STOP), 0.025, matPipe); stairs.add(rail);
+  for (let i = 0; i <= 4; i++) { const t = i / 4; stairs.add(bar(V(-SW2 + 0.01, 0.95 + t * 5.0, S0 + t * (STOP - S0)), V(-SW2 + 0.08, 0.95 + t * 5.0, S0 + t * (STOP - S0)), 0.015, matSteel)); }
+  // pochoir « LABO » et flèche sur le mur
+  const stencil = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 0.7), new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false, color: new THREE.Color(0.9, 0.9, 0.9),
+    map: canvasTex(512, 256, (c, w, h) => {
+      c.fillStyle = 'rgba(240,232,220,0.85)'; c.textAlign = 'left'; c.font = '500 120px Geist, Arial, sans-serif';
+      try { c.letterSpacing = '12px'; } catch (e) {}
+      c.fillText('LABO', 24, 150);
+      c.beginPath(); c.moveTo(420, 60); c.lineTo(420, 170); c.lineWidth = 22; c.strokeStyle = 'rgba(240,232,220,0.85)'; c.stroke();
+      c.beginPath(); c.moveTo(380, 140); c.lineTo(420, 200); c.lineTo(460, 140); c.stroke();
+      c.globalCompositeOperation = 'destination-out';
+      for (let i = 0; i < 400; i++) { c.fillStyle = `rgba(0,0,0,${rand(0.2, 0.9)})`; c.beginPath(); c.arc(Math.random() * w, Math.random() * h, rand(1, 4), 0, TAU); c.fill(); }
+    }, { text: true }) }));
+  stencil.position.set(SW2 - 0.01, 6.0, STOP - 1.2); stencil.rotation.y = -Math.PI / 2; stairs.add(stencil);
+  const p2 = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.7), M({ roughness: 0.85, map: canvasTex(256, 360, (c, w, h) => {
+    c.fillStyle = '#e4dccd'; c.fillRect(0, 0, w, h); c.fillStyle = '#ff5a14'; c.fillRect(0, 0, w, h * 0.5);
+    c.fillStyle = '#111'; c.font = '500 70px Geist, Arial, sans-serif'; c.fillText('LEILA', 14, h * 0.44);
+    c.font = '400 18px "Geist Mono", monospace'; c.fillText('AU SOUS-SOL', 16, h * 0.62); speckle(c, w, h, 2000, 0.1, 0.2); tornEdges(c, w, h);
+  }, { text: true }) }));
+  p2.position.set(-SW2 + 0.012, 3.6, S0 + 3.6); p2.rotation.set(0, Math.PI / 2, 0.04); stairs.add(p2);
+  // câble le long du plafond
+  sag(V(SW2 - 0.1, 7.45, TOPZ - 0.2), V(SW2 - 0.1, 2.45, ZF + 0.2), 0.25, 0.015, matRubber, stairs);
+  // lumières de la cage : une ampoule en haut, une applique à mi-hauteur
+  const topBulb = new THREE.Mesh(new THREE.SphereGeometry(0.07, 14, 10), matBulb); topBulb.position.set(0, 7.25, STOP + 1.1); stairs.add(topBulb);
+  stairs.add(bar(V(0, 7.5, STOP + 1.1), V(0, 7.32, STOP + 1.1), 0.008, matRubber));
+  glowSprite(stairs, 0, 7.25, STOP + 1.1, 1.3, 0xffb46b, 0.4);
+  const stairLight = new THREE.PointLight(0xffa860, 9, 9, 2); stairLight.position.set(0, 7.1, STOP + 1.1); scene.add(stairLight);
+  const sconce = new THREE.Mesh(new THREE.SphereGeometry(0.1, 14, 8, 0, TAU, 0, Math.PI / 2), new THREE.MeshBasicMaterial({ color: new THREE.Color(4, 2.8, 1.6) }));
+  sconce.rotation.z = Math.PI / 2; sconce.position.set(SW2 - 0.02, 4.4, S0 + 3.4); stairs.add(sconce);
+  for (let i = 0; i < 3; i++) box(0.02, 0.2, 0.02, matDark, SW2 - 0.07, 4.4, S0 + 3.32 + i * 0.08, stairs);
+  glowSprite(stairs, SW2 - 0.15, 4.4, S0 + 3.4, 1.0, 0xffb46b, 0.4);
+  const sconceLight = new THREE.PointLight(0xffa860, 4, 6, 2); sconceLight.position.set(SW2 - 0.3, 4.4, S0 + 3.4); scene.add(sconceLight);
+  // la lumière chaude du labo qui déborde par la porte
+  const doorLight = new THREE.PointLight(0xffa860, 10, 7, 2); doorLight.position.set(0, 1.9, ZF - 0.9); scene.add(doorLight);
+  glowSprite(stairs, 0, 1.2, ZF - 0.3, 2.6, 0xffa060, 0.22);
+  // encadrement et porte métallique entrouverte
+  const DW = 0.8, DH = 2.45;
+  box(0.08, DH, 0.2, matSteel, -DW - 0.04, DH / 2, ZF, stairs); box(0.08, DH, 0.2, matSteel, DW + 0.04, DH / 2, ZF, stairs); box(DW * 2 + 0.16, 0.08, 0.2, matSteel, 0, DH + 0.04, ZF, stairs);
+  const hinge = new THREE.Group(); hinge.position.set(DW, 0, ZF - 0.08); hinge.rotation.y = 1.15; stairs.add(hinge);
+  box(DW * 2, DH - 0.04, 0.05, M({ map: paintTex('#4d3b30', '130,70,30', '210,190,170'), metalness: 0.6, roughness: 0.55 }), DW, DH / 2, 0, hinge);
+  cyl(0.03, 0.03, 0.12, matChrome, DW * 1.8, 1.05, -0.06, hinge, 10).rotation.x = Math.PI / 2;
+  stairs.traverse(o => { if (o.isMesh && o.material && !o.material.transparent && o.material.type === 'MeshStandardMaterial') { o.castShadow = true; o.receiveShadow = true; } });
+
+  box(SW2 * 2, 0.02, S0 - ZF + 0.02, matStep, 0, 0.0, (ZF + S0) / 2, stairs);
 
   /* ---------- Poussière ---------- */
   const DUST = small ? 180 : 380;
@@ -1397,8 +1425,9 @@ window.LaboPanel = (() => {
   canvas.addEventListener('pointerleave', () => { hoverX = 0; hoverY = 0; if (hovered) { hovered = null; canvas.style.cursor = ''; } requestRender(); });
 
   const target = V(0, 0, 0), fPos = V(0, 0, 0), fTgt = V(0, 0, 0), oPos = V(0, 0, 0), oTgt = V(0, 0, 0);
-  const introPts = [V(0, STREET + 3.2, 18), V(0, STREET + 1.6, 15.6), V(0, RH + 1.8, 14.4), V(0, 2.3, 13.2), V(0, 0, 0)];
-  const introTgts = [V(0, STREET, 4), V(0, STREET - 0.8, 6), V(0, RH + 1.2, 8), V(0, 1.8, 4), V(0, 0, 0)];
+  const sp = z => V(0, stepTop(z) - RISE * 0.5 + 1.65, z);
+  const introPts = [V(0, 5.0 + 1.65, TOPZ - 0.5), sp(STOP - 0.3), sp(S0 + 5.0), sp(S0 + 2.6), sp(S0 + 0.4), V(0, 1.65, ZF - 1.4), V(0, 0, 0)];
+  const introTgts = [V(0, 4.7, STOP - 3.2), V(0, 3.7, S0 + 2.4), V(0, 2.4, S0 - 0.6), V(0, 1.7, ZF - 2.6), V(0, 1.55, ZF - 5), V(0, 1.5, -2), V(0, 0, 0)];
   const introCurve = new THREE.CatmullRomCurve3(introPts), introTgtCurve = new THREE.CatmullRomCurve3(introTgts);
   function rest(t, dt) {
     const ease = 1 - Math.exp(-dt * 4);
@@ -1415,9 +1444,10 @@ window.LaboPanel = (() => {
     rest(t, dt);
     camera.position.copy(oPos); target.copy(oTgt);
     if (introT < 1) {
-      introPts[4].copy(oPos); introTgts[4].copy(oTgt);
+      introPts[introPts.length - 1].copy(oPos); introTgts[introTgts.length - 1].copy(oTgt);
       const u = introT < 0.5 ? 4 * introT ** 3 : 1 - Math.pow(-2 * introT + 2, 3) / 2;
       introCurve.getPoint(u, camera.position); introTgtCurve.getPoint(u, target);
+      camera.position.y += Math.abs(Math.sin(u * Math.PI * 15)) * 0.035 * Math.sin(Math.PI * Math.min(1, u * 1.3));
     }
     if (focusT > 0.001 && lastFocusSpot) {
       const s = lastFocusSpot, shift = portrait ? 0 : 0.75;
@@ -1429,7 +1459,6 @@ window.LaboPanel = (() => {
     }
     if (shake > 0.001) { camera.position.x += (Math.random() - 0.5) * shake; camera.position.y += (Math.random() - 0.5) * shake; }
     camera.lookAt(target);
-    front.visible = camera.position.z < ZF - 0.1;
   }
 
   /* ---------- Réactions quand on ouvre un objet ---------- */
@@ -1650,7 +1679,7 @@ window.LaboPanel = (() => {
   /* ---------- Boucle ---------- */
   let running = !reduced, raf = 0, last = performance.now(), time = 12, spawnClock = 0;
   let introT = (reduced || window.LaboPanel.current()) ? 1 : 0;
-  const INTRO_DUR = 6.5;
+  const INTRO_DUR = 8;
   let lightLevel = 0.3, readClock = 0, strikesWindow = [], neonDip = 0, neonNext = 6;
 
   function animateSpots(t, realDt) {
@@ -1737,7 +1766,7 @@ window.LaboPanel = (() => {
     pauseLabel.textContent = running ? 'Mettre en pause' : 'Lancer l’animation';
   }
   let introEnded = false;
-  function endIntro() { if (!introEnded && portrait && !window.LaboPanel.current()) setTimeout(() => window.LaboView.look('garcon-printemps'), 50); introEnded = true; introT = 1; streetLight.intensity = 0; outside.visible = false; sky.visible = false; setLabel(); requestRender(); }
+  function endIntro() { if (!introEnded && portrait && !window.LaboPanel.current()) setTimeout(() => window.LaboView.look('garcon-printemps'), 50); introEnded = true; introT = 1; setLabel(); requestRender(); }
   function setRunning(on) {
     running = on; setLabel();
     if (on) { arcs.forEach(a => { if (a.life > 1e8) a.life = a.age + 0.25; }); requestRender(); }
