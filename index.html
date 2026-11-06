@@ -514,12 +514,6 @@ window.LaboPanel = (() => {
     $('pTitle').textContent = p.title;
     $('pKind').textContent = p.sub;
     body.textContent = '';
-    if (p.booth) {
-      const cta = el('section', 'boothcta');
-      const go = el('button', 'btn', 'Entrer dans la cabine →'); go.type = 'button'; go.addEventListener('click', () => window.Booth && window.Booth.open());
-      cta.append(el('div', 'eyebrow', 'Essaie-le'), el('h3', '', 'Le photomaton du labo'), el('p', '', 'Allume ta caméra, prends 4 photos et repars avec ta bande souvenir « J’étais au labo de San ».'), go);
-      body.append(cta);
-    }
     if (p.list) {
       const ul = el('ul', 'list');
       p.list.forEach(([name, note], i) => {
@@ -551,6 +545,7 @@ window.LaboPanel = (() => {
     clearTimeout(previewTimer); previewTimer = 0;
     skipBtn.hidden = true; document.body.classList.remove('previewing');
     if (!current) return;
+    if (PROJECTS[current].booth && window.Booth) { window.Booth.open(); return; }   // le photomaton ne sert qu'à la cabine
     panel.classList.add('open'); panel.setAttribute('aria-hidden', 'false');
     setTimeout(() => closeBtn.focus({ preventScroll: true }), 60);
   }
@@ -578,7 +573,8 @@ window.LaboPanel = (() => {
     if (again && (panel.classList.contains('open') || previewTimer)) return;
     listeners.forEach(f => f(id));
     const phone = matchMedia('(max-width: 640px)').matches, calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const delay = (opts && opts.instant) || !phone || calm || !window.LaboView ? 0 : (PREVIEW[id] || 0);
+    let delay = (opts && opts.instant) || !phone || calm || !window.LaboView ? 0 : (PREVIEW[id] || 0);
+    if (p.booth && !(opts && opts.instant) && !calm && window.LaboView) delay = 1.6;   // on voit la caméra s'approcher, puis on entre
     clearTimeout(previewTimer);
     if (delay) { document.body.classList.add('previewing'); skipBtn.hidden = false; previewTimer = setTimeout(reveal, delay * 1000); }
     else reveal();
@@ -697,6 +693,7 @@ window.Booth = (() => {
   const SITE = 'https://sandevisproject.github.io/labo/#photomathon';
   let stream = null, filter = 'labo', shots = [], busy = false, stripBlob = null, from = null, audio = null, cancel = false;
   const N = 4, PW = 1080, PH = 810;
+  const inApp = /Instagram|FBAN|FBAV|FB_IAB|TikTok|musical_ly|Snapchat|Line\//i.test(navigator.userAgent);
 
   const FILTERS = {
     labo: (r, g, b) => { r = r * 1.1 + 14; g = g * 1.0 + 6; b = b * 0.82; return con(r, g, b, 1.12); },
@@ -722,28 +719,40 @@ window.Booth = (() => {
   function open() {
     from = document.activeElement; root.hidden = false; document.body.classList.add('booth-open');
     stripBlob = null; shots = []; renderDots(); $('bResult').hidden = true; video.hidden = false;
-    state('intro'); say('<strong>Bienvenue dans la cabine.</strong>Allume ta caméra, choisis un filtre, et la cabine prend 4 photos. Tu repars avec ta bande souvenir.');
+    state('intro'); say('<strong>Bienvenue dans la cabine.</strong>Allume ta caméra, choisis un filtre, et la cabine prend 4 photos. Tu repars avec ta bande souvenir « J’étais au labo de San ».');
     setTimeout(() => startBtn.focus(), 50);
   }
   function close() {
     cancel = true; stop(); root.hidden = true; document.body.classList.remove('booth-open'); busy = false;
-    if (from && from.focus) from.focus();
+    if (window.LaboPanel && window.LaboPanel.current() === 'photomathon') window.LaboPanel.close();
+    else if (from && from.focus) from.focus();
   }
   function stop() { if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; } video.srcObject = null; }
 
   async function camera() {
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return fail('none');
-    say('<strong>On allume la caméra…</strong>Ton navigateur va te demander l’autorisation.');
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 960 } }, audio: false });
-    } catch (e) { return fail(e && e.name); }
-    video.srcObject = stream; await video.play().catch(() => {});
+    if (inApp) return fail('inapp');
+    if (!window.isSecureContext || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return fail('none');
+    say('<strong>On allume la caméra…</strong>Ton téléphone va te demander l’autorisation.');
+    startBtn.disabled = true;
+    const tries = [{ facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 960 } }, { facingMode: 'user' }, true];
+    let err = null;
+    for (const v of tries) {
+      try { stream = await navigator.mediaDevices.getUserMedia({ video: v, audio: false }); break; }
+      catch (e) { err = e; if (e && (e.name === 'NotAllowedError' || e.name === 'SecurityError')) break; }
+    }
+    startBtn.disabled = false;
+    if (!stream) return fail(err && err.name);
+    video.muted = true; video.setAttribute('playsinline', ''); video.setAttribute('webkit-playsinline', '');
+    video.srcObject = stream;
+    await new Promise(r => { if (video.readyState >= 1) r(); else { video.onloadedmetadata = r; setTimeout(r, 3000); } });
+    try { await video.play(); } catch (e) {}
     say(''); state('ready'); shootBtn.focus();
   }
   function fail(name) {
     state('intro');
     const link = '<a href="' + SITE + '" target="_blank" rel="noopener">ouvre le labo sur son site</a>';
-    if (name === 'NotAllowedError' || name === 'SecurityError') say('<strong>La caméra est bloquée.</strong>Autorise la caméra pour ce site dans ton navigateur, puis réessaie. Si ça bloque encore, ' + link + '.');
+    if (name === 'inapp') say('<strong>Ouvre le labo dans ton navigateur.</strong>L’appli dans laquelle tu es (Instagram, TikTok…) bloque la caméra. Touche les trois points puis « Ouvrir dans le navigateur » (Safari ou Chrome).');
+    else if (name === 'NotAllowedError' || name === 'SecurityError') say('<strong>La caméra est bloquée.</strong>Autorise la caméra pour ce site dans ton navigateur, puis réessaie. Si ça bloque encore, ' + link + '.');
     else if (name === 'NotFoundError' || name === 'OverconstrainedError') say('<strong>Aucune caméra trouvée.</strong>Branche une webcam ou essaie depuis ton téléphone.');
     else if (name === 'NotReadableError') say('<strong>La caméra est déjà utilisée.</strong>Ferme l’appli qui l’utilise (visio, appareil photo), puis réessaie.');
     else say('<strong>La caméra ne marche pas ici.</strong>Pour prendre tes photos, ' + link + '.');
