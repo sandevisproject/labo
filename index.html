@@ -220,6 +220,21 @@ body.dark #scene{cursor:none}
 .rw-x:focus-visible{outline:2px solid #ffe14d}
 @media (max-width:640px){body.dark .mark{opacity:0;visibility:hidden}}
 @media (prefers-reduced-motion:reduce){.secrettoast{transition:none}}
+.talk{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 22px);pointer-events:auto;width:min(560px,calc(100% - 32px));display:grid;gap:12px;padding:16px 18px 18px;border-radius:18px;
+  background:rgba(14,10,7,.8);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid rgba(255,224,102,.45);box-shadow:0 10px 40px rgba(0,0,0,.45)}
+.talk[hidden]{display:none}
+.talk-head{display:grid;grid-template-columns:44px 1fr auto;align-items:center;gap:12px}
+.talk-av{width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid #ffe066}
+.talk-head .eyebrow{color:#ffe066}
+.talk-head strong{font-weight:400;font-size:1.1rem}
+.talk-x{width:40px;height:40px;border:0;border-radius:50%;background:none;color:var(--muted);font-size:1.5rem;cursor:pointer}
+.talk-x:focus-visible{outline:2px solid #ffe066}
+.talk-text{margin:0;font:400 1.35rem/1.35 var(--serif);font-style:italic;color:#fff4e6;min-height:3.6em}
+.talk-choices{display:flex;flex-wrap:wrap;gap:8px}
+.talk-choices .btn{white-space:normal;text-align:left;line-height:1.25;padding:11px 14px}
+.talk-choices .go{border-color:rgba(255,224,102,.7);background:linear-gradient(180deg,rgba(255,224,102,.3),rgba(110,90,10,.2))}
+body.talking .wcap,body.talking .wnav,body.talking .wcard{opacity:0;visibility:hidden}
+@media (max-width:640px){.talk{gap:8px;padding:12px 14px 14px;bottom:calc(env(safe-area-inset-bottom,0px) + 12px)}.talk-text{font-size:1.05rem;min-height:3.9em}.talk-choices{gap:6px}.talk-choices .btn{flex:1 1 calc(50% - 3px);padding:9px 10px;font-size:.8rem}}
 .boothcta{display:grid;gap:12px;margin-bottom:22px;padding:22px 20px;border-radius:16px;border:1px solid rgba(255,180,102,.45);
   background:radial-gradient(120% 140% at 0% 0%,rgba(196,35,28,.32),rgba(40,20,12,.5) 60%),rgba(20,13,9,.6);box-shadow:0 0 40px rgba(255,120,50,.12)}
 .boothcta h3{margin:0;font:400 1.9rem/1 var(--serif);font-style:italic;color:#fff4e6}
@@ -448,6 +463,11 @@ body.in-world .top,body.in-world .ctl-row,body.in-world .hud::before{opacity:0;v
   <div class="wvid" id="wVid" hidden>
     <div class="vinfo"><div class="eyebrow" id="vKind">Teaser</div><strong id="vTitle">Footballeur</strong><span class="vnote">Qualité réduite pour le site · <span id="vHd">version HD sur Instagram</span></span></div>
     <div class="vbtns"><button class="btn" id="vSound" type="button">Activer le son</button><button class="btn vskip" id="vSkip" type="button">Passer <span aria-hidden="true">→</span></button></div>
+  </div>
+  <div class="talk" id="talk" role="dialog" aria-labelledby="talkName" hidden>
+    <div class="talk-head"><img class="talk-av" src="assets/garcon-printemps/visage.webp" alt=""><div><div class="eyebrow">En carton, mais il répond</div><strong id="talkName">Garçon Printemps</strong></div><button class="talk-x" id="talkClose" type="button" aria-label="Arrêter la discussion">×</button></div>
+    <p class="talk-text" id="talkText" aria-live="polite"></p>
+    <div class="talk-choices" id="talkChoices"></div>
   </div>
   <div class="wcard" id="wCard" hidden>
     <div class="eyebrow" id="cKind">Cover</div>
@@ -856,6 +876,51 @@ window.Booth = (() => {
   });
   setFilter('labo');
   return { open, close, isOpen: () => !root.hidden };
+})();
+</script>
+<script>
+/* Parler à Garçon Printemps : un dialogue écrit à l'avance, on choisit ses questions. */
+window.GPTalk = (() => {
+  const $ = id => document.getElementById(id);
+  const root = $('talk'), text = $('talkText'), choices = $('talkChoices');
+  const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const ASK = [['play', 'On joue avec tes fleurs ?'], ['who', 'C’est qui, Garçon Printemps ?'], ['mow', 'Pourquoi une tondeuse ?'], ['san', 'Tu connais San ?'], ['listen', 'Où je peux t’écouter ?']];
+  const LINES = {
+    start: 'Ah, t’es là ! Bienvenue dans mon jardin. Fais pas attention, aujourd’hui je suis en carton.',
+    play: 'Ici chaque fleur a sa note. Je te joue un air, tu le rejoues dans le même ordre. Cinq manches. Prêt ?',
+    who: 'Un mec qui fait pousser des sons. Je plante des mélodies, et quand ça fleurit, ça donne un morceau.',
+    mow: 'Parce qu’il faut couper tout ce qui dépasse… sauf les idées. Elles, on les laisse pousser.',
+    san: 'San ? C’est mon frère. Tous les visuels sur les fils à linge, c’est lui. On va tout défoncer, je te jure.',
+    listen: 'Sur toutes les plateformes. Et mes vidéos passent au drive-in, au fond à droite. Le coucher de soleil est offert.',
+    bye: 'Allez, à plus. Arrose les fleurs en partant.'
+  };
+  let asked = {}, typing = 0, open = false;
+  function say(line, then) {
+    clearInterval(typing); choices.textContent = '';
+    if (calm) { text.textContent = line; then(); return; }
+    let i = 0; text.textContent = '';
+    typing = setInterval(() => { i += 2; text.textContent = line.slice(0, i); if (i >= line.length) { clearInterval(typing); then(); } }, 22);
+  }
+  function btn(label, fn, cls) { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn' + (cls ? ' ' + cls : ''); b.textContent = label; b.addEventListener('click', fn); choices.append(b); return b; }
+  function menu(after) {
+    const left = ASK.filter(([k]) => !asked[k]);
+    (left.length ? left : ASK).forEach(([k, q]) => btn(q, () => answer(k)));
+    if (after === 'play') { choices.textContent = ''; btn('C’est parti !', () => window.GPGarden && window.GPGarden.start(), 'go'); btn('Plus tard', () => say('Pas de souci, elles bougent pas.', () => menu())); return focusFirst(); }
+    if (after === 'listen') btn('Aller au drive-in →', () => { close(); window.LaboView && window.LaboView.goView('cinema'); }, 'go');
+    btn('Salut !', bye);
+    focusFirst();
+  }
+  function focusFirst() { const first = choices.querySelector('button'); if (first && open) first.focus({ preventScroll: true }); }
+  function show(line, btns) { if (!open) { open = true; root.hidden = false; document.body.classList.add('talking'); } say(line, () => { btns.forEach(b => btn(b[0], b[1], b[2])); focusFirst(); }); }
+  function textNow(line) { clearInterval(typing); text.textContent = line; }
+  function back() { say('Pas de souci. On rejoue quand tu veux.', () => menu()); }
+  function bye() { asked = {}; say(LINES.bye, () => setTimeout(close, 1400)); }
+  function answer(k) { asked[k] = true; say(LINES[k], () => menu(k)); }
+  function start() { if (open) return; open = true; root.hidden = false; document.body.classList.add('talking'); say(LINES.start, () => menu()); }
+  function close() { if (!open) return; open = false; clearInterval(typing); if (window.GPGarden) window.GPGarden.stop(); root.hidden = true; document.body.classList.remove('talking'); if (window.LaboView && window.LaboView.unzoom) window.LaboView.unzoom(); }
+  $('talkClose').addEventListener('click', close);
+  root.addEventListener('keydown', e => { if (e.key === 'Escape') { e.stopPropagation(); close(); } });
+  return { start, close, show, text: textNow, back, bye, isOpen: () => open };
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
@@ -2242,7 +2307,7 @@ window.Booth = (() => {
     }
   });
   const endDrag = () => { dragging = false; canvas.classList.remove('dragging'); };
-  canvas.addEventListener('pointerup', e => { const wasClick = dragging && !moved; endDrag(); if (wasClick) { const s = pick(e); if (activeWorld) { if (s && s.hot) goView(s.hot.userData.goView); else if (worldT > 0.95) { const ph = s && s.frame ? s.frame.userData.photo || s.frame : null; if (ph && ph === frameFocus && ph.userData.im && ph.userData.im.link) document.getElementById('cLink').click(); else focusFrame(ph && ph !== frameFocus ? ph : null); } } else if (s === LEVER) setDark(!darkGoal); else if (s === HAM) hamClick(); else if (s) window.LaboPanel.open(s.id); } });
+  canvas.addEventListener('pointerup', e => { const wasClick = dragging && !moved; endDrag(); if (wasClick) { const s = pick(e); if (activeWorld) { if (s && s.hot) goView(s.hot.userData.goView); else if (worldT > 0.95) { const ph = s && s.frame ? s.frame.userData.photo || s.frame : null; if (ph && ph === frameFocus && ph.userData.im && ph.userData.im.link) document.getElementById('cLink').click(); else if (ph && ph.userData.note != null) window.GPGarden.tap(ph.userData.note); else if (ph && ph.userData.talk) { if (frameFocus) focusFrame(null); window.GPTalk.start(); } else if (!ph && window.GPTalk && window.GPTalk.isOpen()) {} else focusFrame(ph && ph !== frameFocus ? ph : null); } } else if (s === LEVER) setDark(!darkGoal); else if (s === HAM) hamClick(); else if (s) window.LaboPanel.open(s.id); } });
   canvas.addEventListener('pointercancel', endDrag);
   const aimAt = e => { const rect = canvas.getBoundingClientRect(); torchNdc.set((e.clientX - rect.left) / rect.width * 2 - 1, -((e.clientY - rect.top) / rect.height) * 2 + 1); if (darkGoal) requestRender(); };
   canvas.addEventListener('pointermove', aimAt); canvas.addEventListener('pointerdown', aimAt);
@@ -2509,20 +2574,22 @@ window.Booth = (() => {
   const FZ = ZB;
   const skyDay = new THREE.ShaderMaterial({
     side: THREE.BackSide, depthWrite: false, fog: false,
-    uniforms: { uTime: { value: 0 }, uSun: { value: new THREE.Vector3(0.35, 0.42, -0.84).normalize() } },
+    uniforms: { uTime: { value: 0 }, uDusk: { value: 0 }, uSun: { value: new THREE.Vector3(0.35, 0.42, -0.84).normalize() } },
     vertexShader: `varying vec3 vDir; void main(){ vDir = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
-    fragmentShader: `uniform float uTime; uniform vec3 uSun; varying vec3 vDir;
+    fragmentShader: `uniform float uTime, uDusk; uniform vec3 uSun; varying vec3 vDir;
       float h(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453); }
       float n(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f); return mix(mix(h(i), h(i+vec2(1,0)), f.x), mix(h(i+vec2(0,1)), h(i+vec2(1,1)), f.x), f.y); }
       float fbm(vec2 p){ float v = 0.0, a = 0.5; for (int i = 0; i < 5; i++){ v += a * n(p); p *= 2.03; a *= 0.5; } return v; }
       void main(){
         vec3 d = normalize(vDir); float y = max(d.y, -0.05);
         vec3 col = mix(vec3(0.80,0.88,0.94), vec3(0.24,0.50,0.86), pow(max(y, 0.0), 0.55));
+        vec3 dusk = mix(vec3(1.05,0.52,0.28), vec3(0.30,0.20,0.46), pow(max(y, 0.0), 0.5));
+        col = mix(col, dusk, uDusk);
         float s = max(dot(d, uSun), 0.0);
-        col += vec3(1.0,0.9,0.7) * pow(s, 8.0) * 0.35 + vec3(7.0,6.2,5.0) * pow(s, 900.0);
+        col += mix(vec3(1.0,0.9,0.7), vec3(1.0,0.55,0.25), uDusk) * pow(s, 8.0) * (0.35 + 0.5 * uDusk) + vec3(7.0,6.2,5.0) * pow(s, 900.0);
         vec2 cp = d.xz / max(y + 0.12, 0.05) * 1.3 + vec2(uTime * 0.012, 0.0);
         float cl = smoothstep(0.5, 0.82, fbm(cp)) * smoothstep(0.0, 0.25, y);
-        col = mix(col, vec3(1.0,0.99,0.97), cl * 0.85);
+        col = mix(col, mix(vec3(1.0,0.99,0.97), vec3(1.0,0.62,0.55), uDusk), cl * 0.85);
         gl_FragColor = vec4(col, 1.0);
       }`
   });
@@ -2541,6 +2608,7 @@ window.Booth = (() => {
   for (let i = 0; i < 28; i++) {
     const x = HOLE_X + rand(-60, 60), z = FZ - rand(26, 72);
     if (Math.abs(x - HOLE_X) < 9 && z > FZ - 34) continue;
+    if (Math.abs(x - (HOLE_X + 14)) < 12 && z > FZ - 36) continue;
     const t = new THREE.Group(); t.position.set(x, 0, z); t.scale.setScalar(rand(0.8, 1.6)); field.add(t);
     cyl(0.25, 0.35, 3, trunkMat, 0, 1.5, 0, t, 8);
     for (let k = 0; k < 3; k++) { const b = new THREE.Mesh(new THREE.IcosahedronGeometry(rand(1.6, 2.4), 1), leafMs[(i + k) % 3]); b.position.set(rand(-0.9, 0.9), 3.4 + k * 0.8, rand(-0.9, 0.9)); t.add(b); }
@@ -2553,7 +2621,7 @@ window.Booth = (() => {
     const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), sc = V(1, 1, 1), ps = V(0, 0, 0), col = new THREE.Color();
     for (let i = 0; i < NB2; i++) {
       const x = rand(-11, 11), z = -0.4 - Math.pow(Math.random(), 0.7) * 22;
-      const path = Math.abs(x) < 0.85 && z > -8.2;
+      const path = (Math.abs(x) < 0.85 && z > -8.2) || (Math.abs(x + 6.8) < 2.6 && z > -8.4) || (x < -0.5 && x > -7 && Math.abs(z + 2.8) < 0.9);
       ps.set(HOLE_X + x, 0, FZ + z); e.set(rand(-0.3, 0.3), rand(0, TAU), rand(-0.3, 0.3)); q.setFromEuler(e);
       const s = path ? rand(0.15, 0.3) : rand(0.6, 1.5); sc.set(s, s * rand(0.8, 1.7), s);
       m4.compose(ps, q, sc); tall.setMatrixAt(i, m4); tall.setColorAt(i, col.setHSL(rand(0.22, 0.3), rand(0.45, 0.65), rand(0.26, 0.44)));
@@ -2564,7 +2632,7 @@ window.Booth = (() => {
     const fc = [0xffffff, 0xffe066, 0xff9fc2, 0xb9a6ff, 0xffb347];
     for (let i = 0; i < NF; i++) {
       const x = rand(-11, 11), z = -0.6 - Math.pow(Math.random(), 0.7) * 22;
-      if (Math.abs(x) < 0.9 && z > -8.2) { i--; continue; }
+      if ((Math.abs(x) < 0.9 && z > -8.2) || (Math.abs(x + 6.8) < 2.6 && z > -8.4) || (x < -0.5 && x > -7 && Math.abs(z + 2.8) < 0.95)) { i--; continue; }
       ps.set(HOLE_X + x, rand(0.28, 0.55), FZ + z); sc.setScalar(rand(0.7, 1.3)); m4.compose(ps, q.identity(), sc);
       flowers.setMatrixAt(i, m4); flowers.setColorAt(i, col.set(fc[i % fc.length]));
     }
@@ -2648,6 +2716,384 @@ window.Booth = (() => {
       const f = Math.sin(t * 22 + b.ph) * 1.1; b.wl.rotation.y = f; b.wr.rotation.y = -f;
     });
   };
+
+  // ----- le drive-in de Garçon Printemps, au fond à droite de la prairie, au coucher du soleil -----
+  const DI = V(HOLE_X + 14, 0, FZ - 24);           // pied de l'écran
+  const SWg = 8.4, SHg = 4.725, SYg = 4.25;
+  const driveIn = new THREE.Group(); field.add(driveIn);
+  let gpDusk = 0;
+  const duskGlow = [];                               // ce qui s'allume quand le soleil se couche
+  const glowMat = (r, g, b) => { const m = new THREE.MeshBasicMaterial({ color: new THREE.Color(r, g, b) }); m.userData.base = new THREE.Color(r, g, b); duskGlow.push(m); return m; };
+  // l'écran, ses pieds en treillis et son dos
+  const matScreenFrame = M({ color: 0x2a2724, roughness: 0.7, metalness: 0.3 });
+  const matLattice = M({ color: 0x8a8278, roughness: 0.6, metalness: 0.6 });
+  box(SWg + 0.5, SHg + 0.5, 0.35, matScreenFrame, DI.x, SYg, DI.z - 0.2, driveIn);
+  [-1, 1].forEach(sx => {
+    const lx = DI.x + sx * (SWg / 2 - 0.9);
+    [-0.5, 0.5].forEach(dz => box(0.12, SYg - SHg / 2 + 0.3, 0.12, matLattice, lx, (SYg - SHg / 2 + 0.3) / 2, DI.z - 0.2 + dz, driveIn));
+    for (let k = 0; k < 3; k++) { const y = 0.4 + k * 0.6; const d = box(0.05, 1.25, 0.05, matLattice, lx, y + 0.3, DI.z - 0.2, driveIn); d.rotation.x = k % 2 ? 0.75 : -0.75; }
+  });
+  // l'amorce du film en attendant les vidéos
+  const gLeader = document.createElement('canvas'); gLeader.width = 640; gLeader.height = 360;
+  const gLeaderTex = new THREE.CanvasTexture(gLeader); gLeaderTex.colorSpace = THREE.SRGBColorSpace;
+  function drawGLeader(t) {
+    const c = gLeader.getContext('2d'), w = gLeader.width, h = gLeader.height, cx = w / 2, cy = h / 2;
+    const n = 3 - Math.floor(t % 3), frac = t % 1;
+    c.fillStyle = '#a59a86'; c.fillRect(0, 0, w, h);
+    c.fillStyle = '#7b7262'; c.beginPath(); c.moveTo(cx, cy); c.arc(cx, cy, 400, -Math.PI / 2, -Math.PI / 2 + frac * TAU); c.closePath(); c.fill();
+    c.strokeStyle = '#f3ecdc'; c.lineWidth = 6; c.beginPath(); c.arc(cx, cy, 130, 0, TAU); c.stroke(); c.beginPath(); c.arc(cx, cy, 112, 0, TAU); c.stroke();
+    c.beginPath(); c.moveTo(0, cy); c.lineTo(w, cy); c.moveTo(cx, 0); c.lineTo(cx, h); c.lineWidth = 3; c.stroke();
+    c.fillStyle = '#1b1814'; c.textAlign = 'center'; c.font = '500 150px Geist, Arial, sans-serif'; c.fillText(String(n), cx, cy + 54);
+    c.font = '500 22px "Geist Mono", monospace'; c.fillStyle = '#2a2622'; c.fillText('GARÇON PRINTEMPS · LES VIDÉOS ARRIVENT BIENTÔT', cx, h - 26);
+    for (let i = 0; i < 30; i++) { c.fillStyle = `rgba(${Math.random() < 0.5 ? '255,255,255' : '0,0,0'},${Math.random() * 0.35})`; c.fillRect(Math.random() * w, Math.random() * h, rand(1, 3), rand(2, 14)); }
+    gLeaderTex.needsUpdate = true;
+  }
+  drawGLeader(0);
+  const gVids = (window.LaboPanel.project('garcon-printemps') || {}).videos || [];
+  let gVideo = null, gVideoTex = null, gIdx = 0;
+  if (gVids[0]) {
+    gVideo = document.createElement('video'); gVideo.muted = true; gVideo.loop = false; gVideo.playsInline = true; gVideo.preload = 'auto';
+    gVideo.setAttribute('playsinline', ''); gVideo.src = gVids[0].src;
+    gVideoTex = new THREE.VideoTexture(gVideo); gVideoTex.colorSpace = THREE.SRGBColorSpace;
+  }
+  const gScreenMat = new THREE.MeshBasicMaterial({ map: gVideoTex || gLeaderTex, color: new THREE.Color(1.2, 1.18, 1.12), fog: false });
+  const gScreenBg = new THREE.Mesh(new THREE.PlaneGeometry(SWg, SHg), new THREE.MeshBasicMaterial({ color: new THREE.Color(0.07, 0.06, 0.06), fog: false }));
+  gScreenBg.position.set(DI.x, SYg, DI.z - 0.015); driveIn.add(gScreenBg);
+  const gScreen = new THREE.Mesh(new THREE.PlaneGeometry(SWg, SHg), gScreenMat); gScreen.position.set(DI.x, SYg, DI.z); driveIn.add(gScreen);
+  function setGVideo(i, init) {
+    if (!gVideo) return;
+    gIdx = (i + gVids.length) % gVids.length; const v = gVids[gIdx];
+    const wasMuted = gVideo.muted, playing = !gVideo.paused;
+    gVideo.src = v.src; gVideo.muted = wasMuted; if (playing) gVideo.play().catch(() => {});
+    const a = v.w / v.h; gScreen.scale.set(Math.min(1, a / (SWg / SHg)), Math.min(1, (SWg / SHg) / a), 1);
+    gScreen.userData.im = Object.assign({ video: true, playlist: gVids.length, index: gIdx + 1 }, v);
+    if (!init && frameFocus === gScreen) window.LaboPanel.zoomInfo(gScreen.userData.im);
+    if (!init && window.LaboView.refreshBar) window.LaboView.refreshBar();
+  }
+  if (gVideo) gVideo.addEventListener('ended', () => setGVideo(gIdx + 1));
+  gScreen.userData.im = { kind: 'Vidéo', title: 'Les vidéos arrivent bientôt' };
+  setGVideo(0, true);
+  gScreen.userData.photo = gScreen; gScreen.userData.view = 'cinema';
+  // l'enseigne lumineuse du drive-in
+  const marqTex = canvasTex(1024, 300, (c, w, h) => {
+    c.fillStyle = '#1a1410'; c.fillRect(0, 0, w, h);
+    c.strokeStyle = '#ffb45a'; c.lineWidth = 8; c.strokeRect(14, 14, w - 28, h - 28);
+    for (let x = 40; x < w - 20; x += 46) { c.fillStyle = '#ffd890'; c.beginPath(); c.arc(x, 36, 8, 0, TAU); c.fill(); c.beginPath(); c.arc(x, h - 36, 8, 0, TAU); c.fill(); }
+    c.textAlign = 'center'; c.fillStyle = '#ff5a3c'; c.shadowColor = '#ff5a3c'; c.shadowBlur = 18;
+    c.font = '500 112px Geist, Arial, sans-serif'; c.fillText('DRIVE-IN', w / 2, 158);
+    c.shadowBlur = 0; c.fillStyle = '#ffe7b8'; c.font = 'italic 400 64px "Instrument Serif", Georgia, serif'; c.fillText('Garçon Printemps', w / 2, 234);
+  }, { text: true });
+  const marq = new THREE.Group(); marq.position.set(DI.x - SWg / 2 - 2.6, 0, DI.z + 3.2); marq.rotation.y = 0.35; driveIn.add(marq);
+  cyl(0.12, 0.14, 4.6, matLattice, 0, 2.3, 0, marq, 10);
+  box(3.5, 1.1, 0.18, matScreenFrame, 0, 4.7, 0, marq);
+  const marqMat = new THREE.MeshBasicMaterial({ map: marqTex, color: new THREE.Color(1, 1, 1) }); marqMat.userData.base = new THREE.Color(1, 1, 1); duskGlow.push(marqMat);
+  const marqFace = new THREE.Mesh(new THREE.PlaneGeometry(3.4, 1.0), marqMat); marqFace.position.set(0, 4.7, 0.095); marq.add(marqFace);
+  // le parking en gravier
+  const gravelTex = canvasTex(256, 256, (c, w, h) => { c.fillStyle = '#7a6f62'; c.fillRect(0, 0, w, h); for (let i = 0; i < 4000; i++) { const v = 90 + Math.random() * 90 | 0; c.fillStyle = `rgb(${v},${v - 8},${v - 18})`; c.fillRect(Math.random() * w, Math.random() * h, rand(1, 3), rand(1, 3)); } }, { repeat: [5, 4] });
+  const lot = new THREE.Mesh(new THREE.PlaneGeometry(16, 13), M({ map: gravelTex, roughness: 1, emissive: 0xffffff, emissiveMap: gravelTex, emissiveIntensity: 0.18 }));
+  lot.rotation.x = -Math.PI / 2; lot.position.set(DI.x, 0.004, DI.z + 9.5); driveIn.add(lot);
+  // les voitures rétro, garées face à l'écran
+  const glassMat = M({ color: 0x1b2a33, roughness: 0.1, metalness: 0.6 });
+  function retroCar(x, z, color, rot) {
+    const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = rot || 0; driveIn.add(g);
+    const paint = M({ color, roughness: 0.35, metalness: 0.35 });
+    softBox(1.9, 0.55, 4.4, 0.2, paint, 0, 0.62, 0, g);
+    softBox(1.62, 0.5, 2.0, 0.22, paint, 0, 1.12, 0.25, g);
+    softBox(1.5, 0.38, 1.85, 0.16, glassMat, 0, 1.13, 0.25, g).scale.set(1.04, 1, 1.03);
+    [-1, 1].forEach(sx => { const fin = box(0.12, 0.3, 0.9, paint, sx * 0.86, 0.98, 1.8, g); fin.rotation.x = -0.25; });
+    [-2.22, 2.22].forEach(zz => box(1.98, 0.14, 0.12, matChrome, 0, 0.45, zz, g));
+    [[-0.68, -1.45], [0.68, -1.45], [-0.68, 1.45], [0.68, 1.45]].forEach(([wx, wz]) => { const w = cyl(0.34, 0.34, 0.26, matRubber, wx * 1.35, 0.34, wz, g, 18); w.rotation.z = Math.PI / 2; const hub = cyl(0.16, 0.16, 0.28, matChrome, wx * 1.35, 0.34, wz, g, 14); hub.rotation.z = Math.PI / 2; });
+    [-0.62, 0.62].forEach(hx => { const hl = new THREE.Mesh(new THREE.CircleGeometry(0.13, 16), M({ color: 0xfff2cc, emissive: 0xfff2cc, emissiveIntensity: 0.4 })); hl.position.set(hx, 0.7, -2.21); hl.rotation.y = Math.PI; g.add(hl); });
+    [-0.7, 0.7].forEach(tx => box(0.22, 0.12, 0.04, glowMat(1.8, 0.15, 0.1), tx, 0.82, 2.21, g));
+    blob(g, 0, 0, 2.4, 4.8, 0.7);
+    return g;
+  }
+  retroCar(DI.x - 3.6, DI.z + 7.5, 0x8fd1c4, 0.04);
+  retroCar(DI.x + 3.7, DI.z + 7.8, 0xe86a5a, -0.05);
+  retroCar(DI.x - 5.8, DI.z + 12.6, 0xf2d27a, 0.08);
+  retroCar(DI.x + 6.0, DI.z + 12.9, 0x4f6fb0, -0.06);
+  // la tondeuse, garée comme une voiture au premier rang
+  const mow = new THREE.Group(); mow.position.set(DI.x + 0.1, 0, DI.z + 7.9); mow.scale.setScalar(1.25); driveIn.add(mow);
+  const mowPaint = M({ color: 0x3f8a3a, roughness: 0.4, metalness: 0.3 });
+  softBox(0.95, 0.4, 1.3, 0.12, mowPaint, 0, 0.42, 0, mow);
+  softBox(0.8, 0.2, 0.7, 0.08, M({ color: 0x1a1a1a, roughness: 0.6 }), 0, 0.7, -0.15, mow);
+  cyl(0.18, 0.2, 0.3, matChrome, 0, 0.75, -0.3, mow, 14);
+  softBox(0.5, 0.12, 0.42, 0.05, M({ color: 0xd8c3a0, roughness: 0.7 }), 0, 0.72, 0.35, mow);
+  softBox(0.45, 0.45, 0.08, 0.04, M({ color: 0xd8c3a0, roughness: 0.7 }), 0, 0.98, 0.55, mow).rotation.x = -0.2;
+  [[-0.5, -0.45, 0.22], [0.5, -0.45, 0.22], [-0.5, 0.45, 0.3], [0.5, 0.45, 0.3]].forEach(([wx, wz, r]) => { const w = cyl(r, r, 0.16, matRubber, wx, r, wz, mow, 16); w.rotation.z = Math.PI / 2; });
+  const flagTex = canvasTex(256, 160, (c, w, h) => { c.fillStyle = '#ffe066'; c.fillRect(0, 0, w, h); c.fillStyle = '#2a1d12'; c.textAlign = 'center'; c.font = '500 92px Geist, Arial, sans-serif'; c.fillText('GP', w / 2, 116); }, { text: true });
+  mow.add(bar(V(0.42, 0.6, 0.55), V(0.42, 1.4, 0.55), 0.012, matSteel));
+  const gpFlag = new THREE.Mesh(new THREE.PlaneGeometry(0.42, 0.26), M({ map: flagTex, roughness: 0.8, side: THREE.DoubleSide, emissive: 0xffffff, emissiveMap: flagTex, emissiveIntensity: 0.25 })); gpFlag.position.set(0.64, 1.26, 0.55); mow.add(gpFlag);
+  // les poteaux à haut-parleur entre les places
+  [-1.85, 1.95, -4.7, 4.9].forEach((dx, i) => {
+    const px = DI.x + dx, pz = DI.z + (i < 2 ? 8.3 : 13.2);
+    cyl(0.05, 0.05, 1.15, matSteel, px, 0.575, pz, driveIn, 8);
+    box(0.28, 0.2, 0.14, matScreenFrame, px, 1.2, pz, driveIn);
+    box(0.06, 0.05, 0.02, glowMat(2.2, 0.6, 0.2), px, 1.28, pz + 0.08, driveIn);
+  });
+  // la guirlande d'ampoules autour du parking
+  const bulbGeo = new THREE.SphereGeometry(0.07, 8, 6);
+  const bulbMatD = glowMat(3.2, 2.0, 0.9);
+  [[V(DI.x - 7.6, 3.2, DI.z + 3.5), V(DI.x - 7.6, 3.2, DI.z + 15.5)], [V(DI.x + 7.6, 3.2, DI.z + 3.5), V(DI.x + 7.6, 3.2, DI.z + 15.5)]].forEach(([a, b]) => {
+    [a, b].forEach(p => cyl(0.07, 0.08, 3.3, postMat, p.x, 1.65, p.z, driveIn, 8));
+    const pts = sag(a, b, 0.6, 0.01, matRubber, driveIn);
+    pts.forEach((p, i) => { if (i % 2) return; const bl = new THREE.Mesh(bulbGeo, bulbMatD); bl.position.copy(p).add(V(0, -0.09, 0)); driveIn.add(bl); });
+  });
+  // la cabine de projection derrière les voitures, et son faisceau vers l'écran
+  const boothG = new THREE.Group(); boothG.position.set(DI.x, 0, DI.z + 18.5); driveIn.add(boothG);
+  box(2.6, 2.6, 2.2, M({ color: 0xcfc2ad, roughness: 0.9 }), 0, 1.3, 0, boothG);
+  box(2.9, 0.15, 2.5, matScreenFrame, 0, 2.66, 0, boothG);
+  const lensD = new THREE.Mesh(new THREE.CircleGeometry(0.14, 18), glowMat(3, 3, 3.2)); lensD.position.set(0, 2.1, -1.11); lensD.rotation.y = Math.PI; boothG.add(lensD);
+  const LENSg = V(DI.x, 2.1, DI.z + 17.38), SCRg = V(DI.x, SYg, DI.z);
+  const gDir = SCRg.clone().sub(LENSg), gLen = gDir.length();
+  const gBeamMat = beamMat.clone(); gBeamMat.uniforms.uColor.value = new THREE.Color(0, 0, 0);
+  const gBeam = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 0.05, gLen, 4, 1, true), gBeamMat);
+  gBeam.geometry.rotateY(Math.PI / 4); gBeam.scale.set(SWg / 3.0, 1, SHg / 3.0);
+  gBeam.position.copy(LENSg).lerp(SCRg, 0.5); gBeam.quaternion.setFromUnitVectors(V(0, 1, 0), gDir.clone().normalize()); gBeam.renderOrder = 4; driveIn.add(gBeam);
+  // le panneau en bois dans la prairie, qui indique le drive-in
+  const signTex = canvasTex(512, 180, (c, w, h) => { c.fillStyle = '#c9a26a'; c.fillRect(0, 0, w, h); for (let i = 0; i < 40; i++) { c.fillStyle = 'rgba(90,60,30,.15)'; c.fillRect(0, Math.random() * h, w, rand(1, 3)); } c.fillStyle = '#2a1a0e'; c.textAlign = 'center'; c.font = '500 78px Geist, Arial, sans-serif'; c.fillText('DRIVE-IN →', w / 2, 120); }, { text: true });
+  const signG = new THREE.Group(); signG.position.set(HOLE_X + 2.3, 0, FZ - 7.2); signG.rotation.y = -0.35; field.add(signG);
+  cyl(0.06, 0.07, 1.6, postMat, 0, 0.8, 0, signG, 8);
+  const signBoard = new THREE.Mesh(new THREE.PlaneGeometry(1.25, 0.44), M({ map: signTex, roughness: 0.9, emissive: 0xffffff, emissiveMap: signTex, emissiveIntensity: 0.3, side: THREE.DoubleSide }));
+  signBoard.position.set(0.25, 1.4, 0.07); signBoard.rotation.z = -0.05; signG.add(signBoard);
+  const hotMatG = new THREE.MeshBasicMaterial({ visible: false });
+  const hotSign = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.8, 0.6), hotMatG); hotSign.position.set(0.2, 0.9, 0); hotSign.userData.goView = 'cinema'; hotSign.userData.view = 'prairie'; signG.add(hotSign);
+  W_GP.hotspots = [hotSign];
+  // Garçon Printemps en carton, planté au bord de l'allée : on peut lui parler
+  const SGH = 2.35, SGW = SGH * 453 / 955;
+  const GD = V(HOLE_X - 6.8, 0, FZ - 6.2);   // le centre du jardin
+  const standee = new THREE.Group(); standee.position.set(GD.x - 1.65, 0, GD.z + 0.1); standee.rotation.y = 0.3; field.add(standee);
+  const cutTex = imgTexture('assets/garcon-printemps/cutout.webp');
+  const gpCard = new THREE.Mesh(new THREE.PlaneGeometry(SGW, SGH), new THREE.MeshBasicMaterial({ map: cutTex, transparent: true, alphaTest: 0.5, color: new THREE.Color(1.05, 1.05, 1.05) }));
+  gpCard.position.set(0, SGH / 2 + 0.04, 0); standee.add(gpCard);
+  const gpBack = new THREE.Mesh(new THREE.PlaneGeometry(SGW, SGH), new THREE.MeshBasicMaterial({ map: cutTex, transparent: true, alphaTest: 0.5, color: new THREE.Color(0.55, 0.42, 0.28) }));
+  gpBack.position.set(0, SGH / 2 + 0.04, -0.012); gpBack.rotation.y = Math.PI; standee.add(gpBack);
+  const easel = box(0.06, 1.2, 0.02, M({ color: 0x9a7a52, roughness: 1, emissive: 0x3a2a18, emissiveIntensity: 0.5 }), 0, 0.6, -0.3, standee); easel.rotation.x = 0.45;
+  blob(standee, 0, -0.1, 1.2, 0.8, 0.5);
+  // une bulle « … » au-dessus de sa tête, pour donner envie de cliquer
+  const bubTex = canvasTex(256, 200, (c, w, h) => {
+    c.fillStyle = '#fffaf0'; c.beginPath(); if (c.roundRect) c.roundRect(10, 10, w - 20, h - 70, 46); else c.rect(10, 10, w - 20, h - 70); c.fill();
+    c.beginPath(); c.moveTo(70, h - 62); c.lineTo(52, h - 12); c.lineTo(112, h - 62); c.fill();
+    c.fillStyle = '#2a1d12'; [w / 2 - 52, w / 2, w / 2 + 52].forEach(x => { c.beginPath(); c.arc(x, 74, 15, 0, TAU); c.fill(); });
+  });
+  const gpBubble = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.39), new THREE.MeshBasicMaterial({ map: bubTex, transparent: true, depthWrite: false, color: new THREE.Color(1.2, 1.2, 1.2) }));
+  gpBubble.position.set(SGW * 0.32, SGH + 0.3, 0.02); standee.add(gpBubble);
+  gpCard.userData.talk = true; gpCard.userData.photo = gpCard; gpCard.userData.im = null; gpCard.userData.view = 'jardin';
+  W_GP.frames.push(gpCard);
+  // ----- le jardin de Garçon Printemps, à gauche de la prairie : ses fleurs chantent -----
+  const garden = new THREE.Group(); garden.position.copy(GD); field.add(garden);
+  const picketMat = M({ color: 0xf3eee2, roughness: 0.85, emissive: 0x4a463e, emissiveIntensity: 0.6 });
+  {
+    const GHX = 2.4, GHZ = 2.0, pts = [];
+    for (let x = -GHX; x <= GHX + 1e-3; x += 0.2) { pts.push([x, -GHZ, 0]); if (Math.abs(x) > 0.65) pts.push([x, GHZ, 0]); }
+    for (let z = -GHZ + 0.2; z < GHZ - 1e-3; z += 0.2) { pts.push([-GHX, z, 1]); pts.push([GHX, z, 1]); }
+    const pk = new THREE.InstancedMesh(new THREE.BoxGeometry(0.075, 0.62, 0.025), picketMat, pts.length);
+    const m4 = new THREE.Matrix4(), q = new THREE.Quaternion();
+    pts.forEach(([x, z, side], i) => { q.setFromAxisAngle(V(0, 1, 0), side ? Math.PI / 2 : 0); m4.compose(V(x, 0.31, z), q, V(1, 1, 1)); pk.setMatrixAt(i, m4); });
+    garden.add(pk);
+    [0.18, 0.46].forEach(y => {
+      box(GHX * 2, 0.05, 0.03, picketMat, 0, y, -GHZ - 0.02, garden);
+      [-1, 1].forEach(sx => { box(GHX - 0.65, 0.05, 0.03, picketMat, sx * (GHX + 0.65) / 2, y, GHZ + 0.02, garden); box(0.03, 0.05, GHZ * 2, picketMat, sx * (GHX + 0.02), y, 0, garden); });
+    });
+    [-0.7, 0.7].forEach(x => box(0.09, 0.82, 0.09, picketMat, x, 0.41, GHZ, garden));
+    // des pas japonais depuis l'allée jusqu'au portillon
+    const stoneMat = M({ color: 0xa9a294, roughness: 1, emissive: 0x3a3832, emissiveIntensity: 0.6 });
+    [[0.2, 2.6], [0.55, 3.2], [1.1, 3.6], [1.8, 3.9], [2.6, 4.1], [3.4, 4.2]].forEach(([x, z], i) => { const s = cyl(0.2 + (i % 2) * 0.04, 0.22, 0.04, stoneMat, x, 0.02, z, garden, 12); s.scale.z = 0.75; });
+  }
+  // le carré de terre surélevé
+  const bedWood = M({ map: woodTex, color: 0xb58a5a, roughness: 0.9, emissive: 0x3a2814, emissiveIntensity: 0.5 });
+  softBox(3.0, 0.32, 1.05, 0.04, bedWood, 0.35, 0.16, 0, garden);
+  box(2.8, 0.04, 0.88, M({ color: 0x4a3222, roughness: 1, emissive: 0x1c120a, emissiveIntensity: 0.6 }), 0.35, 0.33, 0, garden);
+  blob(garden, 0.35, 0, 3.6, 1.7, 0.45);
+  // un arrosoir posé à côté
+  {
+    const can = new THREE.Group(); can.position.set(2.0, 0, 0.8); can.rotation.y = -0.6; garden.add(can);
+    const canMat = M({ color: 0x5f9f8a, roughness: 0.45, metalness: 0.4 });
+    cyl(0.16, 0.18, 0.32, canMat, 0, 0.16, 0, can, 18);
+    can.add(bar(V(0.12, 0.08, 0), V(0.42, 0.36, 0), 0.025, canMat));
+    const handle = new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.018, 6, 16, Math.PI), canMat); handle.position.set(-0.02, 0.32, 0); can.add(handle);
+    blob(can, 0, 0, 0.6, 0.5, 0.5);
+  }
+  // les cinq fleurs musicales
+  const FLC = [0xff7eb6, 0xffc93f, 0xb48cff, 0x6fc3ff, 0xff9a4a];
+  const NOTES = [523.25, 587.33, 659.25, 783.99, 880.0];
+  const stemMat = M({ color: 0x3f7d32, roughness: 0.8, emissive: 0x1d3a14, emissiveIntensity: 0.6 });
+  const petalGeo = new THREE.SphereGeometry(1, 12, 8), hearts = M({ color: 0x6a4a1c, roughness: 0.7, emissive: 0x3a2408, emissiveIntensity: 0.6 });
+  const jNoteTex = canvasTex(128, 128, (c, w, h) => { c.fillStyle = '#fff'; c.textAlign = 'center'; c.font = '400 104px Georgia, serif'; c.fillText('♪', w / 2, 100); }, { text: true });
+  const flowersJ = FLC.map((col, i) => {
+    const f = new THREE.Group(); f.position.set((i - 2) * 0.55 + 0.35, 0.34, i % 2 ? -0.12 : 0.1); garden.add(f);
+    const h = 0.5 + [0.1, 0.28, 0.4, 0.22, 0.06][i];
+    cyl(0.018, 0.026, h, stemMat, 0, h / 2, 0, f, 6);
+    [-1, 1].forEach(s => { const lf = new THREE.Mesh(petalGeo, stemMat); lf.scale.set(0.11, 0.035, 0.05); lf.position.set(s * 0.08, h * 0.4 + (s > 0 ? 0.08 : 0), 0); lf.rotation.z = s * 0.5; f.add(lf); });
+    const head = new THREE.Group(); head.position.y = h; head.rotation.x = -0.3; f.add(head);
+    const pm = M({ color: col, roughness: 0.55, emissive: col, emissiveIntensity: 0.3 });
+    for (let k = 0; k < 7; k++) { const a = k / 7 * TAU, p = new THREE.Mesh(petalGeo, pm); p.scale.set(0.11, 0.055, 0.025); p.position.set(Math.cos(a) * 0.11, Math.sin(a) * 0.11, 0); p.rotation.z = a; head.add(p); }
+    const heart = new THREE.Mesh(petalGeo, hearts); heart.scale.set(0.065, 0.065, 0.04); heart.position.z = 0.02; head.add(heart);
+    const hit = new THREE.Mesh(new THREE.BoxGeometry(0.6, h + 0.45, 0.6), hotMatG); hit.position.y = (h + 0.45) / 2; f.add(hit);
+    hit.userData.note = i; hit.userData.view = 'jardin';
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: jNoteTex, color: col, transparent: true, opacity: 0, depthWrite: false })); sp.scale.setScalar(0.22); f.add(sp);
+    return { f, head, pm, hit, sp, h, lit: 0, noteT: 9, ph: i * 1.3 };
+  });
+  W_GP.frames.push(...flowersJ.map(o => o.hit));
+  // le petit panneau du jardin, à côté du portillon
+  const jSignTex = canvasTex(512, 220, (c, w, h) => { c.fillStyle = '#e9d8b4'; c.fillRect(0, 0, w, h); for (let i = 0; i < 40; i++) { c.fillStyle = 'rgba(90,60,30,.12)'; c.fillRect(0, Math.random() * h, w, rand(1, 3)); } c.fillStyle = '#2a1a0e'; c.textAlign = 'center'; c.font = 'italic 400 76px "Instrument Serif", Georgia, serif'; c.fillText('Le jardin', w / 2, 96); c.font = '500 30px "Geist Mono", monospace'; c.fillText('ICI, LES FLEURS CHANTENT', w / 2, 168); }, { text: true });
+  {
+    const s = new THREE.Group(); s.position.set(1.7, 0, 2.3); s.rotation.y = -0.2; garden.add(s);
+    cyl(0.04, 0.05, 0.62, postMat, 0, 0.31, 0, s, 8);
+    const b = new THREE.Mesh(new THREE.PlaneGeometry(0.75, 0.32), M({ map: jSignTex, roughness: 0.9, emissive: 0xffffff, emissiveMap: jSignTex, emissiveIntensity: 0.3, side: THREE.DoubleSide })); b.position.set(0, 0.6, 0.05); s.add(b);
+  }
+  // le panneau dans la prairie, qui indique le jardin
+  const jArrowTex = canvasTex(512, 180, (c, w, h) => { c.fillStyle = '#c9a26a'; c.fillRect(0, 0, w, h); for (let i = 0; i < 40; i++) { c.fillStyle = 'rgba(90,60,30,.15)'; c.fillRect(0, Math.random() * h, w, rand(1, 3)); } c.fillStyle = '#2a1a0e'; c.textAlign = 'center'; c.font = '500 74px Geist, Arial, sans-serif'; c.fillText('← LE JARDIN', w / 2, 118); }, { text: true });
+  const jSignG = new THREE.Group(); jSignG.position.set(HOLE_X - 2.3, 0, FZ - 7.2); jSignG.rotation.y = 0.35; field.add(jSignG);
+  cyl(0.06, 0.07, 1.6, postMat, 0, 0.8, 0, jSignG, 8);
+  const jBoard = new THREE.Mesh(new THREE.PlaneGeometry(1.25, 0.44), M({ map: jArrowTex, roughness: 0.9, emissive: 0xffffff, emissiveMap: jArrowTex, emissiveIntensity: 0.3, side: THREE.DoubleSide }));
+  jBoard.position.set(-0.25, 1.4, 0.07); jBoard.rotation.z = 0.05; jSignG.add(jBoard);
+  const hotJ = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.8, 0.6), hotMatG); hotJ.position.set(-0.2, 0.9, 0); hotJ.userData.goView = 'jardin'; hotJ.userData.view = 'prairie'; jSignG.add(hotJ);
+  W_GP.hotspots.push(hotJ);
+
+  // le son : une petite note de cloche douce, faite à la main
+  let gAudio = null;
+  function actx() {
+    if (!gAudio) { const C = window.AudioContext || window.webkitAudioContext; if (!C) return null; try { gAudio = new C(); } catch (e) { return null; } }
+    if (gAudio.state === 'suspended') gAudio.resume().catch(() => {});
+    return gAudio;
+  }
+  function tone(f, dur, vol) {
+    const a = actx(); if (!a) return;
+    const t = a.currentTime, g = a.createGain();
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t + dur); g.connect(a.destination);
+    [[1, 'sine', 1], [2, 'sine', 0.22], [3.01, 'triangle', 0.06]].forEach(([m, type, v]) => { const o = a.createOscillator(), gg = a.createGain(); o.type = type; o.frequency.value = f * m; gg.gain.value = v; o.connect(gg); gg.connect(g); o.start(t); o.stop(t + dur + 0.05); });
+  }
+  function ring(i) {
+    const o = flowersJ[i]; o.lit = 1; o.noteT = 0;
+    tone(NOTES[i], 0.9, 0.16);
+    if (reduced) { requestRender(); setTimeout(requestRender, 420); }
+  }
+  function gardenLife(t, dt) {
+    flowersJ.forEach(o => {
+      const hov = hovered && hovered.frame === o.hit ? 1 : 0;
+      o.lit = Math.max(0, o.lit - dt * 2.2);
+      const e = o.lit * o.lit;
+      o.head.scale.setScalar(1 + 0.22 * e + 0.05 * hov);
+      o.pm.emissiveIntensity = 0.3 + 1.5 * e;
+      o.f.rotation.z = Math.sin(t * 1.4 + o.ph) * 0.04 + hov * Math.sin(t * 7) * 0.03;
+      o.noteT += dt;
+      const k = Math.min(1, o.noteT / 1.0);
+      o.sp.material.opacity = o.noteT < 1 ? (1 - k) * 0.95 : 0;
+      o.sp.position.set(Math.sin(k * 5 + o.ph) * 0.06, o.h + 0.2 + k * 0.55, 0.05);
+    });
+  }
+
+  // le mini-jeu : Garçon Printemps joue un air, on le rejoue dans l'ordre
+  window.GPGarden = (() => {
+    const ROUNDS = 5, FIRST = 3;
+    let seq = [], pos = 0, round = 0, phase = 'idle', timers = [];
+    const later = (fn, ms) => timers.push(setTimeout(fn, ms));
+    const clear = () => { timers.forEach(clearTimeout); timers = []; };
+    const T = () => window.GPTalk;
+    function rnd() { let n; do { n = Math.floor(Math.random() * 5); } while (seq.length && n === seq[seq.length - 1]); return n; }
+    let best = 0; try { best = +localStorage.getItem('labo-gp-best') || 0; } catch (e) {}
+    function keepBest(r) { if (r > best) { best = r; try { localStorage.setItem('labo-gp-best', String(r)); } catch (e) {} } }
+    function start() { clear(); actx(); seq = []; for (let i = 0; i < FIRST; i++) seq.push(rnd()); round = 1; listen(); }
+    function listen() {
+      clear(); phase = 'demo'; pos = 0;
+      T().show(`Manche ${round} sur ${ROUNDS}. Écoute bien…`, [['Arrêter', stop]]);
+      seq.forEach((n, i) => later(() => ring(n), 900 + i * 640));
+      later(() => { phase = 'you'; T().show(`À toi ! Rejoue les ${seq.length} notes dans l’ordre.`, [['Réécouter', listen], ['Arrêter', stop]]); }, 900 + seq.length * 640);
+    }
+    function tap(i) {
+      if (phase === 'demo') return;
+      ring(i);
+      if (phase !== 'you') return;
+      if (i !== seq[pos]) {
+        phase = 'lost'; clear(); keepBest(round - 1);
+        later(() => { tone(196, 0.5, 0.1); tone(185, 0.6, 0.08); }, 160);
+        T().show(round > 1 ? `Oups, pas celle-là ! Tu as tenu ${round - 1} manche${round > 2 ? 's' : ''}. On recommence ?` : 'Oups, pas celle-là ! Pas grave, ça pousse pas en un jour. On recommence ?', [['Rejouer', start, 'go'], ['Arrêter', stop]]);
+        return;
+      }
+      pos++;
+      if (pos < seq.length) { T().text(`À toi ! ${pos} sur ${seq.length}…`); return; }
+      phase = 'wait';
+      if (round >= ROUNDS) { keepBest(ROUNDS); return win(); }
+      T().text('Joli ! J’ajoute une note…');
+      later(() => { seq.push(rnd()); round++; listen(); }, 1100);
+    }
+    function win() {
+      phase = 'won';
+      seq.forEach((n, i) => later(() => ring(n), 500 + i * 260));
+      later(() => T().show('T’as l’oreille ! Tu viens de jouer mon air en entier. Si un jour je le sors, je te mets dans les crédits.', [['Rejouer', start, 'go'], ['Salut !', () => T().bye()]]), 500 + seq.length * 260 + 300);
+    }
+    function stop() { clear(); phase = 'idle'; if (T() && T().isOpen()) T().back(); }
+    return { start, tap, stop: () => { clear(); phase = 'idle'; }, busy: () => phase !== 'idle', best: () => best, peek: () => seq.slice() };
+  })();
+  W_GP.frames.forEach(f => { if (!f.userData.view) f.userData.view = 'prairie'; });
+  W_GP.frames.push(gScreen);
+  W_GP.views = {
+    prairie: { pos: V(HOLE_X, 1.65, FZ - 3.0), tgt: V(HOLE_X, 1.55, FZ - 11.0), label: 'La prairie', hint: 'Le jardin de Garçon Printemps est à gauche, le drive-in à droite' },
+    jardin: { pos: V(GD.x + 0.35, 1.5, GD.z + 4.3), tgt: V(GD.x - 0.15, 0.62, GD.z - 0.3), label: 'Le jardin', hint: 'Touche les fleurs pour les entendre, ou clique sur Garçon Printemps pour jouer avec lui' },
+    cinema: { pos: V(DI.x, 2.35, DI.z + 13.5), tgt: V(DI.x, 3.75, DI.z), label: 'Le drive-in', hint: gVids[0] ? 'Clique sur l’écran pour t’approcher' : 'Les vidéos de Garçon Printemps arrivent bientôt sur cet écran' }
+  };
+  W_GP.routes = {
+    'prairie>cinema': [{ pos: V(HOLE_X + 2.0, 1.8, FZ - 5.0), tgt: V(HOLE_X + 9, 1.9, FZ - 12) }, { pos: V(DI.x - 3.5, 2.1, DI.z + 17.0), tgt: V(DI.x, 3.2, DI.z) }],
+    'cinema>prairie': [{ pos: V(DI.x - 3.5, 2.1, DI.z + 17.0), tgt: V(HOLE_X + 4, 1.7, FZ - 4) }, { pos: V(HOLE_X + 2.0, 1.8, FZ - 5.0), tgt: V(HOLE_X, 1.55, FZ - 11) }],
+    'prairie>jardin': [{ pos: V(HOLE_X - 2.4, 1.6, FZ - 2.4), tgt: V(GD.x + 1, 0.9, GD.z - 1) }],
+    'jardin>prairie': [{ pos: V(HOLE_X - 2.4, 1.6, FZ - 2.4), tgt: V(HOLE_X - 1, 1.4, FZ - 10) }],
+    'jardin>cinema': [{ pos: V(HOLE_X - 1.5, 1.7, FZ - 3.2), tgt: V(HOLE_X + 6, 1.8, FZ - 10) }, { pos: V(HOLE_X + 2.0, 1.8, FZ - 5.0), tgt: V(HOLE_X + 9, 1.9, FZ - 12) }, { pos: V(DI.x - 3.5, 2.1, DI.z + 17.0), tgt: V(DI.x, 3.2, DI.z) }],
+    'cinema>jardin': [{ pos: V(DI.x - 3.5, 2.1, DI.z + 17.0), tgt: V(HOLE_X + 4, 1.7, FZ - 4) }, { pos: V(HOLE_X - 1.0, 1.7, FZ - 3.0), tgt: V(GD.x, 1.0, GD.z) }]
+  };
+  W_GP.baseView = 'prairie'; W_GP.view = 'prairie'; W_GP.visited = { prairie: true }; W_GP.cinemaView = 'cinema';
+  W_GP.video = () => gVideo;
+  W_GP.currentVideo = () => gScreen.userData.im;
+  W_GP.nextVideo = () => setGVideo(gIdx + 1);
+  {
+    const prep0 = W_GP.prepare;
+    W_GP.prepare = function (pos, tgt) {
+      prep0.call(this, pos, tgt);
+      this.views.prairie.pos.set(HOLE_X, portrait ? 1.75 : 1.65, FZ - (portrait ? 1.3 : 3.0));
+      this.views.cinema.pos.set(DI.x, portrait ? 2.6 : 2.35, DI.z + (portrait ? 16.0 : 13.5));
+      // sur téléphone, le carton se rapproche du centre pour rester dans le cadre
+      // le jardin : on recule assez pour voir les cinq fleurs et Garçon Printemps, au-dessus de la boîte de dialogue
+      const tn = Math.tan(camera.fov * Math.PI / 360) * camera.aspect, dj = Math.max(5.3, (portrait ? 2.2 : 1.95) / tn);
+      this.views.jardin.pos.set(GD.x + (portrait ? -0.45 : 0.1), portrait ? 2.4 : 1.85, GD.z + dj);
+      this.views.jardin.tgt.set(GD.x - (portrait ? 0.45 : 0.25), portrait ? -0.75 : 0.35, GD.z - 0.3);
+    };
+  }
+  // le coucher de soleil : on le règle à chaque image, pendant qu'on est dans la prairie
+  const fogDay = W_GP.fog[0].clone(), fogDusk = new THREE.Color(0xd9876a);
+  const sunDay = skyDay.uniforms.uSun.value.clone(), sunDusk = V(0.42, 0.13, -1).normalize();
+  const sunPosDay = sun.position.clone(), sunPosDusk = V(DI.x + 6, 5, DI.z - 60);
+  const sunColDay = new THREE.Color(0xfff0d6), sunColDusk = new THREE.Color(0xff8a4a);
+  const hemiSkyDay = new THREE.Color(0xcfe3ff), hemiSkyDusk = new THREE.Color(0xd98aa0);
+  const dimmed = [ground.material, hillMat, trunkMat, ...leafMs, lot.material].map(m => ({ m, base: m.emissiveIntensity }));
+  function gpCinemaLife(t, dt) {
+    const w = W_GP, want = w.view === 'cinema' || (w.trip && w.trip.to === 'cinema') ? 1 : 0;
+    let goal = want;
+    if (w.trip) { const k = smooth(w.trip.k); goal = w.trip.to === 'cinema' ? k : 1 - k; }
+    gpDusk += (goal - gpDusk) * Math.min(1, dt * 3);
+    if (Math.abs(goal - gpDusk) < 0.002) gpDusk = goal;
+    const d = gpDusk;
+    skyDay.uniforms.uDusk.value = d;
+    skyDay.uniforms.uSun.value.copy(sunDay).lerp(sunDusk, d).normalize();
+    w.fog[0].copy(fogDay).lerp(fogDusk, d);
+    sun.position.copy(sunPosDay).lerp(sunPosDusk, d); sun.color.copy(sunColDay).lerp(sunColDusk, d); sun.intensity *= 1 - 0.45 * d;
+    fieldHemi.color.copy(hemiSkyDay).lerp(hemiSkyDusk, d); fieldHemi.intensity *= 1 - 0.35 * d;
+    dimmed.forEach(o => { o.m.emissiveIntensity = o.base * (1 - 0.6 * d); });
+    duskGlow.forEach(m => m.color.copy(m.userData.base).multiplyScalar(0.25 + 0.75 * d));
+    gBeamMat.uniforms.uColor.value.setRGB(0.42 * d, 0.36 * d, 0.3 * d); gBeamMat.uniforms.uTime.value = t;
+    // l'écran : la vidéo joue seulement quand on est au drive-in
+    if (!gVideo) { if (w.view === 'cinema' || w.trip) drawGLeader(t); }
+    else { const on = w.view === 'cinema' || (w.trip && w.trip.to === 'cinema'); if (on && gVideo.paused) gVideo.play().catch(() => {}); if (!on && !gVideo.paused) gVideo.pause(); }
+    gpFlag.rotation.y = Math.sin(t * 2.2) * 0.25;
+    const hovT = hovered && hovered.frame === gpCard ? 1 : 0;
+    standee.rotation.z = Math.sin(t * 1.1) * 0.012 + hovT * Math.sin(t * 9) * 0.02;
+    gpBubble.visible = !(window.GPTalk && window.GPTalk.isOpen());
+    gpBubble.position.y = SGH + 0.3 + Math.sin(t * 2.4) * 0.04;
+    gardenLife(t, dt);
+  }
+  {
+    const life0 = W_GP.life;
+    W_GP.life = function (t, dt) { life0.call(this, t, dt); gpCinemaLife(t, dt); };
+  }
 
   // ===== Leila : la house partyRoom anglaise =====
   const PO = V(40, -30, 0);
@@ -2909,7 +3355,7 @@ window.Booth = (() => {
     leak.intensity = 3 + Math.random() * 1.5;
     lensGlow.material.color.setScalar(2 + Math.random() * 0.5);
   };
-  W_LE.video = () => video;
+  W_LE.video = () => video; W_LE.cinemaView = 'projection';
   W_LE.currentVideo = () => sheetScreen.userData.im;
   W_LE.nextVideo = () => setVideo(vIdx + 1);
 
@@ -2956,7 +3402,7 @@ window.Booth = (() => {
     const dist = Math.max(hh / 2 / tn, ww / 2 / (tn * camera.aspect), 0.6); zDist = dist;
     p.copy(t).addScaledVector(zN, dist);
   }
-  function focusFrame(mesh) { frameFocus = mesh; if (mesh) frameLast = mesh; dragYaw = dragPitch = 0; document.body.classList.toggle('zoomed', !!mesh); window.LaboPanel.zoomInfo(mesh && mesh.userData.im); requestRender(); }
+  function focusFrame(mesh) { if (!(mesh && mesh.userData.talk) && window.GPTalk) window.GPTalk.close(); frameFocus = mesh; if (mesh) frameLast = mesh; dragYaw = dragPitch = 0; document.body.classList.toggle('zoomed', !!mesh); window.LaboPanel.zoomInfo(mesh && mesh.userData.im); requestRender(); }
   const fogBase = { c: scene.fog.color.clone(), d: scene.fog.density };
   window.LaboWorld = true;
   function finishExit() { window.LaboPanel.setVideoBar(null); if (activeWorld && activeWorld.views) { activeWorld.view = activeWorld.baseView; activeWorld.trip = null; activeWorld.navShown = false; activeWorld.exitAfter = false; } window.LaboPanel.setNav(null); frameFocus = null; frameT = 0; document.body.classList.remove('zoomed'); window.LaboPanel.zoomInfo(null); activeWorld = null; pendingWorld = null; focusSpot = null; focusGoal = 0; gpHold = false; dragYaw = dragPitch = 0; }
@@ -2972,6 +3418,7 @@ window.Booth = (() => {
   }
   function exitWorld() {
     if (!activeWorld) return;
+    if (window.GPTalk) window.GPTalk.close();
     window.LaboPanel.setNav(null);
     if (activeWorld.views && worldT === 1 && !reduced && !pendingWorld && (activeWorld.trip || activeWorld.view !== activeWorld.baseView)) { activeWorld.exitAfter = true; focusFrame(null); if (!activeWorld.trip) goView(activeWorld.baseView); return; }
     frameFocus = null; document.body.classList.remove('zoomed');
@@ -3027,9 +3474,9 @@ window.Booth = (() => {
   }
   function refreshVideoBar() {
     const w = activeWorld;
-    const on = w === W_LE && worldT >= 1 && worldGoal === 1 && !w.trip && w.view === 'projection' && W_LE.video && W_LE.video();
+    const on = w && w.cinemaView && worldT >= 1 && worldGoal === 1 && !w.trip && w.view === w.cinemaView && w.video && w.video();
     if (!on) { window.LaboPanel.setVideoBar(null); return; }
-    const im = W_LE.currentVideo(); window.LaboPanel.setVideoBar(Object.assign({ muted: W_LE.video().muted }, im));
+    const im = w.currentVideo(); window.LaboPanel.setVideoBar(Object.assign({ muted: w.video().muted }, im));
   }
   window.LaboView.refreshBar = refreshVideoBar;
   function navUpdate() {
@@ -3049,9 +3496,10 @@ window.Booth = (() => {
   window.LaboView.goView = goView;
   window.LaboView.toggleDark = on => setDark(on === undefined ? !darkGoal : on);
   window.LaboView.darkState = () => ({ dark, darkGoal, found: foundCount, total: secrets.length, secrets: secrets.map(x => [x.id, x.found]) });
-  window.LaboView.nextVideo = () => W_LE.nextVideo && W_LE.nextVideo();
-  window.LaboView.videoMuted = () => { const v = W_LE.video && W_LE.video(); return !v || v.muted; };
-  window.LaboView.toggleSound = () => { const v = W_LE.video && W_LE.video(); if (!v) return true; v.muted = !v.muted; if (v.paused) v.play().catch(() => {}); return v.muted; };
+  const cinemaWorld = () => (activeWorld && activeWorld.video ? activeWorld : W_LE);
+  window.LaboView.nextVideo = () => { const w = cinemaWorld(); if (w.nextVideo) w.nextVideo(); };
+  window.LaboView.videoMuted = () => { const w = cinemaWorld(), v = w.video && w.video(); return !v || v.muted; };
+  window.LaboView.toggleSound = () => { const w = cinemaWorld(), v = w.video && w.video(); if (!v) return true; v.muted = !v.muted; if (v.paused) v.play().catch(() => {}); return v.muted; };
   window.LaboView.state = () => ({ world: activeWorld && activeWorld.id, worldT, frameT, zoomed: !!frameFocus });
   window.LaboView.unzoom = () => { if (activeWorld && frameFocus) { focusFrame(null); return true; } return false; };
 
