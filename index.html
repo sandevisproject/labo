@@ -220,6 +220,71 @@ body.dark #scene{cursor:none}
 .rw-x:focus-visible{outline:2px solid #ffe14d}
 @media (max-width:640px){body.dark .mark{opacity:0;visibility:hidden}}
 @media (prefers-reduced-motion:reduce){.secrettoast{transition:none}}
+.boothcta{display:grid;gap:12px;margin-bottom:22px;padding:22px 20px;border-radius:16px;border:1px solid rgba(255,180,102,.45);
+  background:radial-gradient(120% 140% at 0% 0%,rgba(196,35,28,.32),rgba(40,20,12,.5) 60%),rgba(20,13,9,.6);box-shadow:0 0 40px rgba(255,120,50,.12)}
+.boothcta h3{margin:0;font:400 1.9rem/1 var(--serif);font-style:italic;color:#fff4e6}
+.boothcta p{margin:0;color:#e0d2c3;font-weight:300;line-height:1.5}
+.boothcta .btn{justify-self:start;padding:13px 18px;border-color:rgba(255,180,102,.7);background:linear-gradient(180deg,rgba(255,150,80,.4),rgba(140,40,20,.3))}
+.booth{position:fixed;inset:0;z-index:20;display:flex;background:#0d0705;color:var(--ink);overflow:auto}
+.b-curtain{position:fixed;inset:0;pointer-events:none;background:
+  repeating-linear-gradient(90deg,rgba(0,0,0,.35) 0 18px,rgba(255,255,255,.03) 18px 26px,rgba(0,0,0,.2) 26px 44px),
+  linear-gradient(90deg,#5a0e0b 0%,#2a0806 22%,#120605 50%,#2a0806 78%,#5a0e0b 100%)}
+.b-inner{position:relative;margin:auto;width:min(980px,100%);display:grid;gap:16px;
+  padding:calc(env(safe-area-inset-top,0px) + 20px) max(16px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 20px) max(16px,env(safe-area-inset-left,0px))}
+.b-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.b-head h2{margin:8px 0 0;font:400 clamp(1.8rem,5vw,2.8rem)/1 var(--serif);font-style:italic;color:#fff4e6}
+.b-close span{font-size:1.2rem;line-height:.6}
+.b-stage{display:grid;place-items:center}
+.b-screen{position:relative;width:100%;aspect-ratio:4/3;max-height:62vh;border-radius:18px;overflow:hidden;background:#000;
+  border:1px solid rgba(255,180,102,.35);box-shadow:0 0 0 8px rgba(0,0,0,.45),0 0 60px rgba(255,120,50,.15)}
+.booth[data-state="done"] .b-screen{display:none}
+.b-screen video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.booth[data-state="intro"] video{opacity:0}
+.booth[data-filter="labo"] video{filter:sepia(.32) saturate(1.2) contrast(1.1) brightness(1.05)}
+.booth[data-filter="nb"] video{filter:grayscale(1) contrast(1.28)}
+.booth[data-filter="neon"] video{filter:grayscale(1) contrast(1.3)}
+.b-tint{position:absolute;inset:0;pointer-events:none;opacity:0;mix-blend-mode:color;background:linear-gradient(160deg,#ff46aa,#78f0ff)}
+.booth[data-filter="neon"]:not([data-state="intro"]) .b-tint{opacity:1}
+.b-screen::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(90% 90% at 50% 50%,transparent 55%,rgba(0,0,0,.5))}
+.b-msg{position:absolute;inset:0;display:grid;place-content:center;gap:10px;text-align:center;padding:24px;max-width:34rem;margin:auto;color:#e9dccd;font-weight:300;line-height:1.5;z-index:2}
+.b-msg strong{display:block;font:400 1.7rem/1.1 var(--serif);font-style:italic;color:#fff4e6}
+.b-msg a{color:var(--amber)}
+.b-count{position:absolute;inset:0;display:grid;place-items:center;font:300 clamp(6rem,22vw,13rem)/1 var(--display);color:#fff;text-shadow:0 0 40px rgba(255,170,90,.8);pointer-events:none;z-index:3}
+.b-count.tick{animation:bTick .75s ease-out}
+@keyframes bTick{from{transform:scale(1.35);opacity:0}25%{opacity:1}to{transform:scale(.92);opacity:.85}}
+.b-shotn{position:absolute;left:16px;top:14px;font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:#fff;text-shadow:0 1px 6px #000;z-index:3}
+.b-flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:4}
+.b-flash.go{animation:bFlash .55s ease-out}
+@keyframes bFlash{from{opacity:1}to{opacity:0}}
+.b-result{display:grid;place-items:center}
+.b-result img{display:block;max-height:64vh;max-width:100%;width:auto;border-radius:6px;box-shadow:0 18px 50px rgba(0,0,0,.6);transform:rotate(-1.5deg)}
+.b-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px}
+.b-filters{display:flex;gap:6px;padding:4px;border-radius:999px;border:1px solid var(--hair);background:rgba(0,0,0,.35)}
+.b-filter{cursor:pointer;font:500 .8rem/1 var(--display);color:var(--muted);background:none;border:0;padding:10px 14px;border-radius:999px}
+.b-filter[aria-checked="true"]{color:#1a0f08;background:var(--amber)}
+.b-filter:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.booth[data-state="shooting"] .b-filters,.booth[data-state="done"] .b-filters{opacity:.35;pointer-events:none}
+.b-dots{display:flex;gap:8px}
+.b-dots span{width:12px;height:12px;border-radius:50%;border:1px solid rgba(255,200,150,.5)}
+.b-dots span.on{background:var(--amber);box-shadow:0 0 10px var(--amber);border-color:var(--amber)}
+.booth[data-state="intro"] .b-dots{visibility:hidden}
+.b-actions{display:flex;flex-wrap:wrap;gap:8px}
+.b-main{padding:14px 20px;font-size:.9rem;border-color:rgba(255,180,102,.75);background:linear-gradient(180deg,rgba(255,150,80,.45),rgba(140,40,20,.35))}
+#bStart,#bShoot,#bSave,#bAgain{display:none}
+.booth[data-state="intro"] #bStart,.booth[data-state="ready"] #bShoot,.booth[data-state="done"] #bSave,.booth[data-state="done"] #bAgain{display:inline-flex}
+.booth[data-state="done"] #bShare:not([hidden]){display:inline-flex}
+#bShare{display:none}
+.b-note{margin:0;font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:center}
+body.booth-open{overflow:hidden}
+.booth[hidden],.reward[hidden],.secretbar[hidden]{display:none}
+@media (max-width:640px){
+  .b-screen{aspect-ratio:3/4;max-height:58vh}
+  .b-bar{justify-content:center}
+  .b-actions{width:100%;justify-content:center}
+  .b-main{flex:1 1 auto;justify-content:center}
+  .b-result img{max-height:56vh}
+}
+@media (prefers-reduced-motion:reduce){.b-count.tick{animation:none}.b-flash.go{animation:bFlashSoft .4s ease-out}@keyframes bFlashSoft{from{opacity:.45}to{opacity:0}}}
 .worldui{position:fixed;inset:0;z-index:4;pointer-events:none;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;opacity:0;transition:opacity .4s;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:calc(env(safe-area-inset-top,0px) + 20px) calc(env(safe-area-inset-bottom,0px) + 26px)}
 .worldui.show{opacity:1;transition:opacity .9s 2.6s}
@@ -327,6 +392,43 @@ body.in-world .top,body.in-world .ctl-row,body.in-world .hud::before{opacity:0;v
   </div>
 </div>
 
+<div class="booth" id="booth" role="dialog" aria-modal="true" aria-labelledby="bTitle" data-state="intro" data-filter="labo" hidden>
+  <div class="b-curtain" aria-hidden="true"></div>
+  <div class="b-inner">
+    <header class="b-head">
+      <div><div class="eyebrow">Photomathon · la cabine du labo</div><h2 id="bTitle">Souris, c’est dans la boîte.</h2></div>
+      <button class="btn b-close" id="bClose" type="button" aria-label="Sortir de la cabine"><span aria-hidden="true">×</span> Sortir</button>
+    </header>
+    <div class="b-stage">
+      <div class="b-screen">
+        <video id="bVideo" playsinline muted autoplay></video>
+        <div class="b-tint" aria-hidden="true"></div>
+        <div class="b-count" id="bCount" aria-live="assertive"></div>
+        <div class="b-msg" id="bMsg"></div>
+        <div class="b-shotn" id="bShotN" aria-live="polite"></div>
+        <div class="b-flash" id="bFlash" aria-hidden="true"></div>
+      </div>
+      <div class="b-result" id="bResult" hidden><img id="bStrip" alt="Ta bande de 4 photos souvenir, marquée « J’étais au labo de San »."></div>
+    </div>
+    <div class="b-bar">
+      <div class="b-filters" role="radiogroup" aria-label="Filtre">
+        <button class="b-filter" type="button" role="radio" data-f="labo" aria-checked="true">Labo</button>
+        <button class="b-filter" type="button" role="radio" data-f="nb" aria-checked="false">Noir &amp; blanc</button>
+        <button class="b-filter" type="button" role="radio" data-f="neon" aria-checked="false">Néon</button>
+      </div>
+      <div class="b-dots" id="bDots" aria-hidden="true"></div>
+      <div class="b-actions">
+        <button class="btn b-main" id="bStart" type="button">Allumer la caméra</button>
+        <button class="btn b-main" id="bShoot" type="button">Prendre les 4 photos</button>
+        <button class="btn b-main" id="bSave" type="button">Télécharger ma bande <span aria-hidden="true">↓</span></button>
+        <button class="btn" id="bShare" type="button" hidden>Partager</button>
+        <button class="btn" id="bAgain" type="button">Recommencer</button>
+      </div>
+    </div>
+    <p class="b-note">Tes photos restent sur ton appareil : rien n’est envoyé, rien n’est gardé.</p>
+  </div>
+</div>
+
 <aside class="panel" id="panel" role="dialog" aria-labelledby="pTitle" aria-hidden="true">
   <div class="panel-inner">
     <button class="btn back" id="pClose" type="button"><span aria-hidden="true">←</span> Retour au labo</button>
@@ -386,7 +488,7 @@ window.LaboPanel = (() => {
         { src: 'assets/leila/footballeur.mp4', w: 1920, h: 1080, kind: 'Teaser', title: 'Footballeur' }
       ]
     },
-    'photomathon': { eyebrow: 'Projet 03', title: 'Photomathon', sub: 'Réalisations graphiques', images: [] },
+    'photomathon': { eyebrow: 'Projet 03', title: 'Photomathon', sub: 'Réalisations graphiques', images: [], booth: true },
     'setup': {
       eyebrow: 'Atelier', title: 'Mon setup', sub: 'Le matériel avec lequel je photographie et je filme.',
       list: [
@@ -412,6 +514,12 @@ window.LaboPanel = (() => {
     $('pTitle').textContent = p.title;
     $('pKind').textContent = p.sub;
     body.textContent = '';
+    if (p.booth) {
+      const cta = el('section', 'boothcta');
+      const go = el('button', 'btn', 'Entrer dans la cabine →'); go.type = 'button'; go.addEventListener('click', () => window.Booth && window.Booth.open());
+      cta.append(el('div', 'eyebrow', 'Essaie-le'), el('h3', '', 'Le photomaton du labo'), el('p', '', 'Allume ta caméra, prends 4 photos et repars avec ta bande souvenir « J’étais au labo de San ».'), go);
+      body.append(cta);
+    }
     if (p.list) {
       const ul = el('ul', 'list');
       p.list.forEach(([name, note], i) => {
@@ -577,6 +685,168 @@ window.LaboPanel = (() => {
   addEventListener('keydown', e => { if (e.key === 'Escape') closeReward(); });
   $('lightBtn').addEventListener('click', () => window.LaboView && window.LaboView.toggleDark && window.LaboView.toggleDark());
   return { setDark, secretFound, setVideoBar, setNav, zoomInfo, open, close, current: () => current, onChange: f => listeners.push(f), project: id => PROJECTS[id], showImage: im => openLightbox(im, document.activeElement) };
+})();
+</script>
+<script>
+/* Le photomaton du labo : 4 photos avec la caméra du visiteur, une bande souvenir à garder. Rien ne quitte l'appareil. */
+window.Booth = (() => {
+  const $ = id => document.getElementById(id);
+  const root = $('booth'), video = $('bVideo'), count = $('bCount'), msg = $('bMsg'), flash = $('bFlash');
+  const startBtn = $('bStart'), shootBtn = $('bShoot'), saveBtn = $('bSave'), shareBtn = $('bShare'), againBtn = $('bAgain');
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const SITE = 'https://sandevisproject.github.io/labo/#photomathon';
+  let stream = null, filter = 'labo', shots = [], busy = false, stripBlob = null, from = null, audio = null, cancel = false;
+  const N = 4, PW = 1080, PH = 810;
+
+  const FILTERS = {
+    labo: (r, g, b) => { r = r * 1.1 + 14; g = g * 1.0 + 6; b = b * 0.82; return con(r, g, b, 1.12); },
+    nb: (r, g, b) => { const l = 0.3 * r + 0.59 * g + 0.11 * b; return con(l, l, l, 1.28); },
+    neon: (r, g, b) => {
+      let l = (0.3 * r + 0.59 * g + 0.11 * b) / 255; l = Math.min(1, Math.max(0, (l - 0.5) * 1.3 + 0.5));
+      // dégradé violet nuit → rose → cyan
+      const s = [[34, 8, 52], [255, 70, 170], [120, 240, 255]];
+      const k = l < 0.55 ? l / 0.55 : (l - 0.55) / 0.45, a = l < 0.55 ? s[0] : s[1], c = l < 0.55 ? s[1] : s[2];
+      return [a[0] + (c[0] - a[0]) * k, a[1] + (c[1] - a[1]) * k, a[2] + (c[2] - a[2]) * k];
+    }
+  };
+  function con(r, g, b, k) { return [(r - 128) * k + 128, (g - 128) * k + 128, (b - 128) * k + 128]; }
+  function setFilter(f) {
+    filter = f; root.dataset.filter = f;
+    root.querySelectorAll('.b-filter').forEach(b => b.setAttribute('aria-checked', b.dataset.f === f ? 'true' : 'false'));
+  }
+  root.querySelectorAll('.b-filter').forEach(b => b.addEventListener('click', () => { if (!busy) setFilter(b.dataset.f); }));
+
+  function state(s) { root.dataset.state = s; }
+  function say(html) { msg.innerHTML = html; msg.hidden = !html; }
+
+  function open() {
+    from = document.activeElement; root.hidden = false; document.body.classList.add('booth-open');
+    stripBlob = null; shots = []; renderDots(); $('bResult').hidden = true; video.hidden = false;
+    state('intro'); say('<strong>Bienvenue dans la cabine.</strong>Allume ta caméra, choisis un filtre, et la cabine prend 4 photos. Tu repars avec ta bande souvenir.');
+    setTimeout(() => startBtn.focus(), 50);
+  }
+  function close() {
+    cancel = true; stop(); root.hidden = true; document.body.classList.remove('booth-open'); busy = false;
+    if (from && from.focus) from.focus();
+  }
+  function stop() { if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; } video.srcObject = null; }
+
+  async function camera() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return fail('none');
+    say('<strong>On allume la caméra…</strong>Ton navigateur va te demander l’autorisation.');
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 960 } }, audio: false });
+    } catch (e) { return fail(e && e.name); }
+    video.srcObject = stream; await video.play().catch(() => {});
+    say(''); state('ready'); shootBtn.focus();
+  }
+  function fail(name) {
+    state('intro');
+    const link = '<a href="' + SITE + '" target="_blank" rel="noopener">ouvre le labo sur son site</a>';
+    if (name === 'NotAllowedError' || name === 'SecurityError') say('<strong>La caméra est bloquée.</strong>Autorise la caméra pour ce site dans ton navigateur, puis réessaie. Si ça bloque encore, ' + link + '.');
+    else if (name === 'NotFoundError' || name === 'OverconstrainedError') say('<strong>Aucune caméra trouvée.</strong>Branche une webcam ou essaie depuis ton téléphone.');
+    else if (name === 'NotReadableError') say('<strong>La caméra est déjà utilisée.</strong>Ferme l’appli qui l’utilise (visio, appareil photo), puis réessaie.');
+    else say('<strong>La caméra ne marche pas ici.</strong>Pour prendre tes photos, ' + link + '.');
+  }
+
+  function renderDots() { $('bDots').innerHTML = Array.from({ length: N }, (_, i) => '<span class="' + (i < shots.length ? 'on' : '') + '"></span>').join(''); }
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  function click() {
+    try {
+      audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+      const t = audio.currentTime, len = 0.09, buf = audio.createBuffer(1, audio.sampleRate * len, audio.sampleRate), d = buf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 3);
+      const src = audio.createBufferSource(), g = audio.createGain(); src.buffer = buf; g.gain.value = 0.35; src.connect(g).connect(audio.destination); src.start(t);
+    } catch (e) {}
+  }
+  function grab() {
+    const vw = video.videoWidth, vh = video.videoHeight; if (!vw) return null;
+    const c = document.createElement('canvas'); c.width = PW; c.height = PH; const g = c.getContext('2d');
+    const s = Math.max(PW / vw, PH / vh), w = vw * s, h = vh * s;
+    g.drawImage(video, (PW - w) / 2, (PH - h) / 2, w, h);   // l'aperçu est en miroir, la photo est à l'endroit
+    const im = g.getImageData(0, 0, PW, PH), p = im.data, f = FILTERS[filter];
+    for (let i = 0; i < p.length; i += 4) {
+      const o = f(p[i], p[i + 1], p[i + 2]), n = (Math.random() - 0.5) * 18;
+      p[i] = o[0] + n; p[i + 1] = o[1] + n; p[i + 2] = o[2] + n;
+    }
+    g.putImageData(im, 0, 0);
+    const v = g.createRadialGradient(PW / 2, PH / 2, PH * 0.35, PW / 2, PH / 2, PW * 0.72);
+    v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,0.42)'); g.fillStyle = v; g.fillRect(0, 0, PW, PH);
+    return c;
+  }
+  async function shoot() {
+    if (busy || !stream) return;
+    busy = true; cancel = false; shots = []; renderDots(); state('shooting'); say('');
+    for (let i = 0; i < N; i++) {
+      $('bShotN').textContent = 'Photo ' + (i + 1) + ' sur ' + N;
+      for (let k = 3; k > 0; k--) {
+        count.textContent = k; count.classList.remove('tick'); void count.offsetWidth; count.classList.add('tick');
+        await wait(i === 0 ? 1000 : 750); if (cancel) return;
+      }
+      count.textContent = '';
+      const c = grab(); if (!c) { busy = false; return fail(''); }
+      click(); flash.classList.remove('go'); void flash.offsetWidth; flash.classList.add('go');
+      shots.push(c); renderDots();
+      await wait(700); if (cancel) return;
+    }
+    $('bShotN').textContent = '';
+    await compose(); busy = false;
+  }
+
+  async function compose() {
+    const M = 60, G = 34, FOOT = 330, W = PW + M * 2, H = M + N * PH + (N - 1) * G + M * 0.6 + FOOT;
+    const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
+    g.fillStyle = '#efe6d6'; g.fillRect(0, 0, W, H);
+    for (let i = 0; i < 9000; i++) { g.fillStyle = Math.random() < 0.5 ? 'rgba(255,255,255,.18)' : 'rgba(80,60,40,.08)'; g.fillRect(Math.random() * W, Math.random() * H, 2, 2); }
+    shots.forEach((s, i) => { const y = M + i * (PH + G); g.fillStyle = '#1a130d'; g.fillRect(M - 6, y - 6, PW + 12, PH + 12); g.drawImage(s, M, y); });
+    const fy = M + N * PH + (N - 1) * G + M * 0.6;
+    if (document.fonts && document.fonts.load) await Promise.all(['italic 400 120px "Instrument Serif"', '500 40px "Geist Mono"'].map(f => document.fonts.load(f))).catch(() => {});
+    // éclair du labo
+    g.save(); g.translate(W / 2, fy + 58); g.scale(3.4, 3.4); g.translate(-12, -12);
+    g.fillStyle = '#e07b2c'; g.fill(new Path2D('M13.5 3.5 8.5 12.5h4l-2 8 5.5-10h-4l1.5-7Z')); g.restore();
+    g.fillStyle = '#1a130d'; g.textAlign = 'center';
+    g.font = 'italic 400 104px "Instrument Serif", Georgia, serif'; g.fillText('J’étais au labo de San', W / 2, fy + 190);
+    const d = new Date(), date = d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+    g.font = '500 30px "Geist Mono", ui-monospace, monospace'; g.fillStyle = '#7a5a3c';
+    g.fillText(('Photomathon · sous-sol · ' + date).toUpperCase(), W / 2, fy + 262);
+    const url = await new Promise(r => c.toBlob(b => r(b), 'image/jpeg', 0.9));
+    stripBlob = url;
+    const img = $('bStrip'); if (img.dataset.url) URL.revokeObjectURL(img.dataset.url);
+    img.dataset.url = URL.createObjectURL(url); img.src = img.dataset.url;
+    stop(); video.hidden = true; $('bResult').hidden = false; state('done');
+    shareBtn.hidden = !(navigator.canShare && navigator.canShare({ files: [new File([url], 'labo-de-san.jpg', { type: 'image/jpeg' })] }));
+    say(''); saveBtn.focus();
+  }
+  const fileName = () => 'photomathon-labo-de-san-' + new Date().toISOString().slice(0, 10) + '.jpg';
+  async function save() {
+    if (!stripBlob) return;
+    let dl = null;
+    try { dl = window.claude && window.claude.use ? await window.claude.use('downloads') : null; } catch (e) { dl = null; }
+    if (dl) { try { await dl.save({ filename: fileName(), data: stripBlob }); } catch (e) { if (e && e.code !== 'declined') say('<strong>Le téléchargement n’a pas marché ici.</strong>Fais un appui long ou un clic droit sur la bande pour l’enregistrer.'); } return; }
+    const a = document.createElement('a'); a.href = $('bStrip').dataset.url; a.download = fileName(); document.body.append(a); a.click(); a.remove();
+  }
+  async function share() {
+    if (!stripBlob) return;
+    const file = new File([stripBlob], fileName(), { type: 'image/jpeg' });
+    try { await navigator.share({ files: [file], title: 'Le labo de San', text: 'J’étais au labo de San' }); } catch (e) {}
+  }
+
+  startBtn.addEventListener('click', camera);
+  shootBtn.addEventListener('click', shoot);
+  saveBtn.addEventListener('click', save);
+  shareBtn.addEventListener('click', share);
+  againBtn.addEventListener('click', () => { open(); camera(); });
+  $('bClose').addEventListener('click', close);
+  root.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { e.stopPropagation(); close(); }
+    if (e.key === 'Tab') { // on reste dans la cabine
+      const f = [...root.querySelectorAll('button:not([hidden]),a[href]')].filter(x => x.offsetParent !== null);
+      if (!f.length) return; const a = f[0], z = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === a) { e.preventDefault(); z.focus(); } else if (!e.shiftKey && document.activeElement === z) { e.preventDefault(); a.focus(); }
+    }
+  });
+  setFilter('labo');
+  return { open, close, isOpen: () => !root.hidden };
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
