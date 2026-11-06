@@ -211,6 +211,16 @@ body.zoomed .wcap{opacity:0}
 .wcard strong{font-weight:400;font-size:1.5rem;letter-spacing:-.02em;line-height:1.1}
 .clink{border-color:rgba(255,180,102,.55);text-decoration:none}
 .cbtns{display:flex;flex-wrap:wrap;gap:8px}
+.wvid{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 26px);pointer-events:auto;display:flex;align-items:center;gap:18px;flex-wrap:wrap;justify-content:center;max-width:min(640px,calc(100% - 32px));padding:14px 16px 14px 20px;border-radius:16px;background:rgba(14,10,7,.76);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid var(--hair);box-shadow:0 10px 40px rgba(0,0,0,.45)}
+.vinfo{display:grid;gap:4px;min-width:0}
+.vinfo strong{font-weight:400;font-size:1.25rem;letter-spacing:-.02em}
+.vnote{font-family:var(--mono);font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.vnote a{color:var(--amber)}
+.vbtns{display:flex;gap:8px}
+.vskip{border-color:rgba(255,180,102,.65);background:linear-gradient(180deg,rgba(255,170,90,.32),rgba(110,55,20,.22))}
+body.vidbar .wcap,body.zoomed .wvid{opacity:0;visibility:hidden}
+@media (min-width:900px){.wvid{bottom:calc(env(safe-area-inset-bottom,0px) + 40px)}}
+@media (max-width:640px){.wvid{left:16px;right:16px;transform:none;max-width:none;justify-content:space-between;gap:12px}}
 @media (min-width:900px){.wcard{left:max(48px,env(safe-area-inset-left,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 40px)}}
 .wcap h2{margin:0;font-weight:300;font-size:clamp(2.2rem,6vw,4.4rem);line-height:.95;letter-spacing:-.04em;color:#fff}
 .wcap p{margin:0;font-family:var(--mono);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:#fff;opacity:.9}
@@ -294,6 +304,10 @@ body.in-world .top,body.in-world .ctl-row,body.in-world .hud::before{opacity:0;v
   <button class="btn" id="wBack" type="button"><span aria-hidden="true">←</span> Retour au labo</button>
   <div class="wcap"><div class="eyebrow" id="wEyebrow">Projet 01</div><h2 id="wTitle">Garçon Printemps</h2><p id="wHint">Clique sur un visuel pour l'agrandir</p></div>
   <nav class="wnav" id="wNav" aria-label="Lieux du monde" hidden></nav>
+  <div class="wvid" id="wVid" hidden>
+    <div class="vinfo"><div class="eyebrow" id="vKind">Teaser</div><strong id="vTitle">Footballeur</strong><span class="vnote">Qualité réduite pour le site · <span id="vHd">version HD sur Instagram</span></span></div>
+    <div class="vbtns"><button class="btn" id="vSound" type="button">Activer le son</button><button class="btn vskip" id="vSkip" type="button">Passer <span aria-hidden="true">→</span></button></div>
+  </div>
   <div class="wcard" id="wCard" hidden>
     <div class="eyebrow" id="cKind">Cover</div>
     <strong id="cTitle">Actrice</strong>
@@ -330,7 +344,7 @@ window.LaboPanel = (() => {
       ],
       videos: [
         { src: 'assets/leila/actrice.mp4', w: 640, h: 480, kind: 'Réel de communication', title: 'Actrice' },
-        { src: 'assets/leila/footballeur.mp4', w: 1280, h: 720, kind: 'Teaser', title: 'Footballeur' }
+        { src: 'assets/leila/footballeur.mp4', w: 1920, h: 1080, kind: 'Teaser', title: 'Footballeur' }
       ]
     },
     'photomathon': { eyebrow: 'Projet 03', title: 'Photomathon', sub: 'Réalisations graphiques', images: [] },
@@ -425,7 +439,7 @@ window.LaboPanel = (() => {
   function close() {
     if (!current) return;
     current = null;
-    worldUI.classList.remove('show'); worldUI.hidden = true; document.body.classList.remove('in-world'); $('wCard').hidden = true; $('wNav').hidden = true;
+    worldUI.classList.remove('show'); worldUI.hidden = true; document.body.classList.remove('in-world'); $('wCard').hidden = true; $('wNav').hidden = true; setVideoBar(null);
     clearTimeout(previewTimer); previewTimer = 0; skipBtn.hidden = true; document.body.classList.remove('previewing');
     panel.classList.remove('open'); panel.setAttribute('aria-hidden', 'true');
     document.body.classList.remove('project-open');
@@ -473,6 +487,19 @@ window.LaboPanel = (() => {
   }
   $('cNext').addEventListener('click', () => window.LaboView && window.LaboView.nextVideo());
   $('cSound').addEventListener('click', () => { const muted = window.LaboView.toggleSound(); $('cSound').textContent = muted ? 'Activer le son' : 'Couper le son'; });
+  function setVideoBar(v) {
+    const bar = $('wVid');
+    if (!v) { bar.hidden = true; document.body.classList.remove('vidbar'); return; }
+    $('vKind').textContent = v.kind || 'Vidéo';
+    $('vTitle').textContent = (v.title || '') + (v.playlist > 1 ? '  ·  ' + v.index + '/' + v.playlist : '');
+    const hd = $('vHd'); hd.textContent = '';
+    if (v.insta) { const a = el('a', '', 'version HD sur Instagram ↗'); a.href = v.insta; a.target = '_blank'; a.rel = 'noopener'; hd.append(a); } else hd.textContent = 'version HD sur Instagram';
+    $('vSkip').hidden = !(v.playlist > 1);
+    $('vSound').textContent = v.muted ? 'Activer le son' : 'Couper le son';
+    bar.hidden = false; document.body.classList.add('vidbar');
+  }
+  $('vSkip').addEventListener('click', () => window.LaboView && window.LaboView.nextVideo());
+  $('vSound').addEventListener('click', () => { const muted = window.LaboView.toggleSound(); $('vSound').textContent = muted ? 'Activer le son' : 'Couper le son'; });
   function zoomInfo(im) {
     const card = $('wCard');
     if (!im || !im.kind) { card.hidden = true; return; }
@@ -483,7 +510,7 @@ window.LaboPanel = (() => {
     if (im.video && im.playlist > 1) $('cTitle').textContent = (im.title || '') + '  ·  ' + im.index + '/' + im.playlist;
     card.hidden = false;
   }
-  return { setNav, zoomInfo, open, close, current: () => current, onChange: f => listeners.push(f), project: id => PROJECTS[id], showImage: im => openLightbox(im, document.activeElement) };
+  return { setVideoBar, setNav, zoomInfo, open, close, current: () => current, onChange: f => listeners.push(f), project: id => PROJECTS[id], showImage: im => openLightbox(im, document.activeElement) };
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
@@ -2284,6 +2311,7 @@ window.LaboPanel = (() => {
     const a = v.w / v.h; sheetScreen.scale.set(Math.min(1, a / (SW3 / SH3)), Math.min(1, (SW3 / SH3) / a), 1);
     sheetScreen.userData.im = Object.assign({ video: true, playlist: vids.length, index: vIdx + 1 }, v);
     if (!init && frameFocus === sheetScreen) window.LaboPanel.zoomInfo(sheetScreen.userData.im);
+    if (!init && window.LaboView.refreshBar) window.LaboView.refreshBar();
   }
   if (video) video.addEventListener('ended', () => setVideo(vIdx + 1));
   sheetScreen.userData.im = { kind: 'Vidéo', title: 'La vidéo arrive bientôt' };
@@ -2348,6 +2376,7 @@ window.LaboPanel = (() => {
     lensGlow.material.color.setScalar(2 + Math.random() * 0.5);
   };
   W_LE.video = () => video;
+  W_LE.currentVideo = () => sheetScreen.userData.im;
   W_LE.nextVideo = () => setVideo(vIdx + 1);
 
   W_LE.prepare = function (pos, tgt) {
@@ -2396,7 +2425,7 @@ window.LaboPanel = (() => {
   function focusFrame(mesh) { frameFocus = mesh; if (mesh) frameLast = mesh; dragYaw = dragPitch = 0; document.body.classList.toggle('zoomed', !!mesh); window.LaboPanel.zoomInfo(mesh && mesh.userData.im); requestRender(); }
   const fogBase = { c: scene.fog.color.clone(), d: scene.fog.density };
   window.LaboWorld = true;
-  function finishExit() { if (activeWorld && activeWorld.views) { activeWorld.view = activeWorld.baseView; activeWorld.trip = null; activeWorld.navShown = false; activeWorld.exitAfter = false; } window.LaboPanel.setNav(null); frameFocus = null; frameT = 0; document.body.classList.remove('zoomed'); window.LaboPanel.zoomInfo(null); activeWorld = null; pendingWorld = null; focusSpot = null; focusGoal = 0; gpHold = false; dragYaw = dragPitch = 0; }
+  function finishExit() { window.LaboPanel.setVideoBar(null); if (activeWorld && activeWorld.views) { activeWorld.view = activeWorld.baseView; activeWorld.trip = null; activeWorld.navShown = false; activeWorld.exitAfter = false; } window.LaboPanel.setNav(null); frameFocus = null; frameT = 0; document.body.classList.remove('zoomed'); window.LaboPanel.zoomInfo(null); activeWorld = null; pendingWorld = null; focusSpot = null; focusGoal = 0; gpHold = false; dragYaw = dragPitch = 0; }
   function enterWorld(id, s) {
     const w = worldsById[id];
     if (activeWorld && activeWorld !== w) { worldT = 0; worldGoal = 0; finishExit(); }
@@ -2462,7 +2491,15 @@ window.LaboPanel = (() => {
     if (w.trip) { const e = smooth(w.trip.k); w.trip.P.getPoint(e, p); w.trip.T.getPoint(e, t); }
     else { p.copy(w.views[w.view].pos); t.copy(w.views[w.view].tgt); }
   }
+  function refreshVideoBar() {
+    const w = activeWorld;
+    const on = w === W_LE && worldT >= 1 && worldGoal === 1 && !w.trip && w.view === 'projection' && W_LE.video && W_LE.video();
+    if (!on) { window.LaboPanel.setVideoBar(null); return; }
+    const im = W_LE.currentVideo(); window.LaboPanel.setVideoBar(Object.assign({ muted: W_LE.video().muted }, im));
+  }
+  window.LaboView.refreshBar = refreshVideoBar;
   function navUpdate() {
+    refreshVideoBar();
     const w = activeWorld;
     if (!w || !w.views || worldT < 1 || worldGoal < 1) { window.LaboPanel.setNav(null); return; }
     const cur = w.trip ? w.trip.to : w.view;
@@ -2470,7 +2507,7 @@ window.LaboPanel = (() => {
   }
   function goView(id) {
     const w = activeWorld; if (!w || !w.views || !w.views[id] || w.trip || w.view === id || worldT < 1) return;
-    focusFrame(null);
+    focusFrame(null); window.LaboPanel.setVideoBar(null);
     const a = w.views[w.view], b = w.views[id], via = w.routes[w.view + '>' + id] || [];
     w.trip = { P: new THREE.CatmullRomCurve3([a.pos, ...via.map(v => v.pos), b.pos]), T: new THREE.CatmullRomCurve3([a.tgt, ...via.map(v => v.tgt), b.tgt]), k: 0, to: id };
     w.visited[id] = true; dragYaw = dragPitch = 0; navUpdate(); requestRender();
