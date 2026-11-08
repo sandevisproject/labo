@@ -113,6 +113,9 @@ h1 .san{
 .chip.star{font-size:1rem;padding:13px 18px;border-color:rgba(255,200,120,.75);background:linear-gradient(180deg,rgba(255,170,80,.42),rgba(120,50,15,.32));box-shadow:0 0 22px rgba(255,150,60,.22),inset 0 1px 0 rgba(255,255,255,.18)}
 .lede strong{font-weight:500;color:#ffe2bd}
 .lede-egg{display:block;margin-top:.5em;font-style:italic;color:#ffd28a}
+.lockchip{display:inline-flex;align-items:center;gap:8px;border-color:#ffd21f;color:#17110c;background:#ffd21f;font-weight:600}
+.lockchip:hover{background:#ffe066;color:#17110c}
+.lockchip.open{background:linear-gradient(180deg,rgba(255,225,77,.3),rgba(110,80,10,.2));color:#ffe14d}
 .chip.quiet{border-color:rgba(255,200,150,.22);background:linear-gradient(180deg,rgba(255,220,190,.1),rgba(80,50,30,.08));box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
 .chip .num{font-family:var(--mono);font-size:.66rem;color:var(--amber)}
 .chip .go{color:var(--amber);transition:transform .25s}
@@ -213,6 +216,35 @@ body.dark #scene{cursor:none}
 .secrettoast{position:fixed;z-index:5;left:50%;top:calc(env(safe-area-inset-top,0px) + 74px);transform:translate(-50%,-6px);opacity:0;pointer-events:none;
   font:400 1.25rem/1.2 var(--serif);font-style:italic;color:#ffe14d;text-shadow:0 0 18px rgba(255,225,77,.6);transition:opacity .35s,transform .35s;white-space:nowrap}
 .secrettoast.show{opacity:1;transform:translate(-50%,0)}
+.eggpill{position:fixed;z-index:5;top:calc(env(safe-area-inset-top,0px) + 30px);left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:7px;height:38px;padding:0 13px 0 11px;border-radius:20px;border:1px solid rgba(255,225,77,.5);background:rgba(14,10,7,.84);color:#ffe14d;font:500 .9rem/1 var(--mono,'Geist Mono',monospace);cursor:pointer}
+.eggpill svg{width:15px;height:19px;display:block}
+.eggpill:focus-visible{outline:2px solid #ffe14d;outline-offset:2px}
+.eggpill.bump{animation:eggbump .55s cubic-bezier(.3,1.7,.5,1)}
+@keyframes eggbump{0%{transform:translateX(-50%) scale(1)}40%{transform:translateX(-50%) scale(1.3)}100%{transform:translateX(-50%) scale(1)}}
+@media (max-width:640px){.eggpill{top:calc(env(safe-area-inset-top,0px) + 12px);left:auto;right:16px;transform:none;height:34px}body.in-world .eggpill{right:72px}@keyframes eggbump{0%{transform:scale(1)}40%{transform:scale(1.3)}100%{transform:scale(1)}}}
+#secretBar{top:calc(env(safe-area-inset-top,0px) + 76px)}
+body:has(#secretBar:not([hidden])) .secrettoast{top:calc(env(safe-area-inset-top,0px) + 124px)}
+@media (max-width:640px){#secretBar{top:calc(env(safe-area-inset-top,0px) + 104px)}body:has(#secretBar:not([hidden])) .secrettoast{top:calc(env(safe-area-inset-top,0px) + 150px)}}
+.fwmsg{position:fixed;z-index:6;left:50%;top:12%;width:min(860px,90vw);transform:translateX(-50%);text-align:center;pointer-events:none;font:400 clamp(1.9rem,5.2vw,4rem)/1.12 var(--serif);font-style:italic;color:#fff8ea;text-shadow:0 2px 26px rgba(0,0,0,.85),0 0 40px rgba(255,180,90,.45);opacity:0;transition:opacity .8s}
+.fwmsg.show{opacity:1}
+@media (max-width:640px){.fwmsg{top:19%}}
+.eggpop{position:fixed;z-index:11;left:50%;top:21%;width:0;height:0;pointer-events:none;display:grid;place-items:center}
+.eggpop-in{position:absolute;display:grid;justify-items:center;gap:7px;width:min(320px,86vw);padding:16px 18px 15px;border-radius:18px;background:rgba(16,11,7,.92);border:1px solid rgba(255,225,77,.55);box-shadow:0 12px 44px rgba(0,0,0,.5);text-align:center;animation:eggcard 2.5s ease both}
+.eggpop-ic{color:#ffe14d;width:34px;height:42px;animation:egghop .7s cubic-bezier(.3,1.6,.5,1) both}
+.eggpop-ic svg{width:100%;height:100%;display:block}
+.eggpop-k{font:500 .68rem/1 var(--mono,'Geist Mono',monospace);letter-spacing:.16em;text-transform:uppercase;color:#ffe14d}
+.eggpop-t{font:400 1.45rem/1.1 var(--serif);font-style:italic;color:#fff4e6}
+.eggpop-n{font:500 .9rem/1 var(--mono,'Geist Mono',monospace);color:#ffe14d}
+.eggdot{position:absolute;width:7px;height:7px;border-radius:50%;background:var(--c);opacity:0;animation:eggdot 1s ease-out .12s both}
+@keyframes eggcard{0%{opacity:0;transform:translateY(10px) scale(.92)}9%{opacity:1;transform:translateY(0) scale(1)}84%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-8px) scale(.98)}}
+@keyframes egghop{0%{transform:scale(.3) rotate(-14deg)}60%{transform:scale(1.14) rotate(5deg)}100%{transform:scale(1) rotate(0)}}
+@keyframes eggdot{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--x),var(--y)) scale(.4)}}
+@media (prefers-reduced-motion:reduce){.eggpop-in{animation:eggfade 2.5s linear both}.eggpop-ic,.eggpill.bump{animation:none}.eggdot{display:none}@keyframes eggfade{0%,100%{opacity:0}8%,88%{opacity:1}}}
+.egg-list{list-style:none;margin:0;padding:0;display:grid;gap:9px;max-height:50vh;overflow:auto}
+.egg-list li{display:grid;grid-template-columns:20px 1fr;gap:9px;align-items:start;font-size:.97rem;line-height:1.35;color:#e9dccd;font-weight:300}
+.egg-list .m{color:#ffe14d;font-weight:500}
+.egg-list .todo{color:#a89a8a;font-style:italic}
+.rw-code{justify-self:start;padding:10px 16px;border-radius:10px;border:1px dashed rgba(255,225,77,.7);font:500 1.35rem/1 var(--mono,'Geist Mono',monospace);letter-spacing:.12em;color:#ffe14d;user-select:all}
 .reward{position:fixed;inset:0;z-index:12;display:grid;place-items:center;background:rgba(5,3,2,.72);padding:16px}
 .rw-card{position:relative;max-width:30rem;display:grid;gap:16px;padding:32px 28px 26px;border-radius:20px;background:linear-gradient(180deg,rgba(40,30,12,.96),rgba(16,11,7,.97));border:1px solid rgba(255,225,77,.45);box-shadow:0 0 60px rgba(255,225,77,.18)}
 .rw-card .eyebrow{color:#ffe14d}
@@ -413,6 +445,7 @@ body.in-world .top,body.in-world .ctl-row,body.in-world .hud::before{opacity:0;v
         <div class="group">
           <span class="plabel">Brian</span>
           <button class="chip quiet" type="button" data-project="setup">Mon bureau<span class="go" aria-hidden="true">→</span></button>
+          <button class="chip lockchip" id="lockChip" type="button" data-project="toit"><svg viewBox="0 0 20 24" width="14" height="17" aria-hidden="true"><path d="M5 11V7a5 5 0 0 1 10 0v4" fill="none" stroke="currentColor" stroke-width="2.6"/><rect x="2" y="10" width="16" height="13" rx="2.5" fill="currentColor"/></svg><span id="lockChipT">Dehors · 0/9</span></button>
         </div>
       </nav>
       <div class="carousel" id="carousel">
@@ -429,14 +462,26 @@ body.in-world .top,body.in-world .ctl-row,body.in-world .hud::before{opacity:0;v
   </footer>
 </div>
 
-<div class="secretbar" id="secretBar" hidden><span class="sb-k">Secrets trouvés</span><strong id="secretN">0/9</strong><button class="sb-go" id="secretGo" type="button" hidden>Lire le message <span aria-hidden="true">→</span></button></div>
+<div class="secretbar" id="secretBar" hidden><span class="sb-k">Graffitis trouvés</span><strong id="secretN">0/2</strong><button class="sb-go" id="secretGo" type="button" hidden>Lire le message <span aria-hidden="true">→</span></button></div>
 <div class="secrettoast" id="secretToast" role="status" aria-live="polite"></div>
+<button class="eggpill" id="eggPill" type="button" aria-label="Voir les easter eggs"><svg viewBox="0 0 24 30" aria-hidden="true"><path d="M12 1C6.5 1 2 11 2 18.5 2 25 6.5 29 12 29s10-4 10-10.500C22 11 17.500 1 12 1z" fill="currentColor"/><path d="M3.300 15l4.500-3 4.200 3 4.200-3 4.500 3" fill="none" stroke="#1a120c" stroke-width="1.800" stroke-linejoin="round"/></svg><span id="eggN">0/10</span></button>
+<div class="eggpop" id="eggPop" role="status" aria-live="polite"></div>
+<div class="fwmsg" id="fwMsg" role="status" aria-live="polite">Je te remercie du temps que tu as pris pour regarder mon site.</div>
+<div class="reward" id="eggList" role="dialog" aria-modal="true" aria-labelledby="eggListT" hidden>
+  <div class="rw-card">
+    <div class="eyebrow" id="eggListN">0 sur 10</div>
+    <h2 id="eggListT">La chasse aux easter eggs</h2>
+    <ul class="egg-list" id="eggItems"></ul>
+    <button class="rw-x" id="eggListX" type="button" aria-label="Fermer">×</button>
+  </div>
+</div>
 <div class="reward" id="reward" role="dialog" aria-modal="true" aria-labelledby="rwTitle" hidden>
   <div class="rw-card">
-    <div class="eyebrow" id="rwEb">9 secrets sur 9</div>
+    <div class="eyebrow" id="rwEb">10 easter eggs sur 10</div>
     <h2 id="rwTitle">T’as tout fouillé.</h2>
-    <p>T’as la dalle comme nous. Viens, on va tout déchirer ensemble.</p>
-    <div class="rw-btns"><a class="btn rw-go" href="https://www.instagram.com/brian.gldt/" target="_blank" rel="noopener">Écrire à Brian sur Instagram <span aria-hidden="true">↗</span></a><button class="btn" id="rwLight" type="button">Rallumer la lumière</button></div>
+    <p>Personne ne regarde un site comme ça par hasard. Envoie-moi ce code sur Insta, je te réponds en personne.</p>
+    <div class="rw-code">LABO-10</div>
+    <div class="rw-btns"><a class="btn rw-go" href="https://www.instagram.com/brian.gldt/" target="_blank" rel="noopener">Écrire à Brian sur Instagram <span aria-hidden="true">↗</span></a></div>
     <button class="rw-x" id="rwClose" type="button" aria-label="Fermer">×</button>
   </div>
 </div>
@@ -536,6 +581,67 @@ body.in-world .top,body.in-world .ctl-row,body.in-world .hud::before{opacity:0;v
 
 <script>
 /* Fiches : fonctionnent même sans la 3D */
+window.LaboEggs = (() => {
+  const EGGS = [
+    ['lampe', 'Le courant coupé', 'Quelque part, on peut éteindre tout le labo.'],
+    ['graffitis', 'Les messages dans le noir', 'Coupe le courant, et promène la lampe partout.'],
+    ['hamster', 'Le hamster', 'Quelqu’un fait tourner le labo. Va le déranger.'],
+    ['toit', 'Le toit', 'Trouve les 9 autres : le cadenas de la sortie tombera.'],
+    ['blanche', 'La salle blanche', 'Passe le rideau de la cabine.'],
+    ['fleurs', 'Le jeu des fleurs', 'Gagne les cinq manches dans le jardin.'],
+    ['tondeuse', 'La tondeuse', 'Demande à Garçon Printemps pourquoi il en a une.'],
+    ['pong', 'Trois gobelets', 'Mets-en trois dans une même partie, au garage.'],
+    ['skate', 'Leila', 'Parle à Leila, au fond du garage.'],
+    ['place', 'La place libre', 'Au bureau, un cadre t’attend.']
+  ];
+  const $ = id => document.getElementById(id), EGG_SVG = $('eggPill').querySelector('svg').outerHTML;
+  let found = [];
+  try { found = JSON.parse(localStorage.getItem('labo-eggs') || '[]').filter(id => EGGS.some(e => e[0] === id)); } catch (e) {}
+  const save = () => { try { localStorage.setItem('labo-eggs', JSON.stringify(found)); } catch (e) {} };
+  const total = EGGS.length;
+  const showN = () => { $('eggN').textContent = found.length + '/' + total; };
+  const others = () => found.filter(id => id !== 'toit').length, unlocked = () => others() >= 9;
+  const watchers = [];
+  const queue = []; let popping = false;
+  function pop(name, n, kicker) {
+    if (popping) { queue.push([name, n, kicker]); return; }
+    popping = true;
+    const box = $('eggPop'); box.textContent = '';
+    const card = document.createElement('div'); card.className = 'eggpop-in';
+    card.innerHTML = '<div class="eggpop-ic">' + EGG_SVG + '</div><div class="eggpop-k"></div>'; card.querySelector('.eggpop-k').textContent = kicker || 'Easter egg trouvé';
+    const t = document.createElement('div'); t.className = 'eggpop-t'; t.textContent = name; card.append(t);
+    const c = document.createElement('div'); c.className = 'eggpop-n'; c.textContent = typeof n === 'string' ? n : n + ' / ' + total; card.append(c);
+    box.append(card);
+    ['#ffe14d', '#ff4fa3', '#5fd4ff', '#7cff6b', '#ff8a3d'].forEach((col, j) => { for (let i = 0; i < 3; i++) { const d = document.createElement('i'); d.className = 'eggdot'; const a = (j * 3 + i) / 15 * Math.PI * 2, r = 120 + (i * 37) % 60; d.style.setProperty('--c', col); d.style.setProperty('--x', Math.cos(a) * r + 'px'); d.style.setProperty('--y', Math.sin(a) * r * 0.7 + 'px'); box.append(d); } });
+    const pill = $('eggPill'); pill.classList.remove('bump'); void pill.offsetWidth; pill.classList.add('bump'); showN();
+    setTimeout(() => { box.textContent = ''; popping = false; if (queue.length) { const q = queue.shift(); pop(q[0], q[1], q[2]); } }, 2500);
+  }
+  function find(id, silent) {
+    if (found.includes(id)) return false;
+    const e = EGGS.find(x => x[0] === id); if (!e) return false;
+    const was = unlocked(); found.push(id); save();
+    if (silent) showN(); else pop(e[1], found.length);
+    if (!was && unlocked() && !silent) pop('La sortie est ouverte', 'Va voir dehors…', 'Le cadenas est tombé');
+    watchers.forEach(f => f());
+    return true;
+  }
+  function openList() {
+    const ul = $('eggItems'); ul.textContent = '';
+    EGGS.forEach(([id, name, hint]) => { const li = document.createElement('li'), ok = found.includes(id), m = document.createElement('span'), t = document.createElement('span'); m.className = 'm'; m.textContent = ok ? '✓' : '?'; t.textContent = ok ? name : hint; if (!ok) t.className = 'todo'; li.append(m, t); ul.append(li); });
+    $('eggListN').textContent = found.length + ' sur ' + total;
+    const old = ul.parentNode.querySelector('.rw-code'); if (old) old.remove();
+    if (found.length >= total) { const c = document.createElement('div'); c.className = 'rw-code'; c.textContent = 'LABO-10'; ul.after(c); }
+    $('eggList').hidden = false; $('eggListX').focus();
+  }
+  const closeList = () => { if ($('eggList').hidden) return; $('eggList').hidden = true; $('eggPill').focus({ preventScroll: true }); };
+  $('eggPill').addEventListener('click', openList);
+  $('eggListX').addEventListener('click', closeList);
+  $('eggList').addEventListener('click', e => { if (e.target === $('eggList')) closeList(); });
+  addEventListener('keydown', e => { if (e.key === 'Escape') closeList(); });
+  showN();
+  return { find, count: () => found.length, total, others, unlocked, onChange: f => watchers.push(f), refuse() { if (window.LaboView && window.LaboView.lockShake) window.LaboView.lockShake(); openList(); } };
+})();
+const eggFind = (id, silent) => window.LaboEggs && window.LaboEggs.find(id, silent);
 window.LaboPanel = (() => {
   const PROJECTS = {
     'garcon-printemps': {
@@ -647,6 +753,11 @@ window.LaboPanel = (() => {
   }
   function open(id, opts) {
     const p = PROJECTS[id]; if (!p) return;
+    if (id === 'toit' && window.LaboEggs && !window.LaboEggs.unlocked()) {
+      if (location.hash === '#toit') { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {} }
+      if (!(opts && opts.instant)) window.LaboEggs.refuse();
+      return;
+    }
     if (p.world && window.LaboWorld) { if (current !== id) openWorld(id, p, opts); return; }
     const again = current === id;
     if (!again) { lastTrigger = (opts && opts.trigger) || lastTrigger || null; render(p); }
@@ -689,7 +800,7 @@ window.LaboPanel = (() => {
     const id = location.hash.slice(1);
     if (PROJECTS[id]) { if (id !== current) open(id); } else if (current) close();
   });
-  const CAROUSEL = [['garcon-printemps', 'Artiste', 'Garçon Printemps'], ['leila', 'Artiste', 'Leila'], ['setup', 'Brian', 'Mon bureau']];
+  const CAROUSEL = [['garcon-printemps', 'Artiste', 'Garçon Printemps'], ['leila', 'Artiste', 'Leila'], ['setup', 'Brian', 'Mon bureau'], ['toit', 'Dehors', 'Cadenas · 0/9']];
   let ci = 1;
   function showC(move) { const [id, eb, name] = CAROUSEL[ci]; $('cEb').textContent = eb; $('cName').textContent = name; if (move && window.LaboView) window.LaboView.look(id); }
   $('cPrev').addEventListener('click', () => { ci = (ci + CAROUSEL.length - 1) % CAROUSEL.length; showC(true); });
@@ -698,6 +809,8 @@ window.LaboPanel = (() => {
   listeners.push(id => { const k = CAROUSEL.findIndex(c => c[0] === id); if (k >= 0) { ci = k; showC(false); } });
   showC(false);
   if (matchMedia('(max-width: 640px)').matches) $('hintText').textContent = 'Flèches ou glisse pour regarder';
+  function lockUi() { const E = window.LaboEggs, n = E ? Math.min(9, E.others()) : 0, open = E && E.unlocked(); $('lockChipT').textContent = open ? 'Dehors, c’est ouvert →' : 'Dehors · ' + n + '/9'; $('lockChip').classList.toggle('open', !!open); CAROUSEL[3][2] = open ? 'Le toit' : 'Cadenas · ' + n + '/9'; showC(false); }
+  if (window.LaboEggs) { window.LaboEggs.onChange(lockUi); lockUi(); }
   const start = location.hash.slice(1);
   if (PROJECTS[start]) setTimeout(() => open(start, { instant: true }), 0);
   function setNav(items, hint) {
@@ -742,30 +855,28 @@ window.LaboPanel = (() => {
   let hintBefore = '', toastT = 0, rewardShown = false;
   function setDark(on, n, total) {
     const hint = $('hintText');
-    if (on) { hintBefore = hint.textContent; hint.textContent = tapScreen ? 'Glisse le doigt pour éclairer' : 'Promène la lampe pour trouver les secrets'; }
+    if (on) { hintBefore = hint.textContent; hint.textContent = tapScreen ? 'Glisse le doigt pour éclairer' : 'Promène la lampe pour trouver les graffitis'; }
     else if (hintBefore) hint.textContent = hintBefore;
     $('lightBtn').setAttribute('aria-pressed', on ? 'true' : 'false');
     $('lightBtn').setAttribute('aria-label', on ? 'Rallumer la lumière' : 'Éteindre la lumière'); $('lightBtn').title = $('lightBtn').getAttribute('aria-label');
     $('secretBar').hidden = !on; showCount(n, total);
     if (!on) closeReward();
   }
-  function showCount(n, total) { $('secretN').textContent = n + '/' + total; $('secretGo').hidden = n < total; $('rwEb').textContent = total + ' secrets sur ' + total; }
+  function showCount(n, total) { $('secretN').textContent = n + '/' + total; $('secretGo').hidden = true; }
   function secretFound(n, total) {
     showCount(n, total);
-    const t = $('secretToast'); t.textContent = n < total ? 'Secret trouvé · ' + n + '/' + total : 'Tous les secrets trouvés !';
+    const t = $('secretToast'); t.textContent = n < total ? 'Graffiti trouvé · ' + n + '/' + total : 'Tous les graffitis trouvés !';
     t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2200);
-    if (n >= total && !rewardShown) setTimeout(openReward, 1400);
   }
   let rewardFrom = null;
   function openReward() { rewardShown = true; rewardFrom = document.activeElement; $('reward').hidden = false; $('reward').querySelector('.rw-go').focus(); }
   function closeReward() { if ($('reward').hidden) return; $('reward').hidden = true; if (rewardFrom && rewardFrom.focus) rewardFrom.focus(); }
   $('secretGo').addEventListener('click', openReward);
   $('rwClose').addEventListener('click', closeReward);
-  $('rwLight').addEventListener('click', () => { closeReward(); window.LaboView && window.LaboView.toggleDark && window.LaboView.toggleDark(false); });
   $('reward').addEventListener('click', e => { if (e.target === $('reward')) closeReward(); });
   addEventListener('keydown', e => { if (e.key === 'Escape') closeReward(); });
   $('lightBtn').addEventListener('click', () => window.LaboView && window.LaboView.toggleDark && window.LaboView.toggleDark());
-  return { setDark, secretFound, setVideoBar, setNav, zoomInfo, open, close, current: () => current, onChange: f => listeners.push(f), project: id => PROJECTS[id], showImage: im => openLightbox(im, document.activeElement) };
+  return { openReward, setDark, secretFound, setVideoBar, setNav, zoomInfo, open, close, current: () => current, onChange: f => listeners.push(f), project: id => PROJECTS[id], showImage: im => openLightbox(im, document.activeElement) };
 })();
 </script>
 <script>
@@ -948,7 +1059,7 @@ window.GPTalk = (() => {
   const $ = id => document.getElementById(id);
   const root = $('talk'), text = $('talkText'), choices = $('talkChoices');
   const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const ASK = [['play', 'On joue avec tes fleurs ?'], ['who', 'C’est qui, Garçon Printemps ?'], ['mow', 'Pourquoi une tondeuse ?'], ['san', 'Tu connais Brian ?'], ['listen', 'Où je peux t’écouter ?']];
+  const ASK = [['play', 'On joue avec tes fleurs ?'], ['who', 'C’est qui, Garçon Printemps ?'], ['mow', 'Pourquoi t’as une tondeuse ?'], ['san', 'Tu connais Brian ?'], ['listen', 'Où je peux t’écouter ?']];
   const LINES = {
     invite: 'Hello, c’est Garçon Printemps !',
     start: 'Vas-y, demande-moi ce que tu veux.',
@@ -980,18 +1091,68 @@ window.GPTalk = (() => {
   function textNow(line) { clearInterval(typing); text.textContent = line; }
   function back() { say('Pas de souci. On rejoue quand tu veux.', () => menu()); }
   function bye() { asked = {}; say(LINES.bye, () => setTimeout(close, 1400)); }
-  function answer(k) { asked[k] = true; say(LINES[k], () => menu(k)); }
+  function answer(k) {
+    if (k === 'mow') {
+      if (!calm && window.LaboView && window.LaboView.gpMower) {
+        clearInterval(typing); choices.textContent = ''; root.hidden = true;
+        window.LaboView.gpMower(() => { eggFind('tondeuse'); if (!open) return; root.hidden = false; say(LINES.mow, () => menu('mow')); });
+        return;
+      }
+      eggFind('tondeuse');
+    }
+    asked[k] = true; say(LINES[k], () => menu(k)); }
   function start() { if (open) return; invite(); }
   function invite() {
     if (open && window.GPGarden && window.GPGarden.busy()) return;
     const b = window.GPGarden ? window.GPGarden.best() : 0;
     const rec = b >= 5 ? ' Tu as déjà gagné mon jeu.' : b > 0 ? ` Ton record : ${b} manche${b > 1 ? 's' : ''} sur 5.` : '';
-    show(LINES.invite + rec + ' Aujourd’hui, tu veux :', [['▶ Jouer avec mes fleurs', () => answer('play'), 'go'], ['Discuter avec moi', () => say(LINES.start, () => menu())]]);
+    show(LINES.invite + rec + ' Aujourd’hui, tu veux :', [['▶ Jouer avec mes fleurs', () => answer('play'), 'go'], ['Pourquoi t’as une tondeuse ?', () => answer('mow')], ['Discuter avec moi', () => say(LINES.start, () => menu())]]);
   }
-  function close() { if (!open) return; open = false; clearInterval(typing); if (window.GPGarden) window.GPGarden.stop(); root.hidden = true; document.body.classList.remove('talking'); if (window.LaboView && window.LaboView.unzoom) window.LaboView.unzoom(); }
+  function close() { if (!open) return; open = false; clearInterval(typing); if (window.LaboView && window.LaboView.gpMowerStop) window.LaboView.gpMowerStop(); if (window.GPGarden) window.GPGarden.stop(); root.hidden = true; document.body.classList.remove('talking'); if (window.LaboView && window.LaboView.unzoom) window.LaboView.unzoom(); }
   $('talkClose').addEventListener('click', close);
   root.addEventListener('keydown', e => { if (e.key === 'Escape') { e.stopPropagation(); close(); } });
   return { start, invite, close, show, text: textNow, back, bye, isOpen: () => open };
+})();
+
+/* Parler à Leila : même fenêtre que Garçon Printemps, il l'emprunte le temps de la discussion. */
+window.LeilaTalk = (() => {
+  const $ = id => document.getElementById(id);
+  const root = $('talk'), text = $('talkText'), choices = $('talkChoices'), av = root.querySelector('.talk-av'), eb = root.querySelector('.talk-head .eyebrow'), nm = $('talkName');
+  const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const G0 = { av: av.getAttribute('src'), eb: eb.textContent, nm: nm.textContent };
+  const ASK = [['face', 'Qu’est-ce qui t’est arrivé au visage ?'], ['who', 'C’est qui, Leila ?'], ['brian', 'Tu connais Brian ?'], ['listen', 'Où je peux t’écouter ?']];
+  const LINES = {
+    invite: 'Hello, c’est Leila. Aujourd’hui, tu veux :',
+    talk: 'Vas-y, je t’écoute.',
+    face: 'Je suis tombé du skate. Mais je suis venu quand même.',
+    who: 'Je suis artiste, compositeur et interprète. J’explore la pop et l’électro pour faire des sons.',
+    brian: 'C’est mon frère. C’est lui qui a fait mes visuels.',
+    listen: 'Sur toutes les plateformes. Et mes vidéos passent dans la salle de projection, derrière la porte rose.',
+    bye: 'Allez, fais gaffe aux escaliers.'
+  };
+  let open = false, typing = 0, asked = {};
+  function say(line, then) {
+    clearInterval(typing); choices.textContent = '';
+    if (calm) { text.textContent = line; then(); return; }
+    let i = 0; text.textContent = '';
+    typing = setInterval(() => { i += 2; text.textContent = line.slice(0, i); if (i >= line.length) { clearInterval(typing); then(); } }, 22);
+  }
+  function btn(label, fn, cls) { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn' + (cls ? ' ' + cls : ''); b.textContent = label; b.addEventListener('click', fn); choices.append(b); }
+  const focusFirst = () => { const f = choices.querySelector('button'); if (f) f.focus({ preventScroll: true }); };
+  function show() { if (open) return; open = true; asked = {}; av.setAttribute('src', 'assets/leila/pp-spotify.webp'); eb.textContent = 'Tombé du skate, mais il répond'; nm.textContent = 'Leila'; root.hidden = false; document.body.classList.add('talking'); }
+  function play() { close(); if (window.LaboPong) window.LaboPong.invite(); }
+  function menu() {
+    const left = ASK.filter(([k]) => !asked[k]);
+    (left.length ? left : ASK).forEach(([k, q]) => btn(q, () => { asked[k] = true; say(LINES[k], menu); }));
+    btn('▶ On joue au pong ?', play, 'go');
+    btn('Salut !', () => say(LINES.bye, () => setTimeout(close, 1300)));
+    focusFirst();
+  }
+  function invite() { if (window.LaboPong && window.LaboPong.playing && window.LaboPong.playing()) return; if (window.LaboPong) window.LaboPong.close(); show(); say(LINES.invite, () => { btn('▶ Jouer au gobelet pong', play, 'go'); btn('Discuter avec moi', () => say(LINES.talk, menu)); focusFirst(); }); }
+  function start() { if (window.LaboPong) window.LaboPong.close(); if (open) return; show(); say(LINES.talk, menu); }
+  function close() { if (!open) return; open = false; clearInterval(typing); root.hidden = true; document.body.classList.remove('talking'); av.setAttribute('src', G0.av); eb.textContent = G0.eb; nm.textContent = G0.nm; if (window.LaboView && window.LaboView.unzoom) window.LaboView.unzoom(); }
+  root.addEventListener('keydown', e => { if (e.key === 'Escape' && open) { e.stopPropagation(); close(); } });
+  return { invite, start, close, isOpen: () => open };
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
@@ -1043,7 +1204,7 @@ window.GPTalk = (() => {
     if (!o.data) t.colorSpace = THREE.SRGBColorSpace;
     t.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
     if (o.repeat) { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(o.repeat[0], o.repeat[1]); }
-    const paint = () => { const g = c.getContext('2d'); g.clearRect(0, 0, w, h); draw(g, w, h); t.needsUpdate = true; };
+    const paint = () => { const g = c.getContext('2d'); g.setTransform(1, 0, 0, 1, 0, 0); g.shadowBlur = 0; g.setLineDash([]); g.clearRect(0, 0, w, h); draw(g, w, h); t.needsUpdate = true; };
     paint();
     if (o.text) fontsReady.then(() => { paint(); requestRender(); });
     return t;
@@ -1872,6 +2033,45 @@ window.GPTalk = (() => {
     const ex = addSpot('toit', CXo, ZB + 0.15, { rotY: 0, eyebrow: 'Sortie', label: 'Le toit', plaqueY: 3.3, light: 0, ring: 0.5, hit: [1.6, 2.7, 0.9], hitZ: -0.35, targetY: 1.4, focusDist: 3, focusY: 1.7 }, () => {});
     ex.g.children.forEach(ch => { if (ch !== ex.hitMesh) ch.visible = false; });
   }
+  // Le gros cadenas qui bloque la sortie tant qu'on n'a pas trouvé les 9 easter eggs
+  const exLock = new THREE.Group(); exLock.position.set(CXo, 0, ZB + 0.24); scene.add(exLock);
+  const exHazardTex = canvasTex(512, 64, (c, w, h) => { c.fillStyle = '#ffd21f'; c.fillRect(0, 0, w, h); c.fillStyle = '#17110c'; for (let x = -64; x < w + 64; x += 64) { c.beginPath(); c.moveTo(x, h); c.lineTo(x + 32, h); c.lineTo(x + 64, 0); c.lineTo(x + 32, 0); c.fill(); } });
+  [[-0.72], [0.72]].forEach(([a]) => { const b = new THREE.Mesh(new THREE.BoxGeometry(1.75, 0.16, 0.03), new THREE.MeshBasicMaterial({ map: exHazardTex, color: new THREE.Color(1.2, 1.2, 1.2) })); b.position.set(0, 1.5, 0); b.rotation.z = a; exLock.add(b); });
+  const exLockTop = new THREE.Group(); exLockTop.position.set(0, 1.62, 0.1); exLock.add(exLockTop);
+  const exGold = M({ color: 0xffc22e, metalness: 0.75, roughness: 0.28, emissive: 0xc27a08, emissiveIntensity: 1.25 });
+  const exShackle = new THREE.Mesh(new THREE.TorusGeometry(0.27, 0.07, 14, 32, Math.PI), M({ color: 0xe8ebee, metalness: 0.9, roughness: 0.2, emissive: 0x777a80, emissiveIntensity: 0.9 })); exShackle.position.y = 0.24; exLockTop.add(exShackle);
+  [-0.27, 0.27].forEach(x => cyl(0.07, 0.07, 0.24, exShackle.material, x, 0.13, 0, exLockTop, 14));
+  softBox(0.86, 0.68, 0.2, 0.08, exGold, 0, -0.14, 0, exLockTop);
+  const exKey = new THREE.Mesh(new THREE.CircleGeometry(0.075, 24), new THREE.MeshBasicMaterial({ color: 0x17110c })); exKey.position.set(0, -0.08, 0.102); exLockTop.add(exKey);
+  const exKey2 = new THREE.Mesh(new THREE.PlaneGeometry(0.05, 0.18), exKey.material); exKey2.position.set(0, -0.2, 0.102); exLockTop.add(exKey2);
+  glowSprite(exLockTop, 0, -0.08, 0.2, 2.6, 0xffb020, 0.3);
+  const exLockLight = new THREE.PointLight(0xffb030, 9, 5, 2); exLockLight.position.set(0, 1.7, 1.0); exLock.add(exLockLight);
+  const exSignCv = document.createElement('canvas'); exSignCv.width = 1024; exSignCv.height = 440;
+  const exSignTex = new THREE.CanvasTexture(exSignCv); exSignTex.colorSpace = THREE.SRGBColorSpace; exSignTex.anisotropy = 8;
+  function exSignDraw() {
+    const c = exSignCv.getContext('2d'), w = 1024, h = 440, n = window.LaboEggs ? Math.min(9, window.LaboEggs.others()) : 0;
+    c.setTransform(1, 0, 0, 1, 0, 0); c.fillStyle = '#ffd21f'; c.fillRect(0, 0, w, h); c.strokeStyle = '#17110c'; c.lineWidth = 16; c.strokeRect(14, 14, w - 28, h - 28);
+    c.fillStyle = '#17110c'; c.textAlign = 'center'; c.font = '700 96px Geist, Arial, sans-serif'; c.fillText('TROUVE LES', w / 2, 118); c.fillText('9 EASTER EGGS', w / 2, 218);
+    c.font = '500 62px Geist, Arial, sans-serif'; c.fillText('pour voir celui-ci', w / 2, 298);
+    c.font = '700 80px "Geist Mono", monospace'; c.fillText(n + ' / 9', w / 2, 394); exSignTex.needsUpdate = true;
+  }
+  exSignDraw(); if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { exSignDraw(); requestRender(); });
+  const exSign = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 0.645), new THREE.MeshBasicMaterial({ map: exSignTex, color: new THREE.Color(1.25, 1.25, 1.25) })); exSign.position.set(0, 0.56, 0.13); exLock.add(exSign);
+  let exShake = 0, exFall = -1;
+  function exRefresh() { exSignDraw(); try { requestRender(); } catch (e) {} }   // peut être appelé pendant le chargement, avant que la boucle existe
+  if (window.LaboEggs) { window.LaboEggs.onChange(exRefresh); if (window.LaboEggs.unlocked()) exLock.visible = false; }
+  function exLockLife(dt) {
+    if (!exLock.visible) return;
+    if (exFall < 0 && window.LaboEggs && window.LaboEggs.unlocked() && !activeWorld && worldT === 0) exFall = 0;
+    if (exFall >= 0) {
+      exFall += dt; const k = exFall / 1.2;
+      exLockTop.position.y = 1.62 - Math.min(1.6, 3.2 * k * k); exLockTop.rotation.z = k * 1.2; exSign.position.y = 0.56 - Math.min(0.9, k * 1.1); exSign.rotation.z = -k * 0.4;
+      exLock.children.forEach(ch => { if (ch.geometry && ch.geometry.type === 'BoxGeometry') { ch.position.y = 1.5 - 2 * k * k; } });
+      if (k >= 1) exLock.visible = false;
+      return;
+    }
+    if (exShake > 0) { exShake = Math.max(0, exShake - dt * 1.6); exLockTop.rotation.z = Math.sin(exShake * 26) * 0.22 * exShake; }
+  }
   // Le générateur principal : un hamster en blouse qui fait tourner sa roue (surprise cliquable)
   const ham = new THREE.Group(); ham.position.set(1.15, PLAT, -4.0); ham.rotation.y = -0.1; ham.scale.setScalar(1.2); scene.add(ham);
   box(1.15, 0.72, 0.75, matWood, 0, 0.36, 0, ham);
@@ -1926,7 +2126,7 @@ window.GPTalk = (() => {
   const hamHit = new THREE.Mesh(new THREE.BoxGeometry(1.3, 1.6, 0.9), hitMat); hamHit.position.set(0, 1.1, 0); ham.add(hamHit);
   const HAM = { id: 'hamster' };
   let hamBoost = -1, frenzy = 0;
-  function hamClick() { if (reduced) return; hamBoost = 0; requestRender(); }
+  function hamClick() { eggFind('hamster'); if (reduced) return; hamBoost = 0; requestRender(); }
   function updateHamster(t, dt) {
     let k = 0;
     if (hamBoost >= 0) {
@@ -2180,58 +2380,11 @@ window.GPTalk = (() => {
   }
   const WZ = ZB + 0.03, FY = 0.012, FS = 1.9;   // mur du fond, sol, étirement au sol
   // 1 · le cri de guerre, avec les deux flèches vers leurs projets
-  addSecret('defoncer', 6.6, 6.6 * 0.3125 * FS, 2048, 640, (g, w, h) => {
-    arrow(g, [[w * 0.2, 450], [w * 0.06, 400], [w * 0.035, 110]], INK.yellow, 20);
-    arrow(g, [[w * 0.8, 450], [w * 0.94, 400], [w * 0.965, 110]], INK.yellow, 20);
-    hand(g, 'GP', w * 0.085, 330, 80, INK.green, { align: 'left' });
-    hand(g, 'Leila', w * 0.915, 330, 80, INK.pink, { align: 'right' });
-    spray(g, 'LES GARS, ON VA TOUT DÉFONCER', w / 2, 560, 112, INK.yellow, { rot: -0.01, drips: 0.5, glow: 0.07 });
+  addSecret('defoncer', 4.4, 4.4 * 0.3125 * FS, 2048, 640, (g, w, h) => {
+    spray(g, 'DEMANDE À', w / 2, 170, 150, INK.yellow, { rot: -0.01, drips: 0.4, glow: 0.07 });
+    spray(g, 'GARÇON PRINTEMPS', w / 2, 345, 170, INK.green, { rot: 0.008, drips: 0.5, glow: 0.07 });
+    hand(g, 'pourquoi il a une tondeuse', w / 2, 540, 124, INK.white);
   }, V(0, FY, 1.0), { floor: true, center: V(0, FY, 2.0), r: 1.6 });
-  // 2 · le cœur, en haut du mur
-  addSecret('freres', 2.3, 1.15, 1024, 512, (g, w, h) => {
-    g.save(); g.translate(w / 2, h * 0.5); g.scale(1.75, 1.05);
-    g.beginPath(); g.moveTo(0, 125); g.bezierCurveTo(-230, -10, -150, -200, 0, -100); g.bezierCurveTo(150, -200, 230, -10, 0, 125);
-    g.restore(); g.strokeStyle = INK.pink; g.lineWidth = 14; g.shadowColor = INK.pink; g.shadowBlur = 20; g.stroke(); g.shadowBlur = 0;
-    spray(g, 'BRIAN · GP · LEILA', w / 2, h * 0.47, 86, INK.white, { drips: 0.8 });
-    hand(g, 'Des frères, pas des clients.', w / 2, h * 0.66, 50, INK.pink);
-  }, V(-1.95, 3.5, WZ), { r: 0.7 });
-  // 3 · pour Garçon Printemps, sur le mur derrière la tondeuse
-  addSecret('gp', 2.4, 1.2, 1024, 512, (g, w, h) => {
-    spray(g, 'GP, MON FRÈRE.', w / 2, 190, 112, INK.green, { rot: -0.04 });
-    hand(g, 'Après toi, plus rien', w / 2, 330, 74, INK.white);
-    hand(g, 'ne repousse pareil.', w / 2, 420, 74, INK.white);
-  }, V(-2.65, 1.75, WZ), { r: 0.8 });
-  // 4 · pour Leila
-  addSecret('leila', 2.4, 1.2, 1024, 512, (g, w, h) => {
-    spray(g, 'LEILA, MON FRÈRE.', w / 2, 190, 104, INK.pink, { rot: 0.035 });
-    hand(g, 'On va retourner', w / 2, 330, 78, INK.white);
-    hand(g, 'l’Angleterre.', w / 2, 425, 78, INK.white);
-  }, V(4.2, 2.0, WZ), { r: 0.8 });
-  // 5 · la liste d'objectifs
-  addSecret('liste', 1.5, 1.875, 512, 640, (g, w, h) => {
-    spray(g, 'À FAIRE', w / 2, 92, 72, INK.cyan, { drips: 0.6 });
-    const items = [['Monter le labo', 1], ['Première cover', 1], ['1 million de streams', 0], ['La grande scène', 0], ['Tout déchirer', 0]];
-    items.forEach(([t, done], i) => {
-      const y = 190 + i * 96; g.strokeStyle = INK.cyan; g.lineWidth = 6; g.strokeRect(34, y - 44, 46, 46);
-      if (done) { g.strokeStyle = INK.green; g.lineWidth = 9; g.beginPath(); g.moveTo(38, y - 22); g.lineTo(56, y - 2); g.lineTo(90, y - 56); g.stroke(); }
-      hand(g, t, 104, y, 54, INK.white, { align: 'left' });
-    });
-  }, V(-5.7, 2.4, WZ), { r: 0.7 });
-  // 6 · au sol, à gauche
-  addSecret('planb', 2.0, 2.0 * 0.5 * FS, 1024, 512, (g, w, h) => {
-    spray(g, 'PAS DE PLAN B.', w / 2, 210, 104, INK.orange, { rot: -0.03, glow: 0.07 });
-    hand(g, 'Le plan A, on le force.', w / 2, 380, 84, INK.white);
-  }, V(-2.2, FY, 3.35), { floor: true, r: 0.9 });
-  // 7 · au sol, à droite
-  addSecret('disques', 2.0, 2.0 * 0.5 * FS, 1024, 512, (g, w, h) => {
-    hand(g, 'On dort quand', w / 2, 200, 96, INK.white);
-    spray(g, 'ON SERA DISQUES D’OR', w / 2, 360, 82, INK.yellow, { rot: 0.02, glow: 0.07 });
-  }, V(2.2, FY, 3.35), { floor: true, r: 0.9 });
-  // 8 · en haut du mur, à droite de la bobine
-  addSecret('elec', 2.1, 0.55, 1024, 268, (g, w, h) => {
-    spray(g, 'L’ÉLECTRICITÉ,', w / 2, 110, 92, INK.cyan, { drips: 0.6, rot: 0.02 });
-    hand(g, 'c’est nous.', w / 2, 225, 84, INK.white);
-  }, V(1.9, 3.4, WZ), { r: 0.6 });
   // 9 · la signature, dans un coin sombre
   addSecret('signature', 1.8, 0.9, 1024, 512, (g, w, h) => {
     spray(g, 'Brian était là.', w / 2, 220, 120, INK.orange, { family: '"Instrument Serif", Georgia, serif', font: 'italic 400', rot: -0.06 });
@@ -2268,7 +2421,9 @@ window.GPTalk = (() => {
   const DARK_EXP = 0.08;
   let foundCount = 0;
   try { const saved = JSON.parse(localStorage.getItem('labo-secrets') || '[]'); secrets.forEach(s => { if (saved.includes(s.id)) { s.found = true; foundCount++; } }); } catch (e) {}
+  if (foundCount >= secrets.length) eggFind('graffitis', true);
   function setDark(on) {
+    if (on) eggFind('lampe');
     on = !!on; if (on === !!darkGoal) return;
     darkGoal = on ? 1 : 0; darkFlick = on && !reduced ? 0.45 : 0;
     torch.castShadow = on;
@@ -2303,7 +2458,7 @@ window.GPTalk = (() => {
       if (s.seen > 0.9) {
         s.found = true; s.pop = 1; foundCount++;
         try { localStorage.setItem('labo-secrets', JSON.stringify(secrets.filter(x => x.found).map(x => x.id))); } catch (e) {}
-        window.LaboPanel.secretFound && window.LaboPanel.secretFound(foundCount, secrets.length);
+        window.LaboPanel.secretFound && window.LaboPanel.secretFound(foundCount, secrets.length); if (foundCount >= secrets.length) eggFind('graffitis');
       }
     });
   }
@@ -2405,7 +2560,7 @@ window.GPTalk = (() => {
     }
   });
   const endDrag = () => { dragging = false; canvas.classList.remove('dragging'); };
-  canvas.addEventListener('pointerup', e => { if (window.LaboPong && window.LaboPong.grab(e)) return; const wasClick = dragging && !moved; endDrag(); if (wasClick) { const s = pick(e); if (activeWorld) { if (s && s.hot) goView(s.hot.userData.goView); else if (worldT > 0.95) { const ph = s && s.frame ? s.frame.userData.photo || s.frame : null; if (ph && ph === frameFocus && ph.userData.im && ph.userData.im.link) document.getElementById('cLink').click(); else if (ph && ph.userData.booth) { if (window.Booth) window.Booth.open(); } else if (ph && ph.userData.pong) { if (window.LaboPong) window.LaboPong.invite(); } else if (ph && ph.userData.note != null) window.GPGarden.tap(ph.userData.note); else if (ph && ph.userData.talk) { if (frameFocus) focusFrame(null); window.GPTalk.start(); } else if (!ph && window.GPTalk && window.GPTalk.isOpen()) {} else focusFrame(ph && ph !== frameFocus ? ph : null); } } else if (s === LEVER) setDark(!darkGoal); else if (s === HAM) hamClick(); else if (s) window.LaboPanel.open(s.id); } });
+  canvas.addEventListener('pointerup', e => { if (window.LaboPong && window.LaboPong.grab(e)) return; const wasClick = dragging && !moved; endDrag(); if (wasClick) { const s = pick(e); if (activeWorld) { if (s && s.hot) goView(s.hot.userData.goView); else if (worldT > 0.95) { const ph = s && s.frame ? s.frame.userData.photo || s.frame : null; if (ph && ph === frameFocus && ph.userData.im && ph.userData.im.link) document.getElementById('cLink').click(); else if (ph && ph.userData.booth) { if (window.Booth) window.Booth.open(); } else if (ph && ph.userData.leiTalk) { focusFrame(ph); window.LeilaTalk.start(); } else if (ph && ph.userData.pong) { if (window.LeilaTalk) window.LeilaTalk.close(); if (window.LaboPong) window.LaboPong.invite(); } else if (ph && ph.userData.note != null) window.GPGarden.tap(ph.userData.note); else if (ph && ph.userData.talk) { if (frameFocus) focusFrame(null); window.GPTalk.start(); } else if (!ph && ((window.GPTalk && window.GPTalk.isOpen()) || (window.LeilaTalk && window.LeilaTalk.isOpen()))) {} else focusFrame(ph && ph !== frameFocus ? ph : null); } } else if (s === LEVER) setDark(!darkGoal); else if (s === HAM) hamClick(); else if (s) window.LaboPanel.open(s.id); } });
   canvas.addEventListener('pointercancel', endDrag);
   const aimAt = e => { const rect = canvas.getBoundingClientRect(); torchNdc.set((e.clientX - rect.left) / rect.width * 2 - 1, -((e.clientY - rect.top) / rect.height) * 2 + 1); if (darkGoal) requestRender(); };
   canvas.addEventListener('pointermove', aimAt); canvas.addEventListener('pointerdown', aimAt);
@@ -3088,6 +3243,84 @@ window.GPTalk = (() => {
     });
   }
 
+  // ----- la tondeuse : elle tombe du ciel, galère à démarrer, fait n'importe quoi, puis part en orbite -----
+  const mwG = spotById('garcon-printemps').g.userData.mower.clone(true); mwG.visible = false; mwG.scale.setScalar(2); garden.add(mwG);
+  const mwWheel = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.1, 20), matRubber); mwWheel.visible = false; garden.add(mwWheel);
+  const mwWordTex = (word, col, deg) => canvasTex(1024, 360, (c, w, h) => { c.translate(w / 2, h / 2); c.rotate(deg); c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = 'italic 700 170px Geist, Arial, sans-serif'; c.lineJoin = 'round'; c.lineWidth = 34; c.strokeStyle = '#17110c'; c.strokeText(word, 0, 0); c.fillStyle = col; c.fillText(word, 0, 0); }, { text: true });
+  const mwSprite = (tex, sz) => { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false, depthWrite: false, fog: false, opacity: 0 })); sp.renderOrder = 7; sp.visible = false; sp.userData.sz = sz; garden.add(sp); return sp; };
+  const MW_W = { boing: mwSprite(mwWordTex('BOING !', '#ffe14d', -0.08), 2.5), prrt: mwSprite(mwWordTex('prrt… prrt…', '#ffffff', 0.05), 2.4), vroom: mwSprite(mwWordTex('VROOOOOM', '#ff4f2e', -0.05), 3.4), oh: mwSprite(mwWordTex('OH NON', '#5fd4ff', 0.08), 2.2), plus: mwSprite(mwWordTex('…', '#ffe14d', 0), 1.6) };
+  const mwStarTex = canvasTex(256, 256, (c, w) => { c.translate(w / 2, w / 2); c.fillStyle = '#fff6c8'; c.shadowColor = '#ffe14d'; c.shadowBlur = 26; for (let i = 0; i < 4; i++) { c.rotate(Math.PI / 2); c.beginPath(); c.moveTo(0, -112); c.lineTo(14, -14); c.lineTo(-14, -14); c.closePath(); c.fill(); } });
+  const mwStar = mwSprite(mwStarTex, 1);
+  const mwPath = new THREE.CatmullRomCurve3([V(0.9, 0.27, 1.3), V(-0.9, 0.27, 1.45), V(-2.05, 0.27, 0.75), V(-2.05, 0.27, -1.1), V(0.35, 0.27, -1.45), V(2.15, 0.27, -0.9), V(2.15, 0.27, 0.95)], true, 'catmullrom', 0.5);
+  const mwP = V(0, 0, 0), mwT = V(0, 0, 0), mwQ = V(0, 0, 0), mwAway = V(-1.4, 11, -13);
+  let mwOn = false, mwAge = 0, mwDone = null, mwSpin = 0, mwWords = [], mwFired = {}, mwEngine = null, mwNext = 0;
+  const mwOnce = key => { if (mwFired[key]) return false; mwFired[key] = true; return true; };
+  const mwWord = (sp, x, y, z, life) => { sp.visible = true; sp.userData.k = portrait ? 0.56 : 1; sp.position.set(portrait ? x * 0.35 + 0.1 : x, y, z); mwWords.push({ sp, age: 0, life }); };
+  const mwPuff = (x, y, z, vy, size, life, col) => { garden.localToWorld(mwQ.set(x, y, z)); puff(mwQ, V(rand(-0.5, 0.5), vy, rand(-0.5, 0.5)), size, life, col); };
+  function mwSlide(f0, f1, dur, vol) { const a = actx(); if (!a) return; const t = a.currentTime, o = a.createOscillator(), g = a.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + dur); g.gain.setValueAtTime(vol, t); g.gain.setValueAtTime(vol, t + dur * 0.85); g.gain.exponentialRampToValueAtTime(0.0001, t + dur); o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + dur + 0.02); }
+  function mwEngineOn() { const a = actx(); if (!a || mwEngine) return; const o = a.createOscillator(), o2 = a.createOscillator(), lfo = a.createOscillator(), lg = a.createGain(), g = a.createGain(), f = a.createBiquadFilter(); o.type = 'sawtooth'; o2.type = 'square'; o.frequency.value = 62; o2.frequency.value = 93; lfo.frequency.value = 26; lg.gain.value = 0.035; g.gain.value = 0.055; f.type = 'lowpass'; f.frequency.value = 900; lfo.connect(lg); lg.connect(g.gain); o.connect(f); o2.connect(f); f.connect(g); g.connect(a.destination); [o, o2, lfo].forEach(n => n.start()); mwEngine = { a, o, o2, g, stop() { const t = a.currentTime; g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(0.0001, t); [o, o2, lfo].forEach(n => { try { n.stop(t + 0.02); } catch (e) {} }); } }; }
+  function mwEngineOff() { if (mwEngine) { mwEngine.stop(); mwEngine = null; } }
+  function gpMower(done) { mwOn = true; mwAge = 0; mwDone = done; mwSpin = 0; mwFired = {}; mwNext = 0; mwWords.forEach(o => { o.sp.visible = false; }); mwWords = []; mwG.visible = true; mwG.scale.setScalar(2); mwG.rotation.set(0, 0.5, 0); mwG.position.set(0.9, 8, 1.3); mwWheel.visible = false; mwSlide(1900, 260, 0.72, 0.075); requestRender(); }
+  function gpMowerStop() { mwOn = false; mwDone = null; mwEngineOff(); mwG.visible = false; mwWheel.visible = false; mwStar.visible = false; mwWords.forEach(o => { o.sp.visible = false; }); mwWords = []; standee.rotation.y = 0.3; standee.position.y = 0; }
+  function mwLife(t, dt) {
+    mwWords = mwWords.filter(o => { o.age += dt; const k = o.age / o.life, pop = Math.min(1, o.age * 9), sz = o.sp.userData.sz * (o.sp.userData.k || 1) * (0.6 + 0.4 * pop + Math.sin(o.age * 26) * 0.02); o.sp.scale.set(sz, sz * 0.352, 1); o.sp.material.opacity = k < 0.72 ? 1 : Math.max(0, 1 - (k - 0.72) / 0.28); if (k >= 1) { o.sp.visible = false; return false; } return true; });
+    if (!mwOn) return;
+    mwAge += dt; const a = mwAge;
+    // Garçon Printemps tourne comme une toupie quand elle le frôle
+    if (mwSpin > 0) { mwSpin = Math.max(0, mwSpin - dt / 1.1); const e = 1 - mwSpin; standee.rotation.y = 0.3 + (1 - (1 - e) * (1 - e)) * TAU * 3; standee.position.y = Math.abs(Math.sin(e * Math.PI * 3)) * 0.34 * (1 - e); } else if (standee.rotation.y !== 0.3) { standee.rotation.y = 0.3; standee.position.y = 0; }
+    if (a < 0.7) { const k = a / 0.7; mwG.position.set(0.9, 8 - 7.73 * k * k, 1.3); mwG.rotation.y += dt * 9; }
+    else if (a < 1.35) {
+      if (mwOnce('land')) { tone(92, 0.35, 0.34); mwSlide(240, 620, 0.2, 0.05); mwWord(MW_W.boing, 0.9, 1.75, 1.3, 0.95); for (let i = 0; i < 10; i++) mwPuff(0.9, 0.08, 1.3, 0.3, 0.38, 0.8, 0xbfae8c); }
+      const u = a - 0.7, sq = Math.exp(-5 * u) * Math.cos(21 * u);
+      mwG.scale.set(2 * (1 - 0.32 * sq), 2 * (1 + 0.55 * sq), 2 * (1 - 0.32 * sq));
+      mwG.position.y = 0.27 + Math.abs(Math.sin(u * 8.5)) * 0.62 * Math.exp(-3.4 * u); mwG.rotation.y = 0.5;
+    }
+    else if (a < 2.35) {
+      mwG.scale.setScalar(2); mwG.position.y = 0.27;
+      const burst = (a > 1.42 && a < 1.62) || (a > 1.88 && a < 2.08);
+      mwG.position.x = 0.9 + (burst ? Math.sin(a * 90) * 0.035 : 0); mwG.rotation.z = burst ? Math.sin(a * 70) * 0.05 : 0; mwG.rotation.x = burst ? -0.06 : 0;
+      if (mwOnce('prrt')) mwWord(MW_W.prrt, 0.9, 1.65, 1.3, 0.85);
+      if (mwOnce('b1') ) { tone(70, 0.1, 0.2); }
+      if (a > 1.88 && mwOnce('b2')) { tone(64, 0.12, 0.22); }
+      if (burst && Math.random() < 0.45) mwPuff(0.9, 0.55, 1.1, 0.9, 0.34, 0.9, 0x2c2a28);
+    }
+    else if (a < 2.85) {
+      if (mwOnce('vroom')) { mwEngineOn(); mwWord(MW_W.vroom, 0.75, 1.9, 1.35, 1.05); }
+      const k = (a - 2.35) / 0.5; mwG.position.set(0.9 + Math.sin(a * 110) * 0.03, 0.27 + 0.12 * Math.sin(k * Math.PI), 1.3); mwG.rotation.set(-0.85 * Math.sin(k * Math.PI), 0.5 + (Math.atan2(-1.8, 0.15) - 0.5) * k, Math.sin(a * 80) * 0.05);
+      if (mwEngine) mwEngine.o.frequency.value = 62 + k * 60;
+      if (Math.random() < 0.8) mwPuff(0.9, 0.35, 1.05, 0.7, 0.36, 0.9, 0x3a3734);
+    }
+    else if (a < 5.45) {
+      const k = ((a - 2.85) / 2.6) * 2, u = k % 1; mwPath.getPointAt(u, mwP); mwPath.getTangentAt(u, mwT);
+      mwP.y += Math.abs(Math.sin(a * 9)) * 0.07; mwG.position.copy(mwP);
+      mwG.rotation.set(-0.16 + Math.sin(a * 13) * 0.1, Math.atan2(mwT.x, mwT.z) + Math.sin(a * 17) * 0.32, Math.sin(a * 11) * 0.2);
+      if (mwEngine) { mwEngine.o.frequency.value = 118 + Math.sin(a * 3.7) * 26; mwEngine.o2.frequency.value = mwEngine.o.frequency.value * 1.5; }
+      if (Math.random() < 0.85) mwPuff(mwP.x, 0.2, mwP.z, 1.3, 0.2, 0.75, Math.random() < 0.5 ? 0x6fbf3f : 0x9ad85a);
+      if (Math.random() < 0.3) mwPuff(mwP.x, 0.5, mwP.z, 0.8, 0.3, 0.7, 0x3a3734);
+      if (mwSpin === 0 && Math.hypot(mwP.x + 1.65, mwP.z - 0.1) < 1.0) { mwSpin = 1; if (mwOnce('oh')) { mwWord(MW_W.oh, -1.55, 2.75, 0.3, 1.0); mwSlide(900, 300, 0.5, 0.05); } }
+      if (a > mwNext) { mwNext = a + 0.2; flowersJ.forEach(o => { const dx = o.f.position.x - mwP.x, dz = o.f.position.z - mwP.z; if (dx * dx + dz * dz < 2.6 && Math.random() < 0.6) { o.lit = 1; o.noteT = 0; tone(NOTES[o.i], 0.3, 0.07); } }); }
+    }
+    else if (a < 6.55) {
+      if (mwOnce('fly')) { mwEngineOff(); mwSlide(320, 2500, 1.05, 0.075); mwT.copy(mwG.position); mwG.userData.from = mwT.clone(); }
+      const k = (a - 5.45) / 1.1, f = mwG.userData.from; mwP.lerpVectors(f, mwAway, k); mwP.y = f.y + (mwAway.y - f.y) * k * k + Math.sin(k * Math.PI) * 2.6; mwG.position.copy(mwP);
+      mwG.rotation.x += dt * 17; mwG.rotation.z += dt * 6;
+      if (Math.random() < 0.8) mwPuff(mwP.x, mwP.y, mwP.z, -0.2, 0.34, 0.7, 0xfff0d0);
+    }
+    else if (a < 7.15) {
+      if (mwOnce('star')) { mwG.visible = false; tone(1568, 1.0, 0.13); tone(2349, 0.7, 0.05); mwStar.visible = true; mwStar.position.copy(mwAway); mwStar.material.opacity = 1; }
+      const k = (a - 6.55) / 0.6, sz = 2.4 * Math.sin(k * Math.PI); mwStar.scale.set(sz, sz, 1); mwStar.material.rotation = k * 2.4;
+    }
+    else if (a < 8.15) {
+      mwStar.visible = false;
+      if (mwOnce('wheel')) { mwWheel.visible = true; mwSlide(1500, 400, 0.5, 0.05); }
+      const u = a - 7.15, gy = 0.16, y = u < 0.5 ? 6.5 - (6.5 - gy) * (u / 0.5) * (u / 0.5) : gy + Math.abs(Math.sin((u - 0.5) * 8)) * 0.45 * Math.exp(-3.6 * (u - 0.5));
+      if (u >= 0.5 && mwOnce('clonk')) tone(190, 0.18, 0.26);
+      mwWheel.position.set(0.5 + Math.max(0, u - 0.5) * 0.7, y, 1.5); mwWheel.rotation.set(Math.PI / 2, 0, a * -9);
+    }
+    else {
+      mwOn = false; mwWheel.visible = false; const cb = mwDone; mwDone = null; if (cb) cb();
+    }
+  }
   // le mini-jeu : Garçon Printemps joue un air, on le rejoue dans l'ordre
   window.GPGarden = (() => {
     const ROUNDS = 5, FIRST = 3;
@@ -3123,6 +3356,7 @@ window.GPTalk = (() => {
       later(() => { seq.push(rnd()); round++; listen(); }, 1100);
     }
     function win() {
+      eggFind('fleurs');
       phase = 'won';
       seq.forEach((n, i) => later(() => ring(n), 500 + i * 260));
       later(() => T().show('T’as l’oreille ! Tu viens de jouer mon air en entier. Si un jour je le sors, je te mets dans les crédits.', [['Rejouer', start, 'go'], ['Salut !', () => T().bye()]]), 500 + seq.length * 260 + 300);
@@ -3192,7 +3426,7 @@ window.GPTalk = (() => {
     standee.rotation.z = Math.sin(t * 1.1) * 0.012 + hovT * Math.sin(t * 9) * 0.02;
     gpBubble.visible = !(window.GPTalk && window.GPTalk.isOpen());
     gpBubble.position.y = SGH + 0.12 + Math.sin(t * 2.4) * 0.04;
-    gardenLife(t, dt);
+    gardenLife(t, dt); mwLife(t, dt);
   }
   {
     const life0 = W_GP.life;
@@ -3579,10 +3813,20 @@ window.GPTalk = (() => {
   const smoke = []; for (let i = 0; i < 7; i++) { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: smokeTex, transparent: true, depthWrite: false, opacity: 0 })); partyRoom.add(sp); smoke.push({ sp, ph: i / 7 }); }
   blob(leiG, 0, 0.05, 0.9, 0.7, 0.55);
   // on peut s'approcher de lui
-  const leiHit = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.75), new THREE.MeshBasicMaterial({ visible: false })); leiHit.position.set(0, 1.12, 0.3); leiG.add(leiHit);
-  leiHit.userData.photo = leiHit; leiHit.userData.view = 'pong'; leiHit.userData.im = { kind: 'Artiste', title: 'Leila', desc: 'Artiste, compositeur, interprète talentueux, Leila explore la pop et l’électro pour faire des sons.' };
+  const leiHit = new THREE.Mesh(new THREE.PlaneGeometry(0.95, 1.5), new THREE.MeshBasicMaterial({ visible: false })); leiHit.position.set(0, 0.8, 0.42); leiG.add(leiHit);
+  leiHit.userData.photo = leiHit; leiHit.userData.view = 'pong'; leiHit.userData.im = null; leiHit.userData.leiTalk = true;
+  // une bulle au-dessus de sa tête, pour dire qu'on peut lui parler
+  const leiBubTex = canvasTex(520, 220, (c, w, h) => {
+    c.fillStyle = '#fffaf0'; c.beginPath(); if (c.roundRect) c.roundRect(10, 10, w - 20, h - 76, 50); else c.rect(10, 10, w - 20, h - 76); c.fill();
+    c.beginPath(); c.moveTo(62, h - 72); c.lineTo(18, h - 10); c.lineTo(132, h - 72); c.fill();
+    c.fillStyle = '#2a1d12'; c.textAlign = 'center'; c.font = '500 72px Geist, Arial, sans-serif'; c.fillText('Parle-moi !', w / 2, 104);
+  }, { text: true });
+  const leiBubble = new THREE.Mesh(new THREE.PlaneGeometry(0.62, 0.262), new THREE.MeshBasicMaterial({ map: leiBubTex, transparent: true, depthWrite: false, color: new THREE.Color(1.15, 1.15, 1.15) }));
+  leiG.add(leiBubble);
+  leiHit.userData.egg = 'skate';
   W_LE.frames.push(leiHit);
   function leilaLife(t, dt) {
+    leiBubble.visible = !(window.LeilaTalk && window.LeilaTalk.isOpen()) && !(window.LaboPong && window.LaboPong.playing()); leiBubble.position.set(0.62, (portrait ? 0.92 : 1.34) + Math.sin(t * 2.4) * 0.03, 0.2);
     lBody.scale.y = 1 + Math.sin(t * 1.3) * 0.01; lHead.rotation.y = Math.sin(t * 0.4) * 0.12; lHead.rotation.x = 0.05 + Math.sin(t * 0.3) * 0.04;
     ember.material.color.setRGB(3 + Math.sin(t * 7) * 0.8 + (Math.sin(t * 0.9) > 0.92 ? 3 : 0), 1.0, 0.3);
     leiG.updateMatrixWorld(); const tip = ember.getWorldPosition(V(0, 0, 0)).sub(PO);
@@ -3664,6 +3908,7 @@ window.GPTalk = (() => {
       if (phase !== 'play') return;
       balls--; if (kind === 'hit') sunk++;
       setScore();
+      if (kind === 'hit' && sunk >= 3) eggFind('pong');
       if (kind === 'hit' && sunk === 6) { phase = 'end'; keep(); setTimeout(() => show(L.win, [['Rejouer', start, 'go'], ['Fermer', close]]), 500); return; }
       if (balls === 0) { phase = 'end'; keep(); show(`C’est fini : ${sunk} gobelet${sunk > 1 ? 's' : ''} sur 6. On remet ça ?`, [['Rejouer', start, 'go'], ['Fermer', close]]); return; }
       say(kind === 'hit' ? pick(L.hit) : kind === 'rim' ? L.rim : pow < 0.4 ? pick(L.soft) : pow > 0.6 ? pick(L.hard) : pick(L.miss), () => btns([['Arrêter', close]]));
@@ -3767,8 +4012,8 @@ window.GPTalk = (() => {
     if (fly.state !== 'idle' && reduced) requestRender();
   }
   W_LE.views = {
-    salon: { pos: PVIEW, tgt: PTGT, label: 'Le salon', hint: 'Gobelet pong dans le garage, à gauche du canapé · projection derrière la porte rose' },
-    pong: { pos: P_(QPT.x + 0.05, 1.42, QPT.z + 1.55), tgt: P_(QPT.x, 0.45, QPT.z - 0.9), label: 'Le garage · pong', hint: 'Clique sur la table pour jouer' },
+    salon: { pos: PVIEW, tgt: PTGT, label: 'Le salon', hint: 'Leila t’attend dans le garage, à gauche du canapé · projection derrière la porte rose' },
+    pong: { pos: P_(QPT.x + 0.05, 1.42, QPT.z + 1.55), tgt: P_(QPT.x, 0.45, QPT.z - 0.9), label: 'Le garage · Leila', hint: 'Clique sur Leila pour lui parler, ou sur la table pour jouer' },
     projection: { pos: P_(DXc + 0.55, 1.95, BZ0 - 0.35), tgt: P_(BXc, 1.45, BZ1), label: 'La projection', hint: vids[0] ? 'Clique sur l’écran pour t’approcher' : 'La vidéo de Leila arrive bientôt sur ce drap' }
   };
   W_LE.routes = {
@@ -3804,6 +4049,7 @@ window.GPTalk = (() => {
     W_LE.prepare = function (pos, tgt) {
       prepL.call(this, pos, tgt);
       // sur téléphone : plus haut et plus en arrière, pour voir les gobelets au-dessus de la boîte de Leila
+      leiG.position.x = portrait ? GDXc - 1.1 : GDXc - 1.75;
       this.views.pong.pos.copy(P_(QPT.x + 0.05, portrait ? 1.6 : 1.42, QPT.z + (portrait ? 1.15 : 1.55)));
       this.views.pong.tgt.copy(P_(QPT.x, portrait ? 0.3 : 0.45, QPT.z - 0.9));
     };
@@ -4118,7 +4364,7 @@ window.GPTalk = (() => {
   const buEmpty = new THREE.Mesh(new THREE.PlaneGeometry(0.96, 0.96), buEmptyMat); buEmpty.position.z = 0.018; buEmptyG.add(buEmpty);
   const buEmptyGlow = glowSprite(buEmptyG, 0, 0.1, 0.12, 2.6, 0xffc080, 0.0);
   const buEmptyLight = new THREE.PointLight(0xffc890, 0, 3, 2); buEmptyLight.position.set(0, 0.5, 0.7); buEmptyG.add(buEmptyLight);
-  buEmpty.userData.photo = buEmpty; buEmpty.userData.view = 'bureau'; W_BU.frames.push(buEmpty);
+  buEmpty.userData.egg = 'place'; buEmpty.userData.photo = buEmpty; buEmpty.userData.view = 'bureau'; W_BU.frames.push(buEmpty);
   buEmpty.userData.im = { kind: 'Cette place est libre', title: 'Ton projet ici.', desc: 'Un morceau à sortir, une image à construire, une carrière à lancer : dis-moi où tu en es, on regarde ça ensemble.', link: BU_IG, linkLabel: 'Écris-moi sur Insta' };
   const BU_DESK = [[-2.05, 1.8], [-1.16, 1.8], [0.9, 1.8], [1.42, 1.8], [1.96, 1.8], [-2.05, 1.22], [-1.2, 1.22], [1.14, 1.22], [1.86, 1.24]];
   const BU_PHONE = [[0, 0], [1, 0], [2, 0], [0, 1], [2, 1], [0, 2], [1, 2], [2, 2], null];
@@ -4306,6 +4552,7 @@ window.GPTalk = (() => {
   W_RF.routes = {};
   W_RF.baseView = 'toit'; W_RF.view = 'toit'; W_RF.visited = { toit: true };
   W_RF.prepare = function (pos, tgt) {
+    this.fwDone = false; fwStop();
     this.A = new THREE.CatmullRomCurve3([pos.clone(), V(CXo, 1.6, ZB + 1.6), V(CXo, 1.55, ZB - CD + 0.7)]);
     this.AT = new THREE.CatmullRomCurve3([tgt.clone(), V(CXo, 1.5, ZB - 2), V(CXo, 1.5, ZB - CD - 1.5)]);
     rfWords.position.set(portrait ? -2 : -13, portrait ? 40.5 : 30, -78); rfWords.scale.setScalar(portrait ? 0.62 : 1); rfWords.lookAt(R_(0, 2, 0));
@@ -4319,7 +4566,60 @@ window.GPTalk = (() => {
   W_RF.camAt = function (u, p, t) { if (u < 0.5) { const k = u / 0.5; this.A.getPoint(k, p); this.AT.getPoint(k, t); } else { const k = (u - 0.5) / 0.5; this.B.getPoint(k, p); this.BT.getPoint(k, t); } };
   W_RF.blend = () => worldU >= 0.5 ? 1 : 0;
   let rfShootT = 4;
+  // ----- le feu d'artifice : 10 secondes au-dessus de la ville, en récompense -----
+  const FW_N = 3400, FW_DUR = 10;
+  const fwPos = new Float32Array(FW_N * 3), fwCol = new Float32Array(FW_N * 3), fwVel = new Float32Array(FW_N * 3), fwLifeA = new Float32Array(FW_N), fwMax = new Float32Array(FW_N), fwBase = new Float32Array(FW_N * 3);
+  const fwGeo = new THREE.BufferGeometry(); fwGeo.setAttribute('position', new THREE.BufferAttribute(fwPos, 3)); fwGeo.setAttribute('color', new THREE.BufferAttribute(fwCol, 3));
+  const fwTex = canvasTex(64, 64, (c, w) => { const g = c.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.35, 'rgba(255,255,255,.7)'); g.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = g; c.fillRect(0, 0, w, w); });
+  const fwPts = new THREE.Points(fwGeo, new THREE.PointsMaterial({ size: 2.1, map: fwTex, vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, sizeAttenuation: true }));
+  fwPts.frustumCulled = false; fwPts.visible = false; scene.add(fwPts);
+  const FW_COLS = [[1, 0.25, 0.6], [1, 0.82, 0.25], [0.3, 0.8, 1], [0.45, 1, 0.45], [1, 0.5, 0.2], [1, 1, 1], [0.75, 0.45, 1]].map(c => c.map(v => v * 4.2));
+  let fwActive = false, fwT = -1, fwNext = 0, fwCursor = 0, fwFlash = 0, fwRockets = [];
+  const fwMsgEl = document.getElementById('fwMsg');
+  function fwSpark(x, y, z, vx, vy, vz, col, life) {
+    const i = fwCursor; fwCursor = (fwCursor + 1) % FW_N;
+    fwPos[i * 3] = x; fwPos[i * 3 + 1] = y; fwPos[i * 3 + 2] = z; fwVel[i * 3] = vx; fwVel[i * 3 + 1] = vy; fwVel[i * 3 + 2] = vz;
+    fwBase[i * 3] = col[0]; fwBase[i * 3 + 1] = col[1]; fwBase[i * 3 + 2] = col[2]; fwLifeA[i] = life; fwMax[i] = life;
+  }
+  function fwBurst(p, big) {
+    const col = FW_COLS[Math.floor(Math.random() * FW_COLS.length)], col2 = Math.random() < 0.4 ? FW_COLS[Math.floor(Math.random() * FW_COLS.length)] : col;
+    const n = big ? 300 : 210, sp = big ? 36 : 26;
+    for (let i = 0; i < n; i++) { const u = rand(-1, 1), a = rand(0, TAU), r = Math.sqrt(1 - u * u), v = sp * (0.72 + Math.random() * 0.28); fwSpark(p.x, p.y, p.z, r * Math.cos(a) * v, u * v, r * Math.sin(a) * v * 0.6, i % 3 ? col : col2, rand(1.1, 1.9)); }
+    fwFlash = Math.min(1.4, fwFlash + (big ? 1 : 0.6));
+    tone(66, 0.55, big ? 0.16 : 0.1); [0, 1, 2].forEach(k => setTimeout(() => { if (fwActive) tone(rand(900, 2200), 0.08, 0.018); }, 160 + k * 90));
+  }
+  function fwLaunch(big) {
+    const X = portrait ? 9 : 27, x = rand(-X, X), z = rand(-52, -40), top = rand(portrait ? 12 : 10, portrait ? 34 : 25);
+    const from = R_(x * 0.86, 2, z), to = R_(x, top, z);
+    fwRockets.push({ from, to, k: 0, big, col: FW_COLS[5] }); mwSlide(rand(380, 520), rand(1200, 1700), 0.62, 0.012);
+  }
+  function fwSky(on) { rfWords.visible = on; rfConsts.forEach(o => { o.g.visible = on; }); }
+  function fwStart() { fwSky(false); fwActive = true; fwT = 0; fwNext = 0.2; fwRockets = []; fwCursor = 0; fwLifeA.fill(0); fwPts.visible = true; fwMsgEl.classList.remove('show'); }
+  function fwStop() { fwSky(true); fwActive = false; fwT = -1; fwPts.visible = false; fwRockets = []; fwFlash = 0; fwMsgEl.classList.remove('show'); }
+  function fwLife(dt) {
+    if (fwT < 0 && !reduced && activeWorld === W_RF && worldT >= 1 && worldGoal === 1 && !W_RF.fwDone) { W_RF.fwDone = true; fwStart(); }
+    if (reduced && activeWorld === W_RF && worldT >= 1 && !W_RF.fwDone) { W_RF.fwDone = true; fwMsgEl.classList.add('show'); setTimeout(() => fwMsgEl.classList.remove('show'), 6000); }
+    if (!fwActive) return;
+    fwT += dt;
+    if (fwT > 0.8) fwMsgEl.classList.add('show');
+    if (fwT < FW_DUR - 1.8) {
+      fwNext -= dt;
+      if (fwNext <= 0) { const finale = fwT > 6.6; fwLaunch(finale || Math.random() < 0.25); if (finale && Math.random() < 0.6) fwLaunch(true); fwNext = finale ? rand(0.16, 0.3) : rand(0.42, 0.75); }
+    }
+    fwRockets = fwRockets.filter(r => { r.k += dt / 0.62; const e = 1 - (1 - r.k) * (1 - r.k), x = r.from.x + (r.to.x - r.from.x) * e, y = r.from.y + (r.to.y - r.from.y) * e, z = r.from.z + (r.to.z - r.from.z) * e; if (r.k >= 1) { fwBurst(r.to, r.big); return false; } fwSpark(x, y, z, rand(-0.4, 0.4), -2, 0, FW_COLS[1], 0.32); return true; });
+    for (let i = 0; i < FW_N; i++) {
+      const l = fwLifeA[i]; if (l <= 0) { fwCol[i * 3] = fwCol[i * 3 + 1] = fwCol[i * 3 + 2] = 0; continue; }
+      const nl = l - dt; fwLifeA[i] = nl; const dr = Math.max(0, 1 - dt * 1.7), a = Math.max(0, nl / fwMax[i]), b = a * a * (a > 0.25 || Math.sin(nl * 40 + i) > 0 ? 1 : 0.2);
+      fwVel[i * 3] *= dr; fwVel[i * 3 + 1] = fwVel[i * 3 + 1] * dr - dt * 5.5; fwVel[i * 3 + 2] *= dr;
+      fwPos[i * 3] += fwVel[i * 3] * dt; fwPos[i * 3 + 1] += fwVel[i * 3 + 1] * dt; fwPos[i * 3 + 2] += fwVel[i * 3 + 2] * dt;
+      fwCol[i * 3] = fwBase[i * 3] * b; fwCol[i * 3 + 1] = fwBase[i * 3 + 1] * b; fwCol[i * 3 + 2] = fwBase[i * 3 + 2] * b;
+    }
+    fwGeo.attributes.position.needsUpdate = true; fwGeo.attributes.color.needsUpdate = true;
+    fwFlash = Math.max(0, fwFlash - dt * 2.6); rfHemi.intensity = 0.7 + fwFlash * 0.9;
+    if (fwT >= FW_DUR) { fwStop(); }
+  }
   W_RF.life = function (t, dt) {
+    fwLife(dt);
     rfSkyMat.uniforms.uTime.value = t;
     rfBeacons.forEach(o => { o.b.visible = Math.sin(t * 1.6 + o.ph) > 0.2; });
     rfAntLed.visible = Math.sin(t * 2.2) > 0;
@@ -4356,10 +4656,10 @@ window.GPTalk = (() => {
     p.copy(t).addScaledVector(zN, dist);
     if (portrait && mesh === pmHero.m) { t.y -= 0.55; p.y -= 0.55; }
   }
-  function focusFrame(mesh) { if (!(mesh && mesh.userData.talk) && window.GPTalk) window.GPTalk.close(); frameFocus = mesh; if (mesh) frameLast = mesh; dragYaw = dragPitch = 0; document.body.classList.toggle('zoomed', !!mesh); window.LaboPanel.zoomInfo(mesh && mesh.userData.im); requestRender(); }
+  function focusFrame(mesh) { if (mesh && mesh.userData.egg) eggFind(mesh.userData.egg); if (!(mesh && mesh.userData.talk) && window.GPTalk) window.GPTalk.close(); frameFocus = mesh; if (mesh) frameLast = mesh; dragYaw = dragPitch = 0; document.body.classList.toggle('zoomed', !!mesh); window.LaboPanel.zoomInfo(mesh && mesh.userData.im); requestRender(); }
   const fogBase = { c: scene.fog.color.clone(), d: scene.fog.density };
   window.LaboWorld = true;
-  function finishExit() { stopWorldVideos(true); window.LaboPanel.setVideoBar(null); if (activeWorld && activeWorld.views) { activeWorld.view = activeWorld.baseView; activeWorld.trip = null; activeWorld.navShown = false; activeWorld.exitAfter = false; } window.LaboPanel.setNav(null); frameFocus = null; frameT = 0; document.body.classList.remove('zoomed'); window.LaboPanel.zoomInfo(null); activeWorld = null; pendingWorld = null; focusSpot = null; focusGoal = 0; gpHold = false; dragYaw = dragPitch = 0; }
+  function finishExit() { fwStop(); stopWorldVideos(true); window.LaboPanel.setVideoBar(null); if (activeWorld && activeWorld.views) { activeWorld.view = activeWorld.baseView; activeWorld.trip = null; activeWorld.navShown = false; activeWorld.exitAfter = false; } window.LaboPanel.setNav(null); frameFocus = null; frameT = 0; document.body.classList.remove('zoomed'); window.LaboPanel.zoomInfo(null); activeWorld = null; pendingWorld = null; focusSpot = null; focusGoal = 0; gpHold = false; dragYaw = dragPitch = 0; }
   function enterWorld(id, s) {
     const w = worldsById[id];
     if (quickExit) { quickCut(); labWipe.classList.remove('on'); }
@@ -4377,9 +4677,10 @@ window.GPTalk = (() => {
   function stopWorldVideos(mute) { [W_GP, W_LE].forEach(w => { const v = w.video && w.video(); if (!v) return; if (mute) v.muted = true; if (!v.paused) v.pause(); }); }
   function exitWorld() {
     if (!activeWorld) return;
-    stopWorldVideos(true);
+    stopWorldVideos(true); fwStop();
     if (window.GPTalk) window.GPTalk.close();
     if (window.LaboPong) window.LaboPong.close();
+    if (window.LeilaTalk) window.LeilaTalk.close();
     window.LaboPanel.setNav(null);
     frameFocus = null; document.body.classList.remove('zoomed'); window.LaboPanel.zoomInfo(null);
     dragYaw = dragPitch = 0;
@@ -4395,6 +4696,7 @@ window.GPTalk = (() => {
     return false;
   }
   function updateWorld(t, dt) {
+    if (activeWorld && worldT === 1 && worldGoal === 1) { if (activeWorld === W_RF) eggFind('toit'); else if (activeWorld === W_PM) eggFind('blanche'); }
     if (pendingWorld && activeEvent && activeEvent === events[pendingWorld.id] && activeEvent.t >= pendingWorld.startAt) {
       pendingWorld.prepare(camera.position, target); worldGoal = 1; pendingWorld = null;
     }
@@ -4402,7 +4704,7 @@ window.GPTalk = (() => {
       const w0 = activeWorld; w0.trip.k = Math.min(1, w0.trip.k + dt / 1.6);
       if (w0.trip.k >= 1) {
         w0.view = w0.trip.to; w0.trip = null;
-        if (w0 === W_LE && w0.view === 'pong' && !w0.exitAfter && window.LaboPong) setTimeout(() => { if (activeWorld === W_LE && W_LE.view === 'pong' && !W_LE.trip) window.LaboPong.invite(); }, 350);
+        if (w0 === W_LE && w0.view === 'pong' && !w0.exitAfter && window.LaboPong) setTimeout(() => { if (activeWorld === W_LE && W_LE.view === 'pong' && !W_LE.trip) window.LeilaTalk.invite(); }, 350);
         if (w0 === W_GP && w0.view === 'jardin' && !w0.exitAfter && window.GPTalk) setTimeout(() => { if (activeWorld === W_GP && W_GP.view === 'jardin' && !W_GP.trip) window.GPTalk.invite(); }, 350);
         navUpdate();
       }
@@ -4431,9 +4733,9 @@ window.GPTalk = (() => {
     daySky.visible = !(inWhite || inRoof); rfSky.visible = inRoof; rfHemi.intensity = inRoof ? 0.7 : 0; rfMoon.intensity = inRoof ? 0.9 : 0; rfLights.forEach(l => { if (l.visible !== inRoof) l.visible = inRoof; });
     if (w === W_RF && worldU >= 0.45) W_RF.life(t, dt);
     if (w === W_BU && worldU >= 0.45 && !quickExit) W_BU.life(t, dt); else if (buVideo && !buVideo.paused) buVideo.pause();
-    { const show = (w === W_BU || w === W_RF) && worldT >= 1 && worldGoal === 1; const el = document.getElementById('collab');
+    { const show = (w === W_BU || (w === W_RF && W_RF.fwDone && !fwActive)) && worldT >= 1 && worldGoal === 1; const el = document.getElementById('collab');
       if (el.hidden === show) {
-        if (show) { const roofCard = w === W_RF; document.getElementById('colEb').textContent = roofCard ? 'Bravo' : 'Ouvert aux collabs'; document.getElementById('colTitle').textContent = roofCard ? 'Tu as trouvé l’easter egg de mon site.' : 'Tu fais la musique. Je m’occupe du reste.'; document.getElementById('colText').textContent = roofCard ? 'Viens me le dire sur Insta ;)' : 'Tout ce que tu vois sur ce mur, je l’ai fait pour de vrais artistes : pochettes, clips, photos, stratégie, management. Clique dessus, puis viens me parler de ton projet.'; document.getElementById('colGo').textContent = roofCard ? 'Je te le dis sur Insta' : 'Écris-moi sur Insta'; }
+        if (show) { const roofCard = w === W_RF; document.getElementById('colEb').textContent = roofCard ? 'Merci' : 'Ouvert aux collabs'; document.getElementById('colTitle').textContent = roofCard ? 'Tu as trouvé les 10 easter eggs.' : 'Tu fais la musique. Je m’occupe du reste.'; document.getElementById('colText').textContent = roofCard ? 'Envoie-moi le code LABO-10 sur Insta, je te réponds en personne.' : 'Tout ce que tu vois sur ce mur, je l’ai fait pour de vrais artistes : pochettes, clips, photos, stratégie, management. Clique dessus, puis viens me parler de ton projet.'; document.getElementById('colGo').textContent = roofCard ? 'Envoyer le code sur Insta' : 'Écris-moi sur Insta'; }
         el.hidden = !show; document.body.classList.toggle('in-bureau', show);
       } }
     buHemi.intensity = inBureau ? 0.55 : 0; buLights.forEach(l => { if (l.visible !== inBureau) l.visible = inBureau; });
@@ -4466,7 +4768,7 @@ window.GPTalk = (() => {
     window.LaboPanel.setNav(Object.keys(w.views).map(id => ({ id, label: w.views[id].label, current: cur === id, fresh: !w.visited[id] })), w.views[cur].hint);
   }
   function goView(id) {
-    if (window.LaboPong && activeWorld && activeWorld.view !== id) window.LaboPong.close();
+    if (window.LaboPong && activeWorld && activeWorld.view !== id) { window.LaboPong.close(); if (window.LeilaTalk) window.LeilaTalk.close(); }
     const w = activeWorld; if (!w || !w.views || !w.views[id] || w.trip || w.view === id || worldT < 1) return;
     focusFrame(null); window.LaboPanel.setVideoBar(null);
     const a = w.views[w.view], b = w.views[id], via = w.routes[w.view + '>' + id] || [];
@@ -4474,6 +4776,8 @@ window.GPTalk = (() => {
     w.visited[id] = true; dragYaw = dragPitch = 0; navUpdate(); requestRender();
   }
   window.LaboView.goView = goView;
+  window.LaboView.lockShake = () => { exShake = 1; requestRender(); };
+  window.LaboView.gpMower = gpMower; window.LaboView.gpMowerStop = gpMowerStop;
   window.LaboView.toggleDark = on => setDark(on === undefined ? !darkGoal : on);
   window.LaboView.darkState = () => ({ dark, darkGoal, found: foundCount, total: secrets.length, secrets: secrets.map(x => [x.id, x.found]) });
   const cinemaWorld = () => (activeWorld && activeWorld.video ? activeWorld : W_LE);
@@ -4482,7 +4786,7 @@ window.GPTalk = (() => {
   window.LaboView.toggleSound = () => { const w = cinemaWorld(), v = w.video && w.video(); if (!v) return true; v.muted = !v.muted; if (v.paused) v.play().catch(() => {}); return v.muted; };
   window.LaboView.state = () => ({ world: activeWorld && activeWorld.id, worldT, frameT, zoomed: !!frameFocus });
   window.LaboView.unzoom = () => { if (activeWorld && frameFocus) { focusFrame(null); return true; } return false; };
-  window.LaboView.closeInteraction = () => { if (window.GPTalk) window.GPTalk.close(); if (window.LaboPong) window.LaboPong.close(); window.LaboView.unzoom(); requestRender(); };
+  window.LaboView.closeInteraction = () => { if (window.GPTalk) window.GPTalk.close(); if (window.LeilaTalk) window.LeilaTalk.close(); if (window.LaboPong) window.LaboPong.close(); window.LaboView.unzoom(); requestRender(); };
 
   /* ---------- Boucle ---------- */
   let running = !reduced, raf = 0, last = performance.now(), time = 12, spawnClock = 0;
@@ -4555,6 +4859,7 @@ window.GPTalk = (() => {
       }
     }
     updateEvents(dt);
+    exLockLife(dt);
     updateWorld(time, dt);
     updateHamster(time, running || hamBoost >= 0 ? dt : 0);
     animateSpots(time, dt);
@@ -4567,7 +4872,7 @@ window.GPTalk = (() => {
     updateDark(now / 1000, dt);
     renderAll();
     const settling = darkGoal === 1 || dark > 0 || introT < 1 || anyBusy() || worldBusy() || focusT !== focusGoal || spots.some(s => Math.abs(s.hover - (hovered === s || focusSpot === s || selectedSpot === s ? 1 : 0)) > 0.01);
-    if (running || dragging || settling || Math.abs(dragYaw - curYaw) > 1e-3 || Math.abs(hoverX - curHX) > 1e-3) raf = requestAnimationFrame(frame);
+    if (!raf && (running || dragging || settling || mwOn || exShake > 0 || (exFall >= 0 && exLock.visible) || fwActive || Math.abs(dragYaw - curYaw) > 1e-3 || Math.abs(hoverX - curHX) > 1e-3)) raf = requestAnimationFrame(frame);
   }
   function requestRender() { if (!raf) { last = performance.now(); raf = requestAnimationFrame(frame); } }
 
