@@ -225,6 +225,7 @@ body.dark #scene{cursor:none}
 #secretBar{top:calc(env(safe-area-inset-top,0px) + 76px)}
 body:has(#secretBar:not([hidden])) .secrettoast{top:calc(env(safe-area-inset-top,0px) + 124px)}
 @media (max-width:640px){#secretBar{top:calc(env(safe-area-inset-top,0px) + 104px)}body:has(#secretBar:not([hidden])) .secrettoast{top:calc(env(safe-area-inset-top,0px) + 150px)}}
+.bootmsg{position:fixed;z-index:3;inset:0;display:grid;place-items:center;pointer-events:none;font:400 1.5rem/1 var(--serif);font-style:italic;color:#ffd9ae}
 .fwmsg{position:fixed;z-index:6;left:50%;top:12%;width:min(860px,90vw);transform:translateX(-50%);text-align:center;pointer-events:none;font:400 clamp(1.9rem,5.2vw,4rem)/1.12 var(--serif);font-style:italic;color:#fff8ea;text-shadow:0 2px 26px rgba(0,0,0,.85),0 0 40px rgba(255,180,90,.45);opacity:0;transition:opacity .8s}
 .fwmsg.show{opacity:1}
 @media (max-width:640px){.fwmsg{top:19%}}
@@ -465,6 +466,7 @@ body.in-world .top,body.in-world .ctl-row,body.in-world .hud::before{opacity:0;v
 <div class="secretbar" id="secretBar" hidden><span class="sb-k">Graffitis trouvés</span><strong id="secretN">0/2</strong><button class="sb-go" id="secretGo" type="button" hidden>Lire le message <span aria-hidden="true">→</span></button></div>
 <div class="secrettoast" id="secretToast" role="status" aria-live="polite"></div>
 <button class="eggpill" id="eggPill" type="button" aria-label="Voir les easter eggs"><svg viewBox="0 0 24 30" aria-hidden="true"><path d="M12 1C6.5 1 2 11 2 18.5 2 25 6.5 29 12 29s10-4 10-10.500C22 11 17.500 1 12 1z" fill="currentColor"/><path d="M3.300 15l4.500-3 4.200 3 4.200-3 4.500 3" fill="none" stroke="#1a120c" stroke-width="1.800" stroke-linejoin="round"/></svg><span id="eggN">0/9</span></button>
+<div class="bootmsg" id="bootMsg" role="status">Le labo s’allume…</div>
 <div class="eggpop" id="eggPop" role="status" aria-live="polite"></div>
 <div class="fwmsg" id="fwMsg" role="status" aria-live="polite">Je te remercie du temps que tu as pris pour regarder mon site.</div>
 <div class="reward" id="eggList" role="dialog" aria-modal="true" aria-labelledby="eggListT" hidden>
@@ -1167,12 +1169,13 @@ window.LeilaTalk = (() => {
   catch (e) { pauseBtn.hidden = true; return; }
 
   const small = Math.min(innerWidth, innerHeight) < 600;
-  const PR = Math.min(window.devicePixelRatio || 1, small ? 1.4 : 1.75);
+  let PR = Math.min(window.devicePixelRatio || 1, small ? 1.4 : 1.75);
   renderer.setPixelRatio(PR);
   renderer.toneMapping = THREE.NoToneMapping;
   renderer.setClearColor(0x050302, 1);
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.shadowMap.autoUpdate = false; renderer.shadowMap.needsUpdate = true;
 
   const scene = new THREE.Scene();
   scene.fog = new THREE.FogExp2(0x140d08, 0.042);
@@ -2043,7 +2046,6 @@ window.LeilaTalk = (() => {
   const exKey = new THREE.Mesh(new THREE.CircleGeometry(0.075, 24), new THREE.MeshBasicMaterial({ color: 0x17110c })); exKey.position.set(0, -0.08, 0.102); exLockTop.add(exKey);
   const exKey2 = new THREE.Mesh(new THREE.PlaneGeometry(0.05, 0.18), exKey.material); exKey2.position.set(0, -0.2, 0.102); exLockTop.add(exKey2);
   glowSprite(exLockTop, 0, -0.08, 0.2, 2.6, 0xffb020, 0.3);
-  const exLockLight = new THREE.PointLight(0xffb030, 9, 5, 2); exLockLight.position.set(0, 1.7, 1.0); exLock.add(exLockLight);
   const exSignCv = document.createElement('canvas'); exSignCv.width = 1024; exSignCv.height = 440;
   const exSignTex = new THREE.CanvasTexture(exSignCv); exSignTex.colorSpace = THREE.SRGBColorSpace; exSignTex.anisotropy = 8;
   function exSignDraw() {
@@ -2424,7 +2426,6 @@ window.LeilaTalk = (() => {
     if (on) eggFind('lampe');
     on = !!on; if (on === !!darkGoal) return;
     darkGoal = on ? 1 : 0; darkFlick = on && !reduced ? 0.45 : 0;
-    torch.castShadow = on;
     secrets.forEach(s => { s.m.visible = true; });
     document.body.classList.toggle('dark', on);
     window.LaboPanel.setDark && window.LaboPanel.setDark(on, foundCount, secrets.length);
@@ -2815,9 +2816,24 @@ window.LeilaTalk = (() => {
   };
 
   /* ---------- Les mondes des projets ---------- */
+  const texQueue = []; let texOpen = false, texTimer = 0;
+  function texPump() { texTimer = 0; const job = texQueue.shift(); if (!job) return; job(); if (texQueue.length) texTimer = setTimeout(texPump, 70); }
+  function texRelease() { if (texOpen) return; texOpen = true; texPump(); setTimeout(texWarm, 1500); }
+  // les images sont envoyées à la carte graphique une par une, hors des animations, et pas au moment où on entre dans un monde
+  const texDone = new Set(); let texWarmRuns = 0;
+  function texWarm() {
+    if (activeWorld && worldT > 0 && worldT < 1) { setTimeout(texWarm, 400); return; }
+    const list = [];
+    scene.traverse(o => { const m = o.material; if (!m) return; [m.map, m.emissiveMap, m.roughnessMap, m.normalMap].forEach(t => { if (t && !t.isVideoTexture && !texDone.has(t) && t.image && (t.image.width || t.image.videoWidth) && t.version > 0) list.push(t); }); });
+    const t = list[0];
+    if (t) { texDone.add(t); try { renderer.initTexture(t); } catch (e) {} setTimeout(texWarm, 90); return; }
+    if (++texWarmRuns < 40) setTimeout(texWarm, 500);
+  }
   const imgTexture = (src, onload) => {
     const im = new Image(); const t = new THREE.Texture(im); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
-    im.onload = () => { t.needsUpdate = true; if (onload) onload(im); requestRender(); }; im.src = src; return t;
+    im.onload = () => { t.needsUpdate = true; if (onload) onload(im); requestRender(); };
+    if (texOpen) im.src = src; else texQueue.push(() => { im.src = src; });
+    return t;
   };
   const projectImages = id => { const p = window.LaboPanel.project(id); return (p && p.images) || []; };
 
@@ -3006,7 +3022,7 @@ window.LeilaTalk = (() => {
   const gVids = (window.LaboPanel.project('garcon-printemps') || {}).videos || [];
   let gVideo = null, gVideoTex = null, gIdx = 0;
   if (gVids[0]) {
-    gVideo = document.createElement('video'); gVideo.muted = true; gVideo.loop = false; gVideo.playsInline = true; gVideo.preload = 'metadata';
+    gVideo = document.createElement('video'); gVideo.muted = true; gVideo.loop = false; gVideo.playsInline = true; gVideo.preload = 'none';
     gVideo.setAttribute('playsinline', ''); gVideo.src = gVids[0].src;
     gVideoTex = new THREE.VideoTexture(gVideo); gVideoTex.colorSpace = THREE.SRGBColorSpace;
   }
@@ -3424,7 +3440,7 @@ window.LeilaTalk = (() => {
     standee.rotation.z = Math.sin(t * 1.1) * 0.012 + hovT * Math.sin(t * 9) * 0.02;
     gpBubble.visible = !(window.GPTalk && window.GPTalk.isOpen());
     gpBubble.position.y = SGH + 0.12 + Math.sin(t * 2.4) * 0.04;
-    gardenLife(t, dt); mwLife(t, dt);
+    gardenLife(t, dt); mwLife(t, dtReal);
   }
   {
     const life0 = W_GP.life;
@@ -3616,7 +3632,7 @@ window.LeilaTalk = (() => {
   const vids = (window.LaboPanel.project('leila') || {}).videos || [];
   let video = null, videoTex = null, vIdx = 0;
   if (vids[0]) {
-    video = document.createElement('video'); video.muted = true; video.loop = false; video.playsInline = true; video.preload = 'auto';
+    video = document.createElement('video'); video.muted = true; video.loop = false; video.playsInline = true; video.preload = 'none';
     video.setAttribute('playsinline', ''); video.src = vids[0].src;
     videoTex = new THREE.VideoTexture(video); videoTex.colorSpace = THREE.SRGBColorSpace;
   }
@@ -4361,7 +4377,7 @@ window.LeilaTalk = (() => {
   const buEmptyMat = new THREE.MeshBasicMaterial({ map: buEmptyTex, color: new THREE.Color(0.12, 0.12, 0.12) });
   const buEmpty = new THREE.Mesh(new THREE.PlaneGeometry(0.96, 0.96), buEmptyMat); buEmpty.position.z = 0.018; buEmptyG.add(buEmpty);
   const buEmptyGlow = glowSprite(buEmptyG, 0, 0.1, 0.12, 2.6, 0xffc080, 0.0);
-  const buEmptyLight = new THREE.PointLight(0xffc890, 0, 3, 2); buEmptyLight.position.set(0, 0.5, 0.7); buEmptyG.add(buEmptyLight);
+  const buEmptyLight = new THREE.PointLight(0xffc890, 0, 3, 2); buEmptyLight.position.set(0, 0.5, 0.7); buEmptyG.add(buEmptyLight); buEmptyLight.visible = false; buLights.push(buEmptyLight);
   buEmpty.userData.egg = 'place'; buEmpty.userData.photo = buEmpty; buEmpty.userData.view = 'bureau'; W_BU.frames.push(buEmpty);
   buEmpty.userData.im = { kind: 'Cette place est libre', title: 'Ton projet ici.', desc: 'Un morceau à sortir, une image à construire, une carrière à lancer : dis-moi où tu en es, on regarde ça ensemble.', link: BU_IG, linkLabel: 'Écris-moi sur Insta' };
   const BU_DESK = [[-2.05, 1.8], [-1.16, 1.8], [0.9, 1.8], [1.42, 1.8], [1.96, 1.8], [-2.05, 1.22], [-1.2, 1.22], [1.14, 1.22], [1.86, 1.24]];
@@ -4617,7 +4633,7 @@ window.LeilaTalk = (() => {
     if (fwT >= FW_DUR) { fwStop(); }
   }
   W_RF.life = function (t, dt) {
-    fwLife(dt);
+    fwLife(dtReal);
     rfSkyMat.uniforms.uTime.value = t;
     rfBeacons.forEach(o => { o.b.visible = Math.sin(t * 1.6 + o.ph) > 0.2; });
     rfAntLed.visible = Math.sin(t * 2.2) > 0;
@@ -4659,6 +4675,7 @@ window.LeilaTalk = (() => {
   window.LaboWorld = true;
   function finishExit() { fwStop(); stopWorldVideos(true); window.LaboPanel.setVideoBar(null); if (activeWorld && activeWorld.views) { activeWorld.view = activeWorld.baseView; activeWorld.trip = null; activeWorld.navShown = false; activeWorld.exitAfter = false; } window.LaboPanel.setNav(null); frameFocus = null; frameT = 0; document.body.classList.remove('zoomed'); window.LaboPanel.zoomInfo(null); activeWorld = null; pendingWorld = null; focusSpot = null; focusGoal = 0; gpHold = false; dragYaw = dragPitch = 0; }
   function enterWorld(id, s) {
+    texRelease();
     const w = worldsById[id];
     if (quickExit) { quickCut(); labWipe.classList.remove('on'); }
     if (activeWorld && activeWorld !== w) { worldT = 0; worldGoal = 0; finishExit(); }
@@ -4737,6 +4754,7 @@ window.LeilaTalk = (() => {
         el.hidden = !show; document.body.classList.toggle('in-bureau', show);
       } }
     buHemi.intensity = inBureau ? 0.55 : 0; buLights.forEach(l => { if (l.visible !== inBureau) l.visible = inBureau; });
+    lightRig.apply(inParty ? 'p' : inBureau ? 'b' : inRoof ? 'r' : 'lab');
     pmHemi.intensity = inWhite ? 1.9 : 0; pmSun.intensity = inWhite ? 1.1 : 0; pmVoid.visible = inWhite;
     pmSoft = inWhite ? 1 : 0; finalMat.uniforms.uSoft.value = pmSoft;
     finalMat.uniforms.uFlash.value = (w === W_LE || w === W_PM || w === W_BU || w === W_RF) && worldT > 0 ? Math.max(0, 1 - Math.abs(worldU - 0.5) * 7) : 0;
@@ -4774,6 +4792,7 @@ window.LeilaTalk = (() => {
     w.visited[id] = true; dragYaw = dragPitch = 0; navUpdate(); requestRender();
   }
   window.LaboView.goView = goView;
+  window.LaboView.renderStats = () => ({ programs: renderer.info.programs.length, textures: renderer.info.memory.textures, geometries: renderer.info.memory.geometries, pr: PR, samples: rtScene.samples, warmed: texDone.size });
   window.LaboView.lockShake = () => { exShake = 1; requestRender(); };
   window.LaboView.gpMower = gpMower; window.LaboView.gpMowerStop = gpMowerStop;
   window.LaboView.toggleDark = on => setDark(on === undefined ? !darkGoal : on);
@@ -4787,7 +4806,7 @@ window.LeilaTalk = (() => {
   window.LaboView.closeInteraction = () => { if (window.GPTalk) window.GPTalk.close(); if (window.LeilaTalk) window.LeilaTalk.close(); if (window.LaboPong) window.LaboPong.close(); window.LaboView.unzoom(); requestRender(); };
 
   /* ---------- Boucle ---------- */
-  let running = !reduced, raf = 0, last = performance.now(), time = 12, spawnClock = 0;
+  let dtReal = 0.016, running = !reduced, raf = 0, last = performance.now(), time = 12, spawnClock = 0;
   let introT = (reduced || window.LaboPanel.current()) ? 1 : 0;
   const INTRO_DUR = 8;
   let lightLevel = 0.3, readClock = 0, strikesWindow = [], neonDip = 0, neonNext = 6;
@@ -4832,10 +4851,23 @@ window.LeilaTalk = (() => {
     neonMat.color.setScalar(2.4 * nf); neonLight.intensity = 6 * nf;
   }
 
+  let frameN = 0, firstFrame = true, frameEma = 16, frameSlow = 0, qualityWait = 3;
+  function adaptQuality(ms) {
+    if (document.hidden || ms > 500) return;
+    frameEma += (ms - frameEma) * 0.08;
+    if (qualityWait > 0) { qualityWait -= ms / 1000; return; }
+    frameSlow = frameEma > 42 ? frameSlow + ms / 1000 : 0;
+    if (frameSlow < 1) return;
+    frameSlow = 0; qualityWait = 2;
+    if (rtScene.samples > 0) { rtScene.samples = 0; rtScene.dispose(); return; }
+    if (PR > 0.8) { PR = Math.max(0.8, PR * 0.8); renderer.setPixelRatio(PR); resize(); }
+  }
   function frame(now) {
-    raf = 0;
-    const dt = Math.min(0.05, (now - last) / 1000); last = now;
-    if (introT < 1) { introT = Math.min(1, introT + dt / INTRO_DUR); if (introT >= 1) endIntro(); }
+    raf = 0; frameN++;
+    const rawMs = now - last;
+    if (!firstFrame) adaptQuality(rawMs);
+    const dt = Math.min(0.05, rawMs / 1000); dtReal = firstFrame ? 0 : Math.min(0.2, rawMs / 1000); last = now;
+    if (introT < 1) { introT = Math.min(1, introT + dtReal / INTRO_DUR); if (introT >= 1) endIntro(); }
     if (running) {
       time += dt;
       const activity = 0.5 + 0.5 * Math.sin(time * 0.35) * Math.sin(time * 0.13 + 1);
@@ -4868,7 +4900,10 @@ window.LeilaTalk = (() => {
     haloMat.opacity = 0.2 + lightLevel * 0.3;
     arcs.forEach(a => { if (a.alive) a.face(camera.position); });
     updateDark(now / 1000, dt);
+    renderer.shadowMap.needsUpdate = !(activeWorld && worldT >= 1) && (frameN % 3 === 0 || !!activeEvent);
+    if (firstFrame) { renderer.setRenderTarget(rtScene); renderer.compile(scene, camera); renderer.setRenderTarget(null); }
     renderAll();
+    if (firstFrame) { firstFrame = false; last = performance.now(); const bm = document.getElementById('bootMsg'); if (bm) bm.remove(); }
     const settling = darkGoal === 1 || dark > 0 || introT < 1 || anyBusy() || worldBusy() || focusT !== focusGoal || spots.some(s => Math.abs(s.hover - (hovered === s || focusSpot === s || selectedSpot === s ? 1 : 0)) > 0.01);
     if (!raf && (running || dragging || settling || mwOn || exShake > 0 || (exFall >= 0 && exLock.visible) || fwActive || Math.abs(dragYaw - curYaw) > 1e-3 || Math.abs(hoverX - curHX) > 1e-3)) raf = requestAnimationFrame(frame);
   }
@@ -4880,7 +4915,7 @@ window.LeilaTalk = (() => {
     pauseLabel.textContent = running ? 'Mettre en pause' : 'Lancer l’animation';
   }
   let introEnded = false;
-  function endIntro() { if (!introEnded && portrait && !window.LaboPanel.current()) setTimeout(() => window.LaboView.look('garcon-printemps'), 50); introEnded = true; introT = 1; setLabel(); requestRender(); }
+  function endIntro() { setTimeout(texRelease, 200); if (!introEnded && portrait && !window.LaboPanel.current()) setTimeout(() => window.LaboView.look('garcon-printemps'), 50); introEnded = true; introT = 1; setLabel(); requestRender(); }
   function setRunning(on) {
     running = on; setLabel();
     if (on) { arcs.forEach(a => { if (a.life > 1e8) a.life = a.age + 0.25; }); requestRender(); }
@@ -4899,6 +4934,28 @@ window.LeilaTalk = (() => {
   }
   window.LaboPanel.onChange(applyFocus);
 
+  const lightRig = (() => {
+    const shown = o => { for (let n = o; n; n = n.parent) if (!n.visible) return false; return true; };
+    const lab = []; let labP = 0, labS = 0;
+    scene.traverse(o => { if (!o.isPointLight && !o.isSpotLight) return; if (!shown(o)) return; if (o.isPointLight) labP++; else labS++; if (!o.castShadow && o !== torch) lab.push(o); });
+    const keptS = labS - lab.filter(l => l.isSpotLight).length;
+    const count = list => [list.filter(l => l.isPointLight).length, list.filter(l => l.isSpotLight).length];
+    const sets = { p: count(partyLights), b: count(buLights), r: count(rfLights) };
+    const maxP = Math.max(labP, sets.p[0], sets.b[0], sets.r[0]), maxS = Math.max(labS, keptS + sets.p[1], keptS + sets.b[1], keptS + sets.r[1]);
+    const padP = [], padS = [];
+    for (let i = 0; i < maxP; i++) { const l = new THREE.PointLight(0xffffff, 0, 1, 2); l.position.set(0, -500, 0); l.visible = false; scene.add(l); padP.push(l); }
+    for (let i = 0; i < maxS; i++) { const l = new THREE.SpotLight(0xffffff, 0, 1, 0.5, 0, 2); l.position.set(0, -500, 0); l.visible = false; scene.add(l); padS.push(l); }
+    let cur = null;
+    function apply(mode) {
+      if (mode === cur) return; cur = mode;
+      const inLab = mode === 'lab';
+      lab.forEach(l => { l.visible = inLab; });
+      const nP = inLab ? labP : sets[mode][0], nS = inLab ? labS : keptS + sets[mode][1];
+      padP.forEach((l, i) => { l.visible = i < maxP - nP; }); padS.forEach((l, i) => { l.visible = i < maxS - nS; });
+    }
+    apply('lab');
+    return { apply };
+  })();
   addEventListener('resize', resize);
   resize();
   animateLife(time, 0);
