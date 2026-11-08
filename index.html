@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="description" content="Portfolio de San : un sous-sol en 3D vu de face, avec une bobine Tesla et des objets qui ouvrent les projets Garçon Printemps, Leila et Photomathon.">
+<meta name="description" content="Portfolio de Brian Gaillardet : un sous-sol en 3D vu de face, avec une bobine Tesla et des objets qui ouvrent les projets Garçon Printemps, Leila et Photomaton.">
 <style>[hidden]{display:none!important}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
-<title>Le labo de San</title>
+<title>Le labo de Brian</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
@@ -112,6 +112,7 @@ h1 .san{
 }
 .chip.star{font-size:1rem;padding:13px 18px;border-color:rgba(255,200,120,.75);background:linear-gradient(180deg,rgba(255,170,80,.42),rgba(120,50,15,.32));box-shadow:0 0 22px rgba(255,150,60,.22),inset 0 1px 0 rgba(255,255,255,.18)}
 .lede strong{font-weight:500;color:#ffe2bd}
+.lede-egg{display:block;margin-top:.5em;font-style:italic;color:#ffd28a}
 .chip.quiet{border-color:rgba(255,200,150,.22);background:linear-gradient(180deg,rgba(255,220,190,.1),rgba(80,50,30,.08));box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
 .chip .num{font-family:var(--mono);font-size:.66rem;color:var(--amber)}
 .chip .go{color:var(--amber);transition:transform .25s}
@@ -319,6 +320,14 @@ body.booth-open{overflow:hidden}
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:calc(env(safe-area-inset-top,0px) + 20px) calc(env(safe-area-inset-bottom,0px) + 26px)}
 .worldui.show{opacity:1;transition:opacity .9s 2.6s}
 .worldui .btn{pointer-events:auto}
+#wBack{background:rgba(14,10,7,.84);border-color:rgba(255,255,255,.28);color:#fff}
+.wx{display:none;position:absolute;top:calc(env(safe-area-inset-top,0px) + 18px);right:max(16px,env(safe-area-inset-right,0px));width:48px;height:48px;padding:0;align-items:center;justify-content:center;border-radius:50%;background:rgba(14,10,7,.84);border:1px solid rgba(255,255,255,.35);color:#fff;font-size:1.7rem;line-height:1;cursor:pointer;z-index:6}
+body.zoomed .wx,body.talking .wx{display:flex}
+.wx:focus-visible{outline:2px solid #ffe066;outline-offset:2px}
+.talk-x{display:none}
+#labWipe{position:fixed;inset:0;z-index:30;background:#0b0705;opacity:0;pointer-events:none;transition:opacity .34s ease-out}
+#labWipe.on{opacity:1;pointer-events:auto;transition:opacity .2s ease-in}
+@media (min-width:900px){.wx{top:calc(env(safe-area-inset-top,0px) + 30px);right:max(48px,env(safe-area-inset-right,0px))}}
 .wcap{display:grid;gap:8px;text-shadow:0 2px 18px rgba(0,0,0,.6);transition:opacity .4s}
 body.zoomed .wcap{opacity:0}
 .wnav{position:absolute;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 26px);display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;max-width:60%;pointer-events:auto}
@@ -332,13 +341,14 @@ body.zoomed .wcap{opacity:0}
 .wcard{position:absolute;left:max(16px,env(safe-area-inset-left,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 26px);pointer-events:auto;display:grid;gap:8px;justify-items:start;max-width:min(420px,calc(100% - 32px));padding:16px 18px;border-radius:14px;background:rgba(14,10,7,.74);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid var(--hair);box-shadow:0 10px 40px rgba(0,0,0,.45)}
 .collab{position:absolute;left:max(16px,env(safe-area-inset-left,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 22px);pointer-events:auto;display:grid;gap:10px;justify-items:start;max-width:min(440px,calc(100% - 32px));padding:18px 20px;border-radius:16px;background:rgba(26,16,10,.78);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid rgba(255,180,110,.45);box-shadow:0 10px 40px rgba(0,0,0,.45),0 0 40px rgba(255,140,60,.12)}
 .collab[hidden]{display:none}
+body.zoomed .collab{visibility:hidden}
 .collab .eyebrow{color:#ffb46b}
-.collab strong{font-weight:400;font-size:1.25rem;line-height:1.25;color:#fff4e6}
+.collab strong{font-weight:400;font-size:1.7rem;letter-spacing:-.02em;line-height:1.15;color:#fff4e6}
 .collab p{margin:0;color:#e0d2c3;font-weight:300;line-height:1.5}
-.collab-go{padding:13px 18px;border-color:rgba(255,120,190,.7);background:linear-gradient(180deg,rgba(255,90,170,.42),rgba(120,20,70,.32));font-weight:500}
+.collab-go{padding:13px 18px;border-color:rgba(255,120,190,.7);background:linear-gradient(180deg,rgba(255,90,170,.62),rgba(150,25,90,.5));font-weight:500;font-size:1.05rem;width:100%;box-sizing:border-box;justify-content:center;text-align:center;text-decoration:none}
 body.in-bureau .wcap,body.in-bureau .wnav{opacity:0;visibility:hidden}
 @media (min-width:900px){.collab{left:max(48px,env(safe-area-inset-left,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 40px)}}
-@media (max-width:640px){.collab{padding:14px 16px;gap:8px}.collab strong{font-size:1.05rem}.collab p{font-size:.92rem}}
+@media (max-width:640px){.collab{padding:14px 16px;gap:8px}.collab strong{font-size:1.35rem}.collab p{font-size:.92rem}}
 .wcard .cdesc{margin:0;color:#e0d2c3;font-weight:300;line-height:1.5;font-size:.95rem}
 .wcard strong{font-weight:400;font-size:1.5rem;letter-spacing:-.02em;line-height:1.1}
 .clink{border-color:rgba(255,180,102,.55);text-decoration:none}
@@ -376,7 +386,7 @@ body.in-world .top,body.in-world .ctl-row,body.in-world .hud::before{opacity:0;v
   <header class="top">
     <div class="mark">
       <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10.5" stroke="#ffb466" stroke-opacity=".55"/><path d="M13.5 3.5 8.5 12.5h4l-2 8 5.5-10h-4l1.5-7Z" fill="#ffb466"/></svg>
-      Labo&nbsp;de&nbsp;San · Sous-sol
+      Labo&nbsp;de&nbsp;Brian · Sous-sol
     </div>
     <dl class="readouts" aria-live="off">
       <div><dt>Tension</dt><dd><span id="kv">412</span><small>kV</small></dd></div>
@@ -389,9 +399,9 @@ body.in-world .top,body.in-world .ctl-row,body.in-world .hud::before{opacity:0;v
 
   <footer class="bottom">
     <section class="intro">
-      <div class="eyebrow">Direction artistique · image · management</div>
-      <h1>Le labo <span class="san">de San</span></h1>
-      <p class="lede">Je construis l’image de deux artistes, <strong>Garçon Printemps</strong> et <strong>Leila</strong>. Entre dans leur monde : clique sur leur coin du labo.</p>
+      <div class="eyebrow">Brian Gaillardet · Direction artistique · image · management</div>
+      <h1>Le labo <span class="san">de Brian</span></h1>
+      <p class="lede">Je construis l’image, je crée la stratégie, vous faites la musique. Clique un peu partout pour découvrir mes travaux. <span class="lede-egg">Attention : il y a plein d’easter eggs.</span></p>
     </section>
     <div class="controls">
       <nav class="nav" aria-label="Coins du labo">
@@ -401,7 +411,7 @@ body.in-world .top,body.in-world .ctl-row,body.in-world .hud::before{opacity:0;v
           <button class="chip star" type="button" data-project="leila">Leila<span class="go" aria-hidden="true">→</span></button>
         </div>
         <div class="group">
-          <span class="plabel">San</span>
+          <span class="plabel">Brian</span>
           <button class="chip quiet" type="button" data-project="setup">Mon bureau<span class="go" aria-hidden="true">→</span></button>
         </div>
       </nav>
@@ -426,7 +436,7 @@ body.in-world .top,body.in-world .ctl-row,body.in-world .hud::before{opacity:0;v
     <div class="eyebrow" id="rwEb">9 secrets sur 9</div>
     <h2 id="rwTitle">T’as tout fouillé.</h2>
     <p>T’as la dalle comme nous. Viens, on va tout déchirer ensemble.</p>
-    <div class="rw-btns"><a class="btn rw-go" href="https://www.instagram.com/brian.gldt/" target="_blank" rel="noopener">Écrire à San sur Instagram <span aria-hidden="true">↗</span></a><button class="btn" id="rwLight" type="button">Rallumer la lumière</button></div>
+    <div class="rw-btns"><a class="btn rw-go" href="https://www.instagram.com/brian.gldt/" target="_blank" rel="noopener">Écrire à Brian sur Instagram <span aria-hidden="true">↗</span></a><button class="btn" id="rwLight" type="button">Rallumer la lumière</button></div>
     <button class="rw-x" id="rwClose" type="button" aria-label="Fermer">×</button>
   </div>
 </div>
@@ -435,7 +445,7 @@ body.in-world .top,body.in-world .ctl-row,body.in-world .hud::before{opacity:0;v
   <div class="b-curtain" aria-hidden="true"></div>
   <div class="b-inner">
     <header class="b-head">
-      <div><div class="eyebrow">Photomathon · la cabine du labo</div><h2 id="bTitle">Souris, c’est dans la boîte.</h2></div>
+      <div><div class="eyebrow">Photomaton · la cabine du labo</div><h2 id="bTitle">Souris, c’est dans la boîte.</h2></div>
       <button class="btn b-close" id="bClose" type="button" aria-label="Sortir de la cabine"><span aria-hidden="true">×</span> Sortir</button>
     </header>
     <div class="b-stage">
@@ -447,7 +457,7 @@ body.in-world .top,body.in-world .ctl-row,body.in-world .hud::before{opacity:0;v
         <div class="b-shotn" id="bShotN" aria-live="polite"></div>
         <div class="b-flash" id="bFlash" aria-hidden="true"></div>
       </div>
-      <div class="b-result" id="bResult" hidden><img id="bStrip" alt="Ta bande de 4 photos souvenir, marquée « J’étais au labo de San »."></div>
+      <div class="b-result" id="bResult" hidden><img id="bStrip" alt="Ta bande de 4 photos souvenir, marquée « J’étais au labo de Brian »."></div>
     </div>
     <div class="b-bar">
       <div class="b-filters" role="radiogroup" aria-label="Filtre">
@@ -480,8 +490,10 @@ body.in-world .top,body.in-world .ctl-row,body.in-world .hud::before{opacity:0;v
   </div>
 </aside>
 
+<div id="labWipe" aria-hidden="true"></div>
 <div class="worldui" id="worldui" hidden>
   <button class="btn" id="wBack" type="button"><span aria-hidden="true">←</span> Retour au labo</button>
+  <button class="btn wx" id="wX" type="button" aria-label="Quitter"><span aria-hidden="true">×</span></button>
   <div class="wcap"><div class="eyebrow" id="wEyebrow">Projet 01</div><h2 id="wTitle">Garçon Printemps</h2><p id="wHint">Clique sur un visuel pour l'agrandir</p></div>
   <nav class="wnav" id="wNav" aria-label="Lieux du monde" hidden></nav>
   <div class="wvid" id="wVid" hidden>
@@ -502,15 +514,15 @@ body.in-world .top,body.in-world .ctl-row,body.in-world .hud::before{opacity:0;v
   </div>
   <div class="collab" id="collab" hidden>
     <div class="eyebrow" id="colEb">Ouvert aux collabs</div>
-    <strong id="colTitle">Vidéo · Photo · Montage · Graphisme · Management</strong>
-    <p id="colText">Un clip, une pochette, un shooting, une identité visuelle ou un artiste à accompagner&nbsp;? Écris-moi, on en parle.</p>
-    <a class="btn collab-go" href="https://www.instagram.com/brian.gldt/" target="_blank" rel="noopener">DM sur Instagram <span aria-hidden="true">↗</span></a>
+    <strong id="colTitle">Tu fais la musique. Je m’occupe du reste.</strong>
+    <p id="colText">Tout ce que tu vois sur ce mur, je l’ai fait pour de vrais artistes : pochettes, clips, photos, stratégie, management. Clique dessus, puis viens me parler de ton projet.</p>
+    <a class="btn collab-go" href="https://www.instagram.com/brian.gldt/" target="_blank" rel="noopener"><span id="colGo">Écris-moi sur Insta</span> <span aria-hidden="true">↗</span></a>
   </div>
   <div class="wcard" id="wCard" hidden>
     <div class="eyebrow" id="cKind">Cover</div>
     <strong id="cTitle">Actrice</strong>
     <p class="cdesc" id="cDesc" hidden></p>
-    <a class="btn clink" id="cLink" href="#" target="_blank" rel="noopener">Écouter sur Spotify <span aria-hidden="true">↗</span></a>
+    <a class="btn clink" id="cLink" href="#" target="_blank" rel="noopener"><span id="cLinkT">Écouter sur Spotify</span> <span aria-hidden="true">↗</span></a>
     <div class="cbtns"><button class="btn" id="cSound" type="button" hidden>Activer le son</button><button class="btn" id="cVNext" type="button" hidden>Vidéo suivante <span aria-hidden="true">→</span></button></div>
   </div>
 </div>
@@ -546,10 +558,10 @@ window.LaboPanel = (() => {
         { src: 'assets/leila/footballeur.mp4', w: 1920, h: 1080, kind: 'Teaser', title: 'Footballeur' }
       ]
     },
-    'photomathon': { eyebrow: 'Passage secret', title: 'Photomathon', sub: 'Réalisations graphiques', images: [], booth: true, world: true },
+    'photomathon': { eyebrow: 'Passage secret', title: 'Photomaton', sub: 'Réalisations graphiques', images: [], booth: true, world: true },
     'toit': { eyebrow: 'Sortie', title: 'Le toit', sub: '', images: [], world: true },
     'setup': {
-      eyebrow: 'San', title: 'Mon bureau', sub: 'Vidéo, photo, montage, graphisme, management.', world: true,
+      eyebrow: 'Brian', title: 'Mon bureau', sub: 'Vidéo, photo, montage, graphisme, management.', world: true,
       list: [
         ['Sony ZV-E10 II', 'Boîtier hybride'],
         ['Sigma 24-70 mm F2.8 DG DN II Art', 'Zoom polyvalent'],
@@ -656,6 +668,7 @@ window.LaboPanel = (() => {
   closeBtn.addEventListener('click', close);
   skipBtn.addEventListener('click', reveal);
   $('wBack').addEventListener('click', close);
+  $('wX').addEventListener('click', () => { if (window.LaboView && window.LaboView.closeInteraction) window.LaboView.closeInteraction(); });
   lbClose.addEventListener('click', closeLightbox);
   lb.addEventListener('click', e => { if (e.target === lb) closeLightbox(); });
   document.querySelectorAll('[data-project]').forEach(b => b.addEventListener('click', () => open(b.dataset.project, { trigger: b })));
@@ -664,7 +677,7 @@ window.LaboPanel = (() => {
     const id = location.hash.slice(1);
     if (PROJECTS[id]) { if (id !== current) open(id); } else if (current) close();
   });
-  const CAROUSEL = [['garcon-printemps', 'Artiste', 'Garçon Printemps'], ['leila', 'Artiste', 'Leila'], ['setup', 'San', 'Mon bureau']];
+  const CAROUSEL = [['garcon-printemps', 'Artiste', 'Garçon Printemps'], ['leila', 'Artiste', 'Leila'], ['setup', 'Brian', 'Mon bureau']];
   let ci = 1;
   function showC(move) { const [id, eb, name] = CAROUSEL[ci]; $('cEb').textContent = eb; $('cName').textContent = name; if (move && window.LaboView) window.LaboView.look(id); }
   $('cPrev').addEventListener('click', () => { ci = (ci + CAROUSEL.length - 1) % CAROUSEL.length; showC(true); });
@@ -707,7 +720,7 @@ window.LaboPanel = (() => {
     if (!im || !im.kind) { card.hidden = true; return; }
     $('cKind').textContent = im.kind; $('cTitle').textContent = im.title || '';
     $('cDesc').hidden = !im.desc; $('cDesc').textContent = im.desc || '';
-    const a = $('cLink'); if (im.link) { a.href = im.link; a.hidden = false; } else { a.hidden = true; a.removeAttribute('href'); }
+    const a = $('cLink'); $('cLinkT').textContent = im.linkLabel || 'Écouter sur Spotify'; if (im.link) { a.href = im.link; a.hidden = false; } else { a.hidden = true; a.removeAttribute('href'); }
     $('cSound').hidden = !im.video; $('cVNext').hidden = !(im.video && im.playlist > 1);
     if (im.video) { const v = window.LaboView && window.LaboView.videoMuted ? window.LaboView.videoMuted() : true; $('cSound').textContent = v ? 'Activer le son' : 'Couper le son'; }
     if (im.video && im.playlist > 1) $('cTitle').textContent = (im.title || '') + '  ·  ' + im.index + '/' + im.playlist;
@@ -779,7 +792,7 @@ window.Booth = (() => {
   function open() {
     from = document.activeElement; root.hidden = false; document.body.classList.add('booth-open');
     stripBlob = null; shots = []; renderDots(); $('bResult').hidden = true; video.hidden = false;
-    state('intro'); say('<strong>Bienvenue dans la cabine.</strong>Allume ta caméra, choisis un filtre, et la cabine prend 4 photos. Tu repars avec ta bande souvenir « J’étais au labo de San ».');
+    state('intro'); say('<strong>Bienvenue dans la cabine.</strong>Allume ta caméra, choisis un filtre, et la cabine prend 4 photos. Tu repars avec ta bande souvenir « J’étais au labo de Brian ».');
     setTimeout(() => startBtn.focus(), 50);
   }
   function close() {
@@ -873,10 +886,10 @@ window.Booth = (() => {
     g.save(); g.translate(W / 2, fy + 58); g.scale(3.4, 3.4); g.translate(-12, -12);
     g.fillStyle = '#e07b2c'; g.fill(new Path2D('M13.5 3.5 8.5 12.5h4l-2 8 5.5-10h-4l1.5-7Z')); g.restore();
     g.fillStyle = '#1a130d'; g.textAlign = 'center';
-    g.font = 'italic 400 104px "Instrument Serif", Georgia, serif'; g.fillText('J’étais au labo de San', W / 2, fy + 190);
+    g.font = 'italic 400 104px "Instrument Serif", Georgia, serif'; g.fillText('J’étais au labo de Brian', W / 2, fy + 190);
     const d = new Date(), date = d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
     g.font = '500 30px "Geist Mono", ui-monospace, monospace'; g.fillStyle = '#7a5a3c';
-    g.fillText(('Photomathon · sous-sol · ' + date).toUpperCase(), W / 2, fy + 262);
+    g.fillText(('Photomaton · sous-sol · ' + date).toUpperCase(), W / 2, fy + 262);
     const url = await new Promise(r => c.toBlob(b => r(b), 'image/jpeg', 0.9));
     stripBlob = url;
     const img = $('bStrip'); if (img.dataset.url) URL.revokeObjectURL(img.dataset.url);
@@ -885,7 +898,7 @@ window.Booth = (() => {
     shareBtn.hidden = !(navigator.canShare && navigator.canShare({ files: [new File([url], 'labo-de-san.jpg', { type: 'image/jpeg' })] }));
     say(''); saveBtn.focus();
   }
-  const fileName = () => 'photomathon-labo-de-san-' + new Date().toISOString().slice(0, 10) + '.jpg';
+  const fileName = () => 'photomaton-labo-de-brian-' + new Date().toISOString().slice(0, 10) + '.jpg';
   async function save() {
     if (!stripBlob) return;
     let dl = null;
@@ -896,7 +909,7 @@ window.Booth = (() => {
   async function share() {
     if (!stripBlob) return;
     const file = new File([stripBlob], fileName(), { type: 'image/jpeg' });
-    try { await navigator.share({ files: [file], title: 'Le labo de San', text: 'J’étais au labo de San' }); } catch (e) {}
+    try { await navigator.share({ files: [file], title: 'Le labo de Brian', text: 'J’étais au labo de Brian' }); } catch (e) {}
   }
 
   startBtn.addEventListener('click', camera);
@@ -923,14 +936,14 @@ window.GPTalk = (() => {
   const $ = id => document.getElementById(id);
   const root = $('talk'), text = $('talkText'), choices = $('talkChoices');
   const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const ASK = [['play', 'On joue avec tes fleurs ?'], ['who', 'C’est qui, Garçon Printemps ?'], ['mow', 'Pourquoi une tondeuse ?'], ['san', 'Tu connais San ?'], ['listen', 'Où je peux t’écouter ?']];
+  const ASK = [['play', 'On joue avec tes fleurs ?'], ['who', 'C’est qui, Garçon Printemps ?'], ['mow', 'Pourquoi une tondeuse ?'], ['san', 'Tu connais Brian ?'], ['listen', 'Où je peux t’écouter ?']];
   const LINES = {
-    invite: 'Salut ! Ici chaque fleur chante sa note. Je te joue un air, tu le rejoues dans l’ordre. Cinq manches pour gagner.',
-    start: 'Ah, t’es là ! Bienvenue dans mon jardin. Fais pas attention, aujourd’hui je suis en carton.',
+    invite: 'Hello, c’est Garçon Printemps !',
+    start: 'Vas-y, demande-moi ce que tu veux.',
     play: 'Ici chaque fleur a sa note. Je te joue un air, tu le rejoues dans le même ordre. Cinq manches. Prêt ?',
-    who: 'Un mec qui fait pousser des sons. Je plante des mélodies, et quand ça fleurit, ça donne un morceau.',
+    who: 'Je suis un artiste de pop soul. Mon but à moi, c’est de faire passer des messages à travers des textes impactants et des mélodies joyeuses.',
     mow: 'Parce qu’il faut couper tout ce qui dépasse… sauf les idées. Elles, on les laisse pousser.',
-    san: 'San ? C’est mon frère. Tous les visuels sur les fils à linge, c’est lui. On va tout défoncer, je te jure.',
+    san: 'Oui, c’est mon manager, et c’est lui qui a fait les visuels présents ici.',
     listen: 'Sur toutes les plateformes. Et mes vidéos passent au drive-in, au fond à droite. Le coucher de soleil est offert.',
     bye: 'Allez, à plus. Arrose les fleurs en partant.'
   };
@@ -960,8 +973,8 @@ window.GPTalk = (() => {
   function invite() {
     if (open && window.GPGarden && window.GPGarden.busy()) return;
     const b = window.GPGarden ? window.GPGarden.best() : 0;
-    const rec = b >= 5 ? ' Tu l’as déjà gagné, tu remets ça ?' : b > 0 ? ` Ton record : ${b} manche${b > 1 ? 's' : ''} sur 5.` : '';
-    show(LINES.invite + rec, [['▶ Jouer', () => window.GPGarden && window.GPGarden.start(), 'go'], ['Discuter avec moi', () => say(LINES.start, () => menu())]]);
+    const rec = b >= 5 ? ' Tu as déjà gagné mon jeu.' : b > 0 ? ` Ton record : ${b} manche${b > 1 ? 's' : ''} sur 5.` : '';
+    show(LINES.invite + rec + ' Aujourd’hui, tu veux :', [['▶ Jouer avec mes fleurs', () => answer('play'), 'go'], ['Discuter avec moi', () => say(LINES.start, () => menu())]]);
   }
   function close() { if (!open) return; open = false; clearInterval(typing); if (window.GPGarden) window.GPGarden.stop(); root.hidden = true; document.body.classList.remove('talking'); if (window.LaboView && window.LaboView.unzoom) window.LaboView.unzoom(); }
   $('talkClose').addEventListener('click', close);
@@ -1441,7 +1454,7 @@ window.GPTalk = (() => {
   poster((c, w, h) => {
     c.fillStyle = '#1d1a18'; c.fillRect(0, 0, w, h);
     for (let i = 0; i < 4; i++) { const gr = c.createLinearGradient(0, 60 + i * 150, 0, 190 + i * 150); gr.addColorStop(0, '#6d655c'); gr.addColorStop(1, '#2b2724'); c.fillStyle = gr; c.fillRect(70, 50 + i * 150, w - 140, 130); }
-    c.fillStyle = '#efe6d6'; c.textAlign = 'center'; c.font = '500 46px "Geist Mono", monospace'; c.fillText('PHOTOMATHON', w / 2, h - 40);
+    c.fillStyle = '#efe6d6'; c.textAlign = 'center'; c.font = '500 46px "Geist Mono", monospace'; c.fillText('PHOTOMATON', w / 2, h - 40);
     speckle(c, w, h, 3000, 0.08, 0.2); tornEdges(c, w, h);
   }, 0.62, 0.86 * 1.55, 4.6, 1.75, ZB + 0.012, 0, 0.03);
   poster((c, w, h) => {
@@ -1491,7 +1504,7 @@ window.GPTalk = (() => {
   // conduit d'aération au plafond
   box(1.0, 0.5, ZF - ZB - 1, M({ map: paintTex('#6d7072', '90,60,30', '230,230,230'), metalness: 0.7, roughness: 0.45 }), 5.4, RH - 0.55, (ZF + ZB) / 2 + 0.5, deco);
   for (let z = ZB + 1.5; z < ZF; z += 2.2) box(1.06, 0.56, 0.06, matSteel, 5.4, RH - 0.55, z, deco);
-  // premier plan : caisses, fût, chaîne, et la blouse de San au portemanteau
+  // premier plan : caisses, fût, chaîne, et la blouse de Brian au portemanteau
   const crateW = M({ map: woodTex, roughness: 0.85 });
   box(1.1, 0.8, 0.9, crateW, -3.9, 0.4, 4.9, deco).rotation.y = 0.3;
   box(0.9, 0.6, 0.8, crateW, -3.8, 1.1, 4.8, deco).rotation.y = -0.15;
@@ -1508,7 +1521,7 @@ window.GPTalk = (() => {
   const coat = softBox(0.5, 0.95, 0.2, 0.08, coatMat, 0.14, 1.25, 0.05, rack); coat.rotation.set(0.05, 0.3, 0.04);
   softBox(0.12, 0.6, 0.12, 0.05, coatMat, 0.38, 1.3, 0.1, rack).rotation.z = 0.08;
   softBox(0.12, 0.6, 0.12, 0.05, coatMat, -0.1, 1.3, 0.0, rack).rotation.z = -0.06;
-  const badge = new THREE.Mesh(new THREE.PlaneGeometry(0.12, 0.05), new THREE.MeshBasicMaterial({ map: canvasTex(256, 96, (c, w, h) => { c.fillStyle = '#f3efe6'; c.fillRect(0, 0, w, h); c.fillStyle = '#1b1b1b'; c.font = '500 56px Geist, Arial, sans-serif'; c.fillText('SAN', 20, 70); c.fillStyle = '#e07b2c'; c.fillRect(196, 18, 40, 60); }, { text: true }) }));
+  const badge = new THREE.Mesh(new THREE.PlaneGeometry(0.12, 0.05), new THREE.MeshBasicMaterial({ map: canvasTex(256, 96, (c, w, h) => { c.fillStyle = '#f3efe6'; c.fillRect(0, 0, w, h); c.fillStyle = '#1b1b1b'; c.font = '500 46px Geist, Arial, sans-serif'; c.fillText('BRIAN', 14, 66); c.fillStyle = '#e07b2c'; c.fillRect(196, 18, 40, 60); }, { text: true }) }));
   badge.position.set(0.0, 0.25, 0.105); coat.add(badge);
   blob(deco, 3.2, 5.2, 1.2, 1.2, 0.7);
   // chaîne qui pend au premier plan
@@ -1682,7 +1695,7 @@ window.GPTalk = (() => {
   });
 
   // 03 · Photomathon : la cabine photo
-  addSpot('photomathon', 7.2, -2.9, { eyebrow: 'Projet 03', label: 'Photomathon', plaqueY: 3.35, plaqueZ: 0.4, light: 5, lightPos: [0, 1.8, 1.4], ring: 1.4, ringZ: 0.6, hit: [2.0, 3.2, 1.8], hitZ: 0.2, targetY: 1.5, focusY: 1.9, focusDist: 4.6 }, g => {
+  addSpot('photomathon', 7.2, -2.9, { eyebrow: 'Projet 03', label: 'Photomaton', plaqueY: 3.35, plaqueZ: 0.4, light: 5, lightPos: [0, 1.8, 1.4], ring: 1.4, ringZ: 0.6, hit: [2.0, 3.2, 1.8], hitZ: 0.2, targetY: 1.5, focusY: 1.9, focusDist: 4.6 }, g => {
     const body = M({ map: paintTex('#f1efea', '170,160,148', '255,255,255'), metalness: 0.1, roughness: 0.5, emissive: 0x3a3a3c, emissiveIntensity: 0.6 });
     const bodyTop = M({ color: 0xf4f2ee, roughness: 0.45, metalness: 0.1, emissive: 0x3a3a3c, emissiveIntensity: 0.6 });
     box(1.8, 0.12, 1.4, matDark, 0, 0.06, 0, g);
@@ -1708,7 +1721,7 @@ window.GPTalk = (() => {
     const signTex = canvasTex(1024, 256, (c, w) => {
       c.fillStyle = '#f6f4ef'; c.fillRect(0, 0, w, 256); c.textAlign = 'center'; c.font = '700 112px Geist, Arial, sans-serif';
       try { c.letterSpacing = '14px'; } catch (e) {}
-      c.fillStyle = '#111'; c.fillText('PHOTOMATHON', w / 2 + 7, 166);
+      c.fillStyle = '#111'; c.fillText('PHOTOMATON', w / 2 + 7, 166);
     }, { text: true });
     const sign = new THREE.Mesh(new THREE.PlaneGeometry(1.7, 0.42), new THREE.MeshBasicMaterial({ map: signTex, color: new THREE.Color(0.55, 0.55, 0.55) })); sign.position.set(0, 2.72, 0.225); g.add(sign);
     const bGeo = new THREE.SphereGeometry(0.022, 8, 6);
@@ -1723,7 +1736,7 @@ window.GPTalk = (() => {
     pmS.pl.parent.visible = false; pmS.ring.visible = false; pmS.baseLight *= 0.25; pmS.light.intensity = pmS.baseLight;
   }
   // Atelier · Setup : un vrai coin de créateur (bureau, écran de montage, matériel, softbox)
-  addSpot('setup', -8.9, -1.1, { rotY: Math.PI / 2, eyebrow: 'San', label: 'Mon bureau', plaqueY: 2.95, plaqueZ: -0.55, light: 4, ring: 1.7, hit: [1.4, 2.6, 0.8], hitX: 0, hitZ: -0.25, targetY: 1.2, focusDist: 3.3, focusY: 1.8 }, g => {
+  addSpot('setup', -8.9, -1.1, { rotY: Math.PI / 2, eyebrow: 'Brian', label: 'Mon bureau', plaqueY: 2.95, plaqueZ: -0.55, light: 4, ring: 1.7, hit: [1.4, 2.6, 0.8], hitX: 0, hitZ: -0.25, targetY: 1.2, focusDist: 3.3, focusY: 1.8 }, g => {
     const deskMat = M({ map: woodTex, roughness: 0.55, color: 0x9a7a5e });
     box(2.4, 0.06, 0.9, deskMat, 0, 0.92, -0.1, g);
     [[-1.12, -0.5], [1.12, -0.5], [-1.12, 0.3], [1.12, 0.3]].forEach(([x, z]) => box(0.05, 0.89, 0.05, matDark, x, 0.445, z, g));
@@ -2167,7 +2180,7 @@ window.GPTalk = (() => {
     g.save(); g.translate(w / 2, h * 0.5); g.scale(1.75, 1.05);
     g.beginPath(); g.moveTo(0, 125); g.bezierCurveTo(-230, -10, -150, -200, 0, -100); g.bezierCurveTo(150, -200, 230, -10, 0, 125);
     g.restore(); g.strokeStyle = INK.pink; g.lineWidth = 14; g.shadowColor = INK.pink; g.shadowBlur = 20; g.stroke(); g.shadowBlur = 0;
-    spray(g, 'SAN · GP · LEILA', w / 2, h * 0.47, 86, INK.white, { drips: 0.8 });
+    spray(g, 'BRIAN · GP · LEILA', w / 2, h * 0.47, 86, INK.white, { drips: 0.8 });
     hand(g, 'Des frères, pas des clients.', w / 2, h * 0.66, 50, INK.pink);
   }, V(-1.95, 3.5, WZ), { r: 0.7 });
   // 3 · pour Garçon Printemps, sur le mur derrière la tondeuse
@@ -2209,7 +2222,7 @@ window.GPTalk = (() => {
   }, V(1.9, 3.4, WZ), { r: 0.6 });
   // 9 · la signature, dans un coin sombre
   addSecret('signature', 1.8, 0.9, 1024, 512, (g, w, h) => {
-    spray(g, 'San était là.', w / 2, 220, 120, INK.orange, { family: '"Instrument Serif", Georgia, serif', font: 'italic 400', rot: -0.06 });
+    spray(g, 'Brian était là.', w / 2, 220, 120, INK.orange, { family: '"Instrument Serif", Georgia, serif', font: 'italic 400', rot: -0.06 });
     hand(g, 'Et il va pas partir.', w / 2, 390, 76, INK.white);
   }, V(5.75, 0.95, WZ), { r: 0.6 });
 
@@ -2380,7 +2393,7 @@ window.GPTalk = (() => {
     }
   });
   const endDrag = () => { dragging = false; canvas.classList.remove('dragging'); };
-  canvas.addEventListener('pointerup', e => { if (window.LaboPong && window.LaboPong.grab(e)) return; const wasClick = dragging && !moved; endDrag(); if (wasClick) { const s = pick(e); if (activeWorld) { if (s && s.hot) goView(s.hot.userData.goView); else if (worldT > 0.95) { const ph = s && s.frame ? s.frame.userData.photo || s.frame : null; if (ph && ph === frameFocus && ph.userData.im && ph.userData.im.link) document.getElementById('cLink').click(); else if (ph && ph.userData.booth) { if (window.Booth) window.Booth.open(); } else if (ph && ph.userData.note != null) window.GPGarden.tap(ph.userData.note); else if (ph && ph.userData.talk) { if (frameFocus) focusFrame(null); window.GPTalk.start(); } else if (!ph && window.GPTalk && window.GPTalk.isOpen()) {} else focusFrame(ph && ph !== frameFocus ? ph : null); } } else if (s === LEVER) setDark(!darkGoal); else if (s === HAM) hamClick(); else if (s) window.LaboPanel.open(s.id); } });
+  canvas.addEventListener('pointerup', e => { if (window.LaboPong && window.LaboPong.grab(e)) return; const wasClick = dragging && !moved; endDrag(); if (wasClick) { const s = pick(e); if (activeWorld) { if (s && s.hot) goView(s.hot.userData.goView); else if (worldT > 0.95) { const ph = s && s.frame ? s.frame.userData.photo || s.frame : null; if (ph && ph === frameFocus && ph.userData.im && ph.userData.im.link) document.getElementById('cLink').click(); else if (ph && ph.userData.booth) { if (window.Booth) window.Booth.open(); } else if (ph && ph.userData.pong) { if (window.LaboPong) window.LaboPong.invite(); } else if (ph && ph.userData.note != null) window.GPGarden.tap(ph.userData.note); else if (ph && ph.userData.talk) { if (frameFocus) focusFrame(null); window.GPTalk.start(); } else if (!ph && window.GPTalk && window.GPTalk.isOpen()) {} else focusFrame(ph && ph !== frameFocus ? ph : null); } } else if (s === LEVER) setDark(!darkGoal); else if (s === HAM) hamClick(); else if (s) window.LaboPanel.open(s.id); } });
   canvas.addEventListener('pointercancel', endDrag);
   const aimAt = e => { const rect = canvas.getBoundingClientRect(); torchNdc.set((e.clientX - rect.left) / rect.width * 2 - 1, -((e.clientY - rect.top) / rect.height) * 2 + 1); if (darkGoal) requestRender(); };
   canvas.addEventListener('pointermove', aimAt); canvas.addEventListener('pointerdown', aimAt);
@@ -3553,7 +3566,7 @@ window.GPTalk = (() => {
   blob(leiG, 0, 0.05, 0.9, 0.7, 0.55);
   // on peut s'approcher de lui
   const leiHit = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.75), new THREE.MeshBasicMaterial({ visible: false })); leiHit.position.set(0, 1.12, 0.3); leiG.add(leiHit);
-  leiHit.userData.photo = leiHit; leiHit.userData.view = 'pong'; leiHit.userData.im = { kind: 'Leila', title: 'Tombé du skate, venu quand même', desc: 'Capuche sur la tête, clope au bec : il te regarde jouer depuis le fond du garage.' };
+  leiHit.userData.photo = leiHit; leiHit.userData.view = 'pong'; leiHit.userData.im = { kind: 'Artiste', title: 'Leila', desc: 'Artiste, compositeur, interprète talentueux, Leila explore la pop et l’électro pour faire des sons.' };
   W_LE.frames.push(leiHit);
   function leilaLife(t, dt) {
     lBody.scale.y = 1 + Math.sin(t * 1.3) * 0.01; lHead.rotation.y = Math.sin(t * 0.4) * 0.12; lHead.rotation.x = 0.05 + Math.sin(t * 0.3) * 0.04;
@@ -3564,6 +3577,9 @@ window.GPTalk = (() => {
   const QPT = V(GDXc - 0.5, 0, -PZ - 3.5);                       // centre de la table, dans le repère du salon
   const QTL = 2.2, QTW = 0.64, QTH = 0.76, QCR = 0.068, QCB = 0.05, QCH = 0.14, QBR = 0.024;
   const pongG = new THREE.Group(); pongG.position.copy(QPT); partyRoom.add(pongG);
+  // après avoir fermé le jeu, un clic sur la table le relance
+  const pongHit = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.95, 3.4), new THREE.MeshBasicMaterial({ visible: false })); pongHit.position.copy(QPT).add(V(0, 0.48, 0)); partyRoom.add(pongHit);
+  pongHit.userData.photo = pongHit; pongHit.userData.view = 'pong'; pongHit.userData.pong = true; W_LE.frames.push(pongHit);
   box(QTW, 0.035, QTL, M({ color: 0xd6d0c4, roughness: 0.55 }), 0, QTH - 0.0175, 0, pongG);
   box(0.012, 0.002, QTL, M({ color: 0x2a5fc0, roughness: 0.6, emissive: 0x0c1c40, emissiveIntensity: 0.6 }), 0, QTH + 0.001, 0, pongG);
   [-1, 1].forEach(sz => [-1, 1].forEach(sx => box(0.03, QTH - 0.03, 0.03, matSteel, sx * (QTW / 2 - 0.06), (QTH - 0.03) / 2, sz * (QTL / 2 - 0.15), pongG)));
@@ -3738,7 +3754,7 @@ window.GPTalk = (() => {
   }
   W_LE.views = {
     salon: { pos: PVIEW, tgt: PTGT, label: 'Le salon', hint: 'Gobelet pong dans le garage, à gauche du canapé · projection derrière la porte rose' },
-    pong: { pos: P_(QPT.x + 0.05, 1.42, QPT.z + 1.55), tgt: P_(QPT.x, 0.45, QPT.z - 0.9), label: 'Le garage · pong', hint: 'Vise un gobelet et relâche quand la jauge est dans le vert' },
+    pong: { pos: P_(QPT.x + 0.05, 1.42, QPT.z + 1.55), tgt: P_(QPT.x, 0.45, QPT.z - 0.9), label: 'Le garage · pong', hint: 'Clique sur la table pour jouer' },
     projection: { pos: P_(DXc + 0.55, 1.95, BZ0 - 0.35), tgt: P_(BXc, 1.45, BZ1), label: 'La projection', hint: vids[0] ? 'Clique sur l’écran pour t’approcher' : 'La vidéo de Leila arrive bientôt sur ce drap' }
   };
   W_LE.routes = {
@@ -3828,7 +3844,7 @@ window.GPTalk = (() => {
     const sg = new THREE.Mesh(new THREE.PlaneGeometry(1.7, 0.42), mk(new THREE.Color(1.3, 1.3, 1.3), { map: pmSignTex })); sg.position.set(0, 2.72, 0.225); g.add(sg);
     return cur;
   }
-  const pmSignTex = canvasTex(1024, 256, (c, w) => { c.fillStyle = '#f6f4ef'; c.fillRect(0, 0, w, 256); c.textAlign = 'center'; c.font = '700 112px Geist, Arial, sans-serif'; try { c.letterSpacing = '14px'; } catch (e) {} c.fillStyle = '#111'; c.fillText('PHOTOMATHON', w / 2 + 7, 166); }, { text: true });
+  const pmSignTex = canvasTex(1024, 256, (c, w) => { c.fillStyle = '#f6f4ef'; c.fillRect(0, 0, w, 256); c.textAlign = 'center'; c.font = '700 112px Geist, Arial, sans-serif'; try { c.letterSpacing = '14px'; } catch (e) {} c.fillStyle = '#111'; c.fillText('PHOTOMATON', w / 2 + 7, 166); }, { text: true });
   const pmBooth = new THREE.Group(); pmBooth.position.copy(BC); whiteRoom.add(pmBooth);
   const pmCurtain = boothShell(pmBooth, { lit: true });
   blob(pmBooth, 0, 0.1, 2.8, 2.4, 0.35);
@@ -3855,7 +3871,7 @@ window.GPTalk = (() => {
   const dialHands = [[3.6, 0.07], [2.4, 0.12]].map(([len, wd]) => { const p = new THREE.Group(); p.position.set(BC.x, 0.02, BC.z + 0.6); whiteRoom.add(p); const h = new THREE.Mesh(new THREE.PlaneGeometry(wd, len), pmInk); h.rotation.x = -Math.PI / 2; h.position.z = -len / 2 + 0.3; p.add(h); return p; });
   // ----- des horloges qui flottent, chacune à son rythme (certaines à l'envers) -----
   const clockTex = canvasTex(256, 256, (c, w) => { const r = w / 2; c.fillStyle = '#fbfaf7'; c.beginPath(); c.arc(r, r, r - 2, 0, TAU); c.fill(); c.translate(r, r); c.strokeStyle = '#111'; c.lineWidth = 8; c.beginPath(); c.arc(0, 0, r - 8, 0, TAU); c.stroke(); for (let i = 0; i < 12; i++) { const a = i / 12 * TAU; c.lineWidth = 6; c.beginPath(); c.moveTo(Math.sin(a) * (r - 18), -Math.cos(a) * (r - 18)); c.lineTo(Math.sin(a) * (r - 38), -Math.cos(a) * (r - 38)); c.stroke(); } });
-  const pmClocks = [[-4.6, 2.7, -3.4, 0.62, 1.0], [4.8, 3.3, -8.5, 0.9, -1.6], [-6.4, 1.6, -11, 1.1, 0.4], [3.3, 4.3, -2.6, 0.45, -3.2], [-2.6, 5.2, -9, 0.7, 2.4]].map(([x, y, z, r, sp], i) => {
+  const pmClocks = [[-7.2, 3.0, -4.6, 0.62, 1.0], [4.8, 3.3, -8.5, 0.9, -1.6], [-6.4, 1.6, -11, 1.1, 0.4], [3.3, 4.3, -2.6, 0.45, -3.2], [-2.6, 5.2, -9, 0.7, 2.4]].map(([x, y, z, r, sp], i) => {
     const g = new THREE.Group(); g.position.set(x, y, z); whiteRoom.add(g);
     const face = new THREE.Mesh(new THREE.CircleGeometry(r, 48), new THREE.MeshBasicMaterial({ map: clockTex, color: new THREE.Color(1.7, 1.7, 1.7), side: THREE.DoubleSide })); g.add(face);
     const hands = [[0.8, 0.035], [0.55, 0.06]].map(([l, wd]) => { const p = new THREE.Group(); p.position.z = 0.01; g.add(p); const h = new THREE.Mesh(new THREE.PlaneGeometry(wd * r, l * r), pmInk); h.position.y = l * r / 2 - 0.05 * r; p.add(h); return p; });
@@ -3871,6 +3887,7 @@ window.GPTalk = (() => {
     const m = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 0.375), idVariants[i % 8]);
     const base = V(BC.x + Math.cos(a) * rad, 0.7 + ((i * 0.53) % 3.8), BC.z + 0.4 + Math.sin(a) * rad * 0.8);
     if (base.z > 1.2) base.z -= 3;
+    if (base.x > 3) base.x *= 0.4; if (base.x < -1.2 && base.x > -5.2 && base.z > -6) base.x -= 4;
     m.position.copy(base); whiteRoom.add(m);
     pmCards.push({ m, base, dir: V(rand(-1, 1), rand(-0.4, 0.6), rand(-1, 1)).normalize().multiplyScalar(rand(0.25, 0.6)), ph: rand(0, TAU), rx: rand(-0.4, 0.4), ry: rand(-1, 1), sp: rand(0.6, 1.4) });
   }
@@ -3879,13 +3896,13 @@ window.GPTalk = (() => {
   const pmStrips = [];
   for (let i = 0; i < 12; i++) {
     const m = new THREE.Mesh(new THREE.PlaneGeometry(0.14, 0.56), new THREE.MeshBasicMaterial({ map: pmStripTex, color: new THREE.Color(1.4, 1.4, 1.4), side: THREE.DoubleSide }));
-    const x = BC.x + rand(-6, 6), z = BC.z + rand(-6, 4); m.position.set(x, 2, z); whiteRoom.add(m);
+    const x = BC.x + rand(-6, 3), z = BC.z + rand(-6, 4); m.position.set(x, 2, z); whiteRoom.add(m);
     pmStrips.push({ m, x, z, ph: rand(0, 4), spin: rand(-1.5, 1.5) });
   }
   // ----- les ondes du temps, qui partent de la cabine -----
   const pmRings = [0, 1, 2].map(i => { const m = new THREE.Mesh(new THREE.RingGeometry(0.97, 1, 96), new THREE.MeshBasicMaterial({ color: 0x111111, transparent: true, opacity: 0, depthWrite: false })); m.rotation.x = -Math.PI / 2; m.position.set(BC.x, 0.016, BC.z + 0.6); whiteRoom.add(m); return { m, ph: i / 3 }; });
   // ----- l'héritage : un vieil appareil photo à soufflet sur un socle -----
-  const HP = V(-4.2, 0, -2.4);
+  const HP = V(-3.0, 0, -3.2);
   const herit = new THREE.Group(); herit.position.copy(HP); herit.rotation.y = 0.5; whiteRoom.add(herit);
   box(0.62, 1.05, 0.62, M({ color: 0xffffff, roughness: 0.6 }), 0, 0.525, 0, herit);
   blob(herit, 0, 0, 1.1, 1.1, 0.4);
@@ -3900,8 +3917,34 @@ window.GPTalk = (() => {
   const plaque = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.156), new THREE.MeshBasicMaterial({ map: pmPlaqueTex, color: new THREE.Color(1.3, 1.3, 1.3) })); plaque.position.set(0, 0.8, 0.312); herit.add(plaque);
   const heritHit = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.9), new THREE.MeshBasicMaterial({ visible: false })); heritHit.position.set(0, 1.0, 0.33); herit.add(heritHit);
   heritHit.userData.photo = heritHit; heritHit.userData.view = 'heritage';
-  heritHit.userData.im = { kind: 'L’héritage', title: 'Là où tout a commencé', alt: 'Un vieil appareil photo à soufflet posé sur un socle blanc.' };
+  const PM_STORY = { kind: 'L’héritage', title: 'Ici, tu es dans une zone un peu spéciale.', desc: 'Si je peux aujourd’hui faire des visuels dans la musique, c’est parce que mon frère Leila m’a demandé de réaliser toute la production visuelle de son album Photomaton, sur son ancien projet M4DEN. Franchement, il faut que tu écoutes.', link: 'https://open.spotify.com/intl-fr/album/2RN1nzo7OEUINrDT5wbKkV' };
+  heritHit.userData.im = PM_STORY;
   W_PM.frames.push(heritHit);
+  // ----- les visuels de l'album : un cadre noir pour qu'ils se détachent du blanc -----
+  function pmPrint(src, w, h, im, view, parent) {
+    const g = new THREE.Group(); parent.add(g);
+    box(w + 0.07, h + 0.07, 0.03, pmInk, 0, 0, 0, g);
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: imgTexture(src), color: new THREE.Color(1, 1, 1), fog: false })); m.position.z = 0.02; g.add(m);
+    m.userData.photo = m; m.userData.view = view; m.userData.im = im; W_PM.frames.push(m);
+    return { g, m };
+  }
+  const pmHero = pmPrint('assets/photomathon/serie/cover.webp', 2, 2, PM_STORY, 'salle', herit);
+  pmHero.g.position.set(0, 2.55, -0.45);
+  const PM_KIND = 'Photomaton · M4DEN';
+  const pmSerie = [['ailes', 933, 1400, 'Les ailes'], ['rouge', 933, 1400, 'Le portrait rouge'], ['poisson', 933, 1400, 'Poisson rouge'], ['tag', 989, 1400, 'Le tag'], ['sang', 990, 1400, 'La silhouette rouge'], ['alternative', 1500, 1065, 'La pochette alternative'], ['cereales', 1500, 964, 'La boîte de céréales'], ['ps4', 1600, 988, 'Le jeu PS4'], ['feu', 1500, 1000, 'La voiture en feu']].map(([n, iw, ih, title], i) => {
+    const tall = ih > iw, h = tall ? 1.6 : 1.85 * ih / iw, w = h * iw / ih;
+    return pmPrint('assets/photomathon/serie/' + n + '.webp', w, h, { kind: PM_KIND, title, alt: 'Visuel de l’album Photomaton : ' + title + '.' }, 'serie', whiteRoom);
+  });
+  const PSX = 8;
+  function pmLayout() {
+    pmSerie.forEach((o, i) => {
+      if (portrait) { const r = Math.floor(i / 3), c = i % 3; o.g.scale.setScalar(0.66); o.g.rotation.y = 0; o.g.position.set(PSX + (c - 1) * 1.3, 3.35 - r * 1.3, -5.5); return; }
+      const top = i < 5, th = top ? (i - 2) * 0.33 : (i - 6.5) * 0.33, R = 6.5;
+      o.g.scale.setScalar(1); o.g.rotation.y = -th; o.g.position.set(PSX + Math.sin(th) * R, top ? 2.85 : 1.0, 1 - Math.cos(th) * R);
+    });
+  }
+  const pmHotSerie = new THREE.Mesh(new THREE.BoxGeometry(10, 4.4, 0.4), new THREE.MeshBasicMaterial({ visible: false })); pmHotSerie.position.set(PSX, 1.9, -4.6); pmHotSerie.userData.goView = 'serie'; pmHotSerie.userData.view = 'salle'; whiteRoom.add(pmHotSerie);
+  W_PM.hotspots = [pmHotSerie];
   // ----- la phrase écrite au sol -----
   const floorTxt = canvasTex(1024, 200, (c, w, h) => { c.fillStyle = '#111'; c.textAlign = 'center'; c.font = 'italic 400 110px "Instrument Serif", Georgia, serif'; c.fillText('Là où tout a commencé.', w / 2, 132); }, { text: true });
   const floorLine = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 0.625), new THREE.MeshBasicMaterial({ map: floorTxt, transparent: true, depthWrite: false, opacity: 0.8 }));
@@ -3909,7 +3952,8 @@ window.GPTalk = (() => {
   // ----- les lieux et le passage par le rideau -----
   W_PM.views = {
     salle: { pos: P2(0, 1.65, 2.6), tgt: P2(0, 1.4, -6), label: 'La salle blanche', hint: 'Clique sur la cabine pour te faire tirer le portrait' },
-    heritage: { pos: P2(HP.x + 1.25, 1.5, HP.z + 1.9), tgt: P2(HP.x, 1.0, HP.z), label: 'L’héritage', hint: 'Là où tout a commencé' }
+    heritage: { pos: P2(HP.x + 1.9, 1.8, HP.z + 3.4), tgt: P2(HP.x, 1.75, HP.z), label: 'L’héritage', hint: 'Là où tout a commencé' },
+    serie: { pos: P2(8, 1.9, 1), tgt: P2(8, 1.9, -5.5), label: 'La série', hint: 'Clique sur un visuel pour t’en approcher' }
   };
   W_PM.routes = {};
   W_PM.baseView = 'salle'; W_PM.view = 'salle'; W_PM.visited = { salle: true };
@@ -3920,6 +3964,8 @@ window.GPTalk = (() => {
     this.AT = new THREE.CatmullRomCurve3([tgt.clone(), c.clone(), c.clone().addScaledVector(fwd, -0.6)]);
     const sv = this.views.salle;
     sv.pos.copy(P2(0, portrait ? 1.9 : 1.65, portrait ? 5.2 : 2.6)); sv.tgt.copy(P2(0, portrait ? 1.2 : 1.4, -6));
+    pmLayout();
+    this.views.serie.pos.copy(P2(PSX, portrait ? 2.05 : 1.9, portrait ? 3.4 : 2.8)); this.views.serie.tgt.copy(P2(PSX, portrait ? 2.05 : 1.9, -5.5));
     const curW = P2(BC.x + 0.38, 1.25, BC.z + 0.8);
     this.B = new THREE.CatmullRomCurve3([curW.clone(), P2(BC.x + 0.3, 1.45, BC.z + 2.6), sv.pos.clone()]);
     this.BT = new THREE.CatmullRomCurve3([P2(BC.x + 0.38, 1.25, BC.z - 1), P2(BC.x + 0.1, 1.35, BC.z - 2), sv.tgt.clone()]);
@@ -3927,6 +3973,8 @@ window.GPTalk = (() => {
   W_PM.camAt = function (u, p, t) { if (u < 0.5) { const k = u / 0.5; this.A.getPoint(k, p); this.AT.getPoint(k, t); } else { const k = (u - 0.5) / 0.5; this.B.getPoint(k, p); this.BT.getPoint(k, t); } };
   W_PM.blend = () => worldU >= 0.5 ? 1 : 0;
   W_PM.life = function (t, dt) {
+    // quand on s'approche d'un visuel, plus rien ne passe devant
+    { const calmNow = !frameFocus; if (pmCards[0].m.visible !== calmNow) { pmCards.forEach(o => { o.m.visible = calmNow; }); pmStrips.forEach(o => { o.m.visible = calmNow; }); } }
     // le temps de la salle : il avance, ralentit, puis rembobine un moment
     const tw = t * 0.45 + 2.4 * Math.sin(t * 0.26);
     pmClocks.forEach(o => { o.hands[0].rotation.z = -tw * o.sp * 1.2; o.hands[1].rotation.z = -tw * o.sp * 0.1; o.g.position.y = o.by + Math.sin(tw * 0.6 + o.ph) * 0.12; o.g.rotation.y = Math.sin(tw * 0.3 + o.ph) * 0.5; });
@@ -3939,7 +3987,7 @@ window.GPTalk = (() => {
     pmLeak.material.color.setScalar(3.4 + Math.sin(t * 2.1) * 0.6);
   };
 
-  // ===== Mon bureau : une petite pièce à part du sous-sol, chaude et simple. Ce que San fait, et une porte ouverte. =====
+  // ===== Mon bureau : une petite pièce à part du sous-sol, chaude et simple. Ce que Brian fait, et une porte ouverte. =====
   const BO = V(-30, -35, 60);
   const bureau = new THREE.Group(); bureau.position.copy(BO); scene.add(bureau);
   const W_BU = { id: 'setup', prints: [], frames: [], startAt: 1.0, dur: 2.4, fog: [new THREE.Color(0x1a110b), 0.03] };
@@ -3964,8 +4012,8 @@ window.GPTalk = (() => {
   [[-1.55, 1.35, -1.2, 0xffa860, 4], [1.75, 1.7, -0.6, 0xffb070, 4], [0, 2.2, -1.6, 0xff9a50, 3]].forEach(([x, y, z, c, it]) => { const l = new THREE.PointLight(c, it, 5, 2); l.position.copy(B_(x, y, z)); scene.add(l); l.visible = false; buLights.push(l); });
   const buWarm = new THREE.MeshBasicMaterial({ color: new THREE.Color(5, 3.2, 1.4) });
   {
-    const a = V(-BRX + 0.1, 2.5, -BRZ + 0.15), b = V(BRX - 0.1, 2.5, -BRZ + 0.15);
-    const pts = sag(a, b, 0.14, 0.006, matRubber, bureau);
+    const a = V(-BRX + 0.1, 2.58, 1.2), b = V(BRX - 0.1, 2.58, 1.2);
+    const pts = sag(a, b, 0.1, 0.006, matRubber, bureau);
     pts.forEach((p, i) => { if (i % 2) return; const bl = new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 6), buWarm); bl.position.copy(p).add(V(0, -0.05, 0)); bureau.add(bl); });
   }
   // le bureau en bois, à gauche : lampe, ordinateur, appareil photo, plante, café
@@ -3976,10 +4024,10 @@ window.GPTalk = (() => {
     [[-0.74, -0.32], [0.74, -0.32], [-0.74, 0.32], [0.74, 0.32]].forEach(([x, z]) => box(0.05, 0.73, 0.05, top, x, 0.365, z, g));
     blob(g, 0, 0, 2.0, 1.2, 0.5);
     // lampe banquier
-    const shade = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.16, 0.14, 20, 1, true), M({ color: 0x2f4a3a, metalness: 0.4, roughness: 0.4, side: THREE.DoubleSide })); shade.position.set(-0.55, 1.18, -0.15); g.add(shade);
-    const lb = new THREE.Mesh(new THREE.SphereGeometry(0.045, 12, 8), buWarm); lb.position.set(-0.55, 1.14, -0.15); g.add(lb);
-    cyl(0.012, 0.012, 0.38, matChrome, -0.55, 0.96, -0.15, g, 8); cyl(0.08, 0.09, 0.02, matChrome, -0.55, 0.785, -0.15, g, 16);
-    glowSprite(g, -0.55, 1.1, -0.15, 0.9, 0xffb46b, 0.35);
+    const shade = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.16, 0.14, 20, 1, true), M({ color: 0x2f4a3a, metalness: 0.4, roughness: 0.4, side: THREE.DoubleSide })); shade.position.set(-0.55, 1.04, -0.15); g.add(shade);
+    const lb = new THREE.Mesh(new THREE.SphereGeometry(0.045, 12, 8), buWarm); lb.position.set(-0.55, 1.0, -0.15); g.add(lb);
+    cyl(0.012, 0.012, 0.24, matChrome, -0.55, 0.9, -0.15, g, 8); cyl(0.08, 0.09, 0.02, matChrome, -0.55, 0.785, -0.15, g, 16);
+    glowSprite(g, -0.55, 0.96, -0.15, 0.9, 0xffb46b, 0.35);
     // l'ordinateur, ouvert sur un montage
     const lapTex = canvasTex(512, 320, (c, w, h) => { c.fillStyle = '#16171a'; c.fillRect(0, 0, w, h); const g1 = c.createLinearGradient(110, 20, 400, 180); g1.addColorStop(0, '#c9466a'); g1.addColorStop(1, '#3a2a5a'); c.fillStyle = g1; c.fillRect(110, 20, 290, 165); const cols = ['#5b8def', '#e0a43c', '#5fbf8f', '#c9466a']; for (let t = 0; t < 4; t++) { let x = 20; while (x < w - 20) { const l = 30 + Math.random() * 90; c.fillStyle = cols[(t + (x | 0)) % 4]; c.fillRect(x, 205 + t * 26, Math.min(l, w - 20 - x), 18); x += l + 6; } } });
     box(0.38, 0.015, 0.26, M({ color: 0xbfc3c7, metalness: 0.7, roughness: 0.3 }), 0.1, 0.785, 0.05, g);
@@ -4005,38 +4053,81 @@ window.GPTalk = (() => {
     const fs = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.2, 0.26, 20, 1, true), M({ color: 0xe8d6b8, roughness: 0.9, side: THREE.DoubleSide, emissive: 0xffa860, emissiveIntensity: 0.7 })); fs.position.set(0.55, 1.68, -0.45); g.add(fs);
     glowSprite(g, 0.55, 1.62, -0.45, 1.2, 0xffb46b, 0.35);
   }
-  // au mur du fond : le néon et les cinq métiers, comme des polaroids
-  const collabNeonTex = canvasTex(1024, 260, (c, w, h) => {
-    c.textAlign = 'center'; c.font = 'italic 400 132px "Instrument Serif", Georgia, serif';
-    c.shadowColor = 'rgba(255,140,60,1)'; c.shadowBlur = 34; c.fillStyle = '#ffd2a0'; c.fillText('ouvert aux collabs', w / 2, 160);
-    c.shadowBlur = 8; c.fillStyle = '#fff1df'; c.fillText('ouvert aux collabs', w / 2, 160);
+  // au mur du fond : le néon, les vrais travaux, et une place vide qui attend le visiteur
+  const collabNeonTex = canvasTex(1536, 260, (c, w, h) => {
+    c.textAlign = 'center'; c.font = 'italic 400 124px "Instrument Serif", Georgia, serif';
+    c.shadowColor = 'rgba(255,140,60,1)'; c.shadowBlur = 34; c.fillStyle = '#ffd2a0'; c.fillText('la prochaine, c’est la tienne', w / 2, 160);
+    c.shadowBlur = 8; c.fillStyle = '#fff1df'; c.fillText('la prochaine, c’est la tienne', w / 2, 160);
   }, { text: true });
-  const collabNeon = new THREE.Mesh(new THREE.PlaneGeometry(2.3, 0.585), new THREE.MeshBasicMaterial({ map: collabNeonTex, transparent: true, depthWrite: false, color: new THREE.Color(2.4, 2.4, 2.4), blending: THREE.AdditiveBlending }));
-  collabNeon.position.set(0.15, 2.12, -BRZ + 0.03); bureau.add(collabNeon);
-  const TRADES = [['Vidéo', 'cam'], ['Photo', 'photo'], ['Montage', 'cut'], ['Graphisme', 'pen'], ['Management', 'cal']];
-  const tradeTex = (name, ic) => canvasTex(300, 360, (c, w, h) => {
-    c.fillStyle = '#f7f2e8'; c.fillRect(0, 0, w, h); c.fillStyle = '#2a1d12'; c.fillRect(22, 22, w - 44, 230);
-    c.strokeStyle = '#ffd2a0'; c.fillStyle = '#ffd2a0'; c.lineWidth = 10; c.lineCap = 'round'; c.lineJoin = 'round'; const cx = w / 2, cy = 137;
-    c.beginPath();
-    if (ic === 'cam') { c.strokeRect(cx - 70, cy - 40, 100, 80); c.moveTo(cx + 30, cy - 15); c.lineTo(cx + 75, cy - 40); c.lineTo(cx + 75, cy + 40); c.lineTo(cx + 30, cy + 15); }
-    if (ic === 'photo') { c.strokeRect(cx - 75, cy - 40, 150, 95); c.moveTo(cx + 18 + 32, cy + 8); c.arc(cx, cy + 8, 32, 0, TAU); c.moveTo(cx - 40, cy - 40); c.lineTo(cx - 25, cy - 60); c.lineTo(cx + 25, cy - 60); c.lineTo(cx + 40, cy - 40); }
-    if (ic === 'cut') { for (let i = 0; i < 3; i++) { c.moveTo(cx - 80, cy - 40 + i * 40); c.lineTo(cx - 80 + 60 + i * 30, cy - 40 + i * 40); c.moveTo(cx - 5 + i * 30, cy - 40 + i * 40); c.lineTo(cx + 80, cy - 40 + i * 40); } c.moveTo(cx + 10, cy - 70); c.lineTo(cx + 10, cy + 70); }
-    if (ic === 'pen') { c.moveTo(cx - 60, cy + 60); c.lineTo(cx + 50, cy - 50); c.lineTo(cx + 70, cy - 30); c.lineTo(cx - 40, cy + 80); c.closePath(); c.moveTo(cx - 60, cy + 60); c.lineTo(cx - 70, cy + 90); c.lineTo(cx - 40, cy + 80); }
-    if (ic === 'cal') { c.strokeRect(cx - 70, cy - 50, 140, 120); c.moveTo(cx - 70, cy - 15); c.lineTo(cx + 70, cy - 15); c.moveTo(cx - 35, cy - 70); c.lineTo(cx - 35, cy - 40); c.moveTo(cx + 35, cy - 70); c.lineTo(cx + 35, cy - 40); c.rect(cx - 45, cy + 10, 25, 22); c.rect(cx + 10, cy + 10, 25, 22); }
-    c.stroke();
-    c.fillStyle = '#2a1d12'; c.textAlign = 'center'; c.font = 'italic 400 64px "Instrument Serif", Georgia, serif'; c.fillText(name, w / 2, 320);
+  const collabNeon = new THREE.Mesh(new THREE.PlaneGeometry(3.3, 0.559), new THREE.MeshBasicMaterial({ map: collabNeonTex, transparent: true, depthWrite: false, color: new THREE.Color(1.45, 1.45, 1.45), blending: THREE.AdditiveBlending }));
+  bureau.add(collabNeon);
+  const BUZ = -BRZ + 0.03, BU_IG = 'https://www.instagram.com/brian.gldt/';
+  const buFrameMat = M({ color: 0x1a120c, roughness: 0.5 });
+  const buTagTex = name => canvasTex(320, 72, (c, w, h) => { c.fillStyle = '#f7f2e8'; c.fillRect(0, 0, w, h); c.fillStyle = '#2a1d12'; c.textAlign = 'center'; c.font = '500 34px "Geist Mono", monospace'; c.fillText(name, w / 2, 48); }, { text: true });
+  function buTile(tag, w, h, map, im) {
+    const g = new THREE.Group(); bureau.add(g);
+    box(w + 0.05, h + 0.05, 0.025, buFrameMat, 0, 0, 0, g);
+    const mt = new THREE.MeshBasicMaterial({ map, color: new THREE.Color(0.12, 0.12, 0.12) });
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mt); m.position.z = 0.016; g.add(m);
+    glowSprite(g, 0, h / 2 + 0.03, 0.06, 0.8, 0xffc890, 0.16);
+    const tg = new THREE.Mesh(new THREE.PlaneGeometry(0.25, 0.056), new THREE.MeshBasicMaterial({ map: buTagTex(tag), color: new THREE.Color(0.95, 0.95, 0.95) })); tg.position.set(-w / 2 + 0.11, -h / 2 + 0.01, 0.022); g.add(tg);
+    m.userData.photo = m; m.userData.view = 'bureau'; m.userData.im = im; W_BU.frames.push(m);
+    return { g, mt };
+  }
+  const PMK = 'assets/photomathon/serie/';
+  // le clip : une vraie vidéo, muette et en boucle
+  let buVideo = null;
+  const buClip = (() => { const v = document.createElement('video'); v.muted = true; v.loop = true; v.playsInline = true; v.preload = 'none'; v.src = 'assets/leila/footballeur.mp4'; buVideo = v; const t = new THREE.VideoTexture(v); t.colorSpace = THREE.SRGBColorSpace; return t; })();
+  const buWorks = [
+    ['Graphisme', 0.52, 0.52, imgTexture(PMK + 'cover.webp'), { kind: 'Graphisme · M4DEN', title: 'Pochette de l’album Photomaton', desc: 'Toute la production visuelle de l’album : pochette, affiches, boîte de céréales, faux jeu PS4, photos.', link: 'https://open.spotify.com/intl-fr/album/2RN1nzo7OEUINrDT5wbKkV' }],
+    ['Vidéo · montage', 0.92, 0.5175, imgTexture('assets/leila/footballeur-poster.webp'), { kind: 'Vidéo · Montage · Leila', title: 'Footballeur, le teaser' }],
+    ['Graphisme', 0.52, 0.52, imgTexture('assets/leila/01.webp'), { kind: 'Graphisme · Leila', title: 'Actrice', link: 'https://open.spotify.com/intl-fr/track/6tI6Y8a8eKHyc571IOMgUH?si=0c02dd216ab04f13' }],
+    ['Management', 0.52, 0.52, imgTexture('assets/garcon-printemps/01.webp'), { kind: 'Management · Garçon Printemps', title: 'Son manager, et l’auteur de ses visuels' }],
+    ['Graphisme', 0.5, 0.5, imgTexture('assets/leila/02.webp'), { kind: 'Graphisme · Leila', title: 'Colors +', link: 'https://open.spotify.com/intl-fr/album/0dsB1R0BKnIoBk68w0nOjn?si=jTLiGb3wRNmSjH0XhjOJTg' }],
+    ['Photo', 0.75, 0.5, imgTexture(PMK + 'feu.webp'), { kind: 'Photo · M4DEN', title: 'La voiture en feu' }],
+    ['Objet', 0.78, 0.501, imgTexture(PMK + 'cereales.webp'), { kind: 'Graphisme · M4DEN', title: 'La boîte de céréales' }],
+    ['Affiche', 0.36, 0.54, imgTexture(PMK + 'poisson.webp'), { kind: 'Photo · Graphisme · M4DEN', title: 'Poisson rouge' }]
+  ].map(a => buTile(a[0], a[1], a[2], a[3], a[4]));
+  // l'image fixe laisse place à la vidéo dès qu'elle tourne
+  buVideo.addEventListener('playing', () => { buWorks[1].mt.map = buClip; }, { once: true });
+  // la place vide, éclairée : c'est là que le visiteur se projette
+  const buEmptyTex = canvasTex(512, 512, (c, w) => {
+    c.fillStyle = '#241509'; c.fillRect(0, 0, w, w);
+    c.strokeStyle = '#ffd2a0'; c.lineWidth = 7; c.setLineDash([26, 18]); c.strokeRect(30, 30, w - 60, w - 60); c.setLineDash([]);
+    c.textAlign = 'center'; c.fillStyle = '#fff1df'; c.font = 'italic 400 96px "Instrument Serif", Georgia, serif'; c.fillText('ton projet', w / 2, 230); c.fillText('ici', w / 2, 320);
+    c.fillStyle = '#ffc2e4'; c.font = '500 30px "Geist Mono", monospace'; c.fillText('DM @brian.gldt', w / 2, 420);
   }, { text: true });
-  const tradesG = new THREE.Group(); tradesG.position.set(0.15, 1.5, -BRZ + 0.03); bureau.add(tradesG);
-  TRADES.forEach(([name, ic], i) => {
-    const x = -1.32 + i * 0.68, y = 1.5 + (i % 2 ? 0.05 : -0.03);
-    const m = new THREE.Mesh(new THREE.PlaneGeometry(0.42, 0.504), M({ map: tradeTex(name, ic), roughness: 0.8, emissive: 0xffffff, emissiveMap: tradeTex(name, ic), emissiveIntensity: 0.25 }));
-    m.position.set(x, y - 1.5, 0); m.rotation.z = [-0.05, 0.03, -0.02, 0.06, -0.04][i]; tradesG.add(m);
-    const tape = new THREE.Mesh(new THREE.PlaneGeometry(0.12, 0.035), M({ color: 0xf2ecd8, roughness: 0.8, transparent: true, opacity: 0.85 })); tape.position.set(x, y - 1.25, 0.005); tape.rotation.z = m.rotation.z; tradesG.add(tape);
-  });
-  // la petite enseigne Insta, en rose, sous les polaroids
-  const dmTex = canvasTex(1024, 180, (c, w, h) => { c.textAlign = 'center'; c.font = '500 86px Geist, Arial, sans-serif'; c.shadowColor = 'rgba(255,60,160,1)'; c.shadowBlur = 26; c.fillStyle = '#ffc2e4'; c.fillText('DM → @brian.gldt', w / 2, 120); c.shadowBlur = 6; c.fillStyle = '#fff0f8'; c.fillText('DM → @brian.gldt', w / 2, 120); }, { text: true });
-  const dmNeon = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 0.264), new THREE.MeshBasicMaterial({ map: dmTex, transparent: true, depthWrite: false, color: new THREE.Color(2.2, 2.2, 2.2), blending: THREE.AdditiveBlending }));
-  dmNeon.position.set(0.15, 1.07, -BRZ + 0.03); bureau.add(dmNeon);
+  const buEmptyG = new THREE.Group(); bureau.add(buEmptyG);
+  box(1.02, 1.02, 0.03, M({ color: 0xb08a4a, metalness: 0.7, roughness: 0.35 }), 0, 0, 0, buEmptyG);
+  const buEmptyMat = new THREE.MeshBasicMaterial({ map: buEmptyTex, color: new THREE.Color(0.12, 0.12, 0.12) });
+  const buEmpty = new THREE.Mesh(new THREE.PlaneGeometry(0.96, 0.96), buEmptyMat); buEmpty.position.z = 0.018; buEmptyG.add(buEmpty);
+  const buEmptyGlow = glowSprite(buEmptyG, 0, 0.1, 0.12, 2.6, 0xffc080, 0.0);
+  const buEmptyLight = new THREE.PointLight(0xffc890, 0, 3, 2); buEmptyLight.position.set(0, 0.5, 0.7); buEmptyG.add(buEmptyLight);
+  buEmpty.userData.photo = buEmpty; buEmpty.userData.view = 'bureau'; W_BU.frames.push(buEmpty);
+  buEmpty.userData.im = { kind: 'Cette place est libre', title: 'Ton projet ici.', desc: 'Un morceau à sortir, une image à construire, une carrière à lancer : dis-moi où tu en es, on regarde ça ensemble.', link: BU_IG, linkLabel: 'Écris-moi sur Insta' };
+  const BU_DESK = [[-2.05, 1.8], [-1.16, 1.8], [1.02, 1.8], [1.72, 1.8], [-2.05, 1.22], [-1.2, 1.22], [1.14, 1.22], [1.86, 1.24]];
+  const BU_PHONE = [[0, 0], [1, 0], [2, 0], [0, 1], [2, 1], [0, 2], [1, 2], [2, 2]];
+  function buLayout() {
+    if (portrait) {
+      buWorks.forEach((o, i) => { const [c, r] = BU_PHONE[i]; o.g.scale.setScalar(0.8); o.g.position.set(0.15 + (c - 1) * 0.66, 1.98 - r * 0.6, BUZ + 0.015); });
+      buEmptyG.scale.setScalar(0.5); buEmptyG.position.set(0.15, 1.38, BUZ + 0.02);
+      collabNeon.scale.setScalar(0.56); collabNeon.position.set(0.15, 2.4, BUZ);
+    } else {
+      buWorks.forEach((o, i) => { o.g.scale.setScalar(1); o.g.position.set(BU_DESK[i][0], BU_DESK[i][1], BUZ + 0.015); });
+      buEmptyG.scale.setScalar(1); buEmptyG.position.set(0, 1.5, BUZ + 0.02);
+      collabNeon.scale.setScalar(1); collabNeon.position.set(0, 2.25, BUZ);
+    }
+  }
+  // en entrant, les travaux s'allument un par un, puis la place vide
+  let buLit = 0;
+  W_BU.life = function (t, dt) {
+    if (buVideo && buVideo.paused) buVideo.play().catch(() => {});
+    buLit += dt;
+    buWorks.forEach((o, i) => { const k = reduced ? 1 : Math.min(1, Math.max(0, (buLit - 0.25 - i * 0.14) / 0.35)); o.mt.color.setScalar(0.12 + 0.88 * k); });
+    const e = reduced ? 1 : Math.min(1, Math.max(0, (buLit - 1.6) / 0.5)), br = 1 + Math.sin(t * 1.1) * 0.05;
+    buEmptyMat.color.setScalar(0.12 + 1.15 * e * br);
+    buEmptyGlow.material.opacity = 0.2 * e * br; buEmptyLight.intensity = 2.4 * e * br;
+  };
   // ----- l'arrivée par l'écran du coin bureau du labo -----
   W_BU.views = { bureau: { pos: B_(0, 1.45, 1.75), tgt: B_(0, 1.2, -2), label: 'Mon bureau', hint: '' } };
   W_BU.routes = {};
@@ -4046,7 +4137,7 @@ window.GPTalk = (() => {
     const c = door.localToWorld(V(0, 1.3, 0)), fwd = V(0, 0, 1).applyQuaternion(door.getWorldQuaternion(new THREE.Quaternion())).setY(0).normalize();
     this.A = new THREE.CatmullRomCurve3([pos.clone(), c.clone().addScaledVector(fwd, 1.7).add(V(0, 0.15, 0)), c.clone().addScaledVector(fwd, -0.15)]);
     this.AT = new THREE.CatmullRomCurve3([tgt.clone(), c.clone(), c.clone().addScaledVector(fwd, -1.2)]);
-    tradesG.scale.setScalar(portrait ? 0.68 : 1); collabNeon.scale.setScalar(portrait ? 0.75 : 1);
+    buLayout(); buLit = 0;
     const v = this.views.bureau;
     v.pos.copy(B_(0.1, portrait ? 1.55 : 1.45, portrait ? 1.95 : 1.75)); v.tgt.copy(B_(portrait ? 0.15 : 0, portrait ? 1.1 : 1.3, -2));
     this.B = new THREE.CatmullRomCurve3([B_(0.9, 1.4, 2.0), B_(0.5, 1.42, 1.9), v.pos.clone()]);
@@ -4055,7 +4146,7 @@ window.GPTalk = (() => {
   W_BU.camAt = function (u, p, t) { if (u < 0.5) { const k = u / 0.5; this.A.getPoint(k, p); this.AT.getPoint(k, t); } else { const k = (u - 0.5) / 0.5; this.B.getPoint(k, p); this.BT.getPoint(k, t); } };
   W_BU.blend = () => worldU >= 0.5 ? 1 : 0;
 
-  // ===== La sortie : le toit de l'immeuble, la nuit. San, assis au bord, rêve de l'avenir. =====
+  // ===== La sortie : le toit de l'immeuble, la nuit. Brian, assis au bord, rêve de l'avenir. =====
   const RFO = V(420, 0, 420);
   const roof = new THREE.Group(); roof.position.copy(RFO); scene.add(roof);
   const W_RF = { id: 'toit', prints: [], frames: [], startAt: 0.1, dur: 3.0, fog: [new THREE.Color(0x0d1230), 0.0065] };
@@ -4111,7 +4202,7 @@ window.GPTalk = (() => {
   const rfMoon = new THREE.DirectionalLight(0xb8c8ff, 0); rfMoon.position.copy(R_(-20, 30, -40)); rfMoon.target.position.copy(R_(0, 0, -5)); scene.add(rfMoon, rfMoon.target);
   const rfDoorL = new THREE.PointLight(0xffa860, 4, 7, 2); rfDoorL.position.copy(R_(4.2, 1.5, 2.6)); scene.add(rfDoorL); rfDoorL.visible = false; rfLights.push(rfDoorL);
   const rfCityL = new THREE.PointLight(0xff8a50, 3, 12, 2); rfCityL.position.copy(R_(0, -1.5, -8)); scene.add(rfCityL); rfCityL.visible = false; rfLights.push(rfCityL);
-  // ----- San, de dos, assis au bord du muret, les jambes dans le vide -----
+  // ----- Brian, de dos, assis au bord du muret, les jambes dans le vide -----
   const rfSan = new THREE.Group(); rfSan.position.set(-0.3, 0, -6.2); roof.add(rfSan);
   const rfHoodie = M({ color: 0x23242b, roughness: 0.9 }), rfJeans = M({ color: 0x5f7aa0, roughness: 0.85 }), rfSkin = M({ color: 0xe8b48f, roughness: 0.7 });
   const rfGinger = M({ color: 0xc4522a, roughness: 0.75, emissive: 0x3a1206, emissiveIntensity: 0.4 }), rfWhite = M({ color: 0xeeeeea, roughness: 0.6 });
@@ -4154,7 +4245,7 @@ window.GPTalk = (() => {
     const lbl = new THREE.Mesh(new THREE.PlaneGeometry(f.q ? 16 : 9, f.q ? 3.0 : 1.7), new THREE.MeshBasicMaterial({ map: lblTex, transparent: true, depthWrite: false, fog: false, color: new THREE.Color(1.6, 1.6, 1.6) })); lbl.position.set(0, f.q ? -10.5 : -9.6, 0); g.add(lbl);
     return { g, dots, segs, delay: fi * 1.6 };
   });
-  // ----- ses mots, qui s'écrivent dans le ciel (brouillon : à remplacer par les phrases de San) -----
+  // ----- ses mots, qui s'écrivent dans le ciel (brouillon : à remplacer par les phrases de Brian) -----
   const RF_DREAMS = ['Nous, on rêve de remplir l’Accor Arena.'];
   const rfWCan = document.createElement('canvas'); rfWCan.width = 2048; rfWCan.height = 220;
   const rfWTex = new THREE.CanvasTexture(rfWCan); rfWTex.colorSpace = THREE.SRGBColorSpace;
@@ -4248,6 +4339,7 @@ window.GPTalk = (() => {
     const tn = Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2);
     const dist = Math.max(hh / 2 / tn, ww / 2 / (tn * camera.aspect), 0.6); zDist = dist;
     p.copy(t).addScaledVector(zN, dist);
+    if (portrait && mesh === pmHero.m) { t.y -= 0.55; p.y -= 0.55; }
   }
   function focusFrame(mesh) { if (!(mesh && mesh.userData.talk) && window.GPTalk) window.GPTalk.close(); frameFocus = mesh; if (mesh) frameLast = mesh; dragYaw = dragPitch = 0; document.body.classList.toggle('zoomed', !!mesh); window.LaboPanel.zoomInfo(mesh && mesh.userData.im); requestRender(); }
   const fogBase = { c: scene.fog.color.clone(), d: scene.fog.density };
@@ -4255,6 +4347,7 @@ window.GPTalk = (() => {
   function finishExit() { window.LaboPanel.setVideoBar(null); if (activeWorld && activeWorld.views) { activeWorld.view = activeWorld.baseView; activeWorld.trip = null; activeWorld.navShown = false; activeWorld.exitAfter = false; } window.LaboPanel.setNav(null); frameFocus = null; frameT = 0; document.body.classList.remove('zoomed'); window.LaboPanel.zoomInfo(null); activeWorld = null; pendingWorld = null; focusSpot = null; focusGoal = 0; gpHold = false; dragYaw = dragPitch = 0; }
   function enterWorld(id, s) {
     const w = worldsById[id];
+    if (quickExit) { quickCut(); labWipe.classList.remove('on'); }
     if (activeWorld && activeWorld !== w) { worldT = 0; worldGoal = 0; finishExit(); }
     activeWorld = w; focusSpot = s; lastFocusSpot = s; dragYaw = dragPitch = 0;
     if (w.views) { w.view = w.baseView; w.trip = null; w.navShown = false; w.exitAfter = false; }
@@ -4263,17 +4356,21 @@ window.GPTalk = (() => {
     if (id === 'garcon-printemps') gpHold = true;
     pendingWorld = w; triggerEvent(id);
   }
+  let quickExit = false, quickTimer = 0;
+  const labWipe = document.getElementById('labWipe');
+  function quickCut() { quickExit = false; clearTimeout(quickTimer); worldT = 0; worldU = 0; worldGoal = 0; focusT = 0; focusGoal = 0; finishExit(); requestRender(); }
   function exitWorld() {
     if (!activeWorld) return;
     if (window.GPTalk) window.GPTalk.close();
     if (window.LaboPong) window.LaboPong.close();
     window.LaboPanel.setNav(null);
-    if (activeWorld.views && worldT === 1 && !reduced && !pendingWorld && (activeWorld.trip || activeWorld.view !== activeWorld.baseView)) { activeWorld.exitAfter = true; focusFrame(null); if (!activeWorld.trip) goView(activeWorld.baseView); return; }
-    frameFocus = null; document.body.classList.remove('zoomed');
+    frameFocus = null; document.body.classList.remove('zoomed'); window.LaboPanel.zoomInfo(null);
     dragYaw = dragPitch = 0;
     if (pendingWorld || worldT === 0) { worldT = 0; worldGoal = 0; finishExit(); return; }
-    worldGoal = 0;
-    if (reduced) { worldT = 0; worldU = 0; finishExit(); }
+    if (reduced) { worldGoal = 0; worldT = 0; worldU = 0; finishExit(); return; }
+    if (quickExit) return;
+    quickExit = true; labWipe.classList.add('on');
+    quickTimer = setTimeout(() => { quickCut(); labWipe.classList.remove('on'); }, 220);
   }
   function worldHandles(id, s) {
     if (id && worldsById[id]) { enterWorld(id, s); return true; }
@@ -4285,17 +4382,16 @@ window.GPTalk = (() => {
       pendingWorld.prepare(camera.position, target); worldGoal = 1; pendingWorld = null;
     }
     if (activeWorld && activeWorld.trip) {
-      const w0 = activeWorld; w0.trip.k = Math.min(1, w0.trip.k + dt / 2.6);
+      const w0 = activeWorld; w0.trip.k = Math.min(1, w0.trip.k + dt / 1.6);
       if (w0.trip.k >= 1) {
         w0.view = w0.trip.to; w0.trip = null;
         if (w0 === W_LE && w0.view === 'pong' && !w0.exitAfter && window.LaboPong) setTimeout(() => { if (activeWorld === W_LE && W_LE.view === 'pong' && !W_LE.trip) window.LaboPong.invite(); }, 350);
         if (w0 === W_GP && w0.view === 'jardin' && !w0.exitAfter && window.GPTalk) setTimeout(() => { if (activeWorld === W_GP && W_GP.view === 'jardin' && !W_GP.trip) window.GPTalk.invite(); }, 350);
-        if (w0.exitAfter) { if (w0.view !== w0.baseView) goView(w0.baseView); else { w0.exitAfter = false; worldGoal = 0; } }
-        else navUpdate();
+        navUpdate();
       }
     }
-    if (activeWorld && activeWorld.views && worldT === 1 && worldGoal === 1 && !activeWorld.navShown) { activeWorld.navShown = true; navUpdate(); }
-    if (activeWorld && !pendingWorld) {
+    if (activeWorld && activeWorld.views && worldT === 1 && worldGoal === 1 && !activeWorld.navShown) { activeWorld.navShown = true; navUpdate(); if (activeWorld === W_PM) setTimeout(() => { if (activeWorld === W_PM && worldGoal === 1 && W_PM.view === 'salle' && !W_PM.trip && !frameFocus) focusFrame(pmHero.m); }, 1100); }
+    if (activeWorld && !pendingWorld && !quickExit) {
       const sp = dt / activeWorld.dur;
       if (worldT < worldGoal) worldT = Math.min(worldGoal, worldT + sp); else if (worldT > worldGoal) worldT = Math.max(worldGoal, worldT - sp);
       worldU = smooth(worldT);
@@ -4317,9 +4413,10 @@ window.GPTalk = (() => {
     const inRoof = w === W_RF && worldT > 0 && worldU >= 0.5;
     daySky.visible = !(inWhite || inRoof); rfSky.visible = inRoof; rfHemi.intensity = inRoof ? 0.7 : 0; rfMoon.intensity = inRoof ? 0.9 : 0; rfLights.forEach(l => { if (l.visible !== inRoof) l.visible = inRoof; });
     if (w === W_RF && worldU >= 0.45) W_RF.life(t, dt);
+    if (w === W_BU && worldU >= 0.45 && !quickExit) W_BU.life(t, dt); else if (buVideo && !buVideo.paused) buVideo.pause();
     { const show = (w === W_BU || w === W_RF) && worldT >= 1 && worldGoal === 1; const el = document.getElementById('collab');
       if (el.hidden === show) {
-        if (show) { const roofCard = w === W_RF; document.getElementById('colEb').textContent = roofCard ? 'Bravo' : 'Ouvert aux collabs'; document.getElementById('colTitle').textContent = roofCard ? 'Tu te balades dans mon labo.' : 'Vidéo · Photo · Montage · Graphisme · Management'; document.getElementById('colText').textContent = roofCard ? 'T’as trouvé la sortie, le coin où je rêve de la suite. Si t’as envie d’en faire partie, écris-moi : on construit ensemble.' : 'Un clip, une pochette, un shooting, une identité visuelle ou un artiste à accompagner ? Écris-moi, on en parle.'; }
+        if (show) { const roofCard = w === W_RF; document.getElementById('colEb').textContent = roofCard ? 'Bravo' : 'Ouvert aux collabs'; document.getElementById('colTitle').textContent = roofCard ? 'Tu as trouvé l’easter egg de mon site.' : 'Tu fais la musique. Je m’occupe du reste.'; document.getElementById('colText').textContent = roofCard ? 'Viens me le dire sur Insta ;)' : 'Tout ce que tu vois sur ce mur, je l’ai fait pour de vrais artistes : pochettes, clips, photos, stratégie, management. Clique dessus, puis viens me parler de ton projet.'; document.getElementById('colGo').textContent = roofCard ? 'Je te le dis sur Insta' : 'Écris-moi sur Insta'; }
         el.hidden = !show; document.body.classList.toggle('in-bureau', show);
       } }
     buHemi.intensity = inBureau ? 0.55 : 0; buLights.forEach(l => { if (l.visible !== inBureau) l.visible = inBureau; });
@@ -4368,6 +4465,7 @@ window.GPTalk = (() => {
   window.LaboView.toggleSound = () => { const w = cinemaWorld(), v = w.video && w.video(); if (!v) return true; v.muted = !v.muted; if (v.paused) v.play().catch(() => {}); return v.muted; };
   window.LaboView.state = () => ({ world: activeWorld && activeWorld.id, worldT, frameT, zoomed: !!frameFocus });
   window.LaboView.unzoom = () => { if (activeWorld && frameFocus) { focusFrame(null); return true; } return false; };
+  window.LaboView.closeInteraction = () => { if (window.GPTalk) window.GPTalk.close(); if (window.LaboPong) window.LaboPong.close(); window.LaboView.unzoom(); requestRender(); };
 
   /* ---------- Boucle ---------- */
   let running = !reduced, raf = 0, last = performance.now(), time = 12, spawnClock = 0;
