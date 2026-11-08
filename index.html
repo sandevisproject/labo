@@ -542,7 +542,19 @@ window.LaboPanel = (() => {
       eyebrow: 'Artiste', title: 'Garçon Printemps', sub: 'Réalisations graphiques', world: true,
       images: [
         { src: 'assets/garcon-printemps/01.webp', w: 2000, h: 2000,
-          alt: 'Photo mise en scène vue d’en haut : une personne en bonnet pousse un caddie chargé d’une guitare et d’un accordéon, devant un mannequin en chapeau de cowboy allongé sur un canapé en cuir, à côté d’une machine à laver.' }
+          alt: 'Photo mise en scène vue d’en haut : une personne en bonnet pousse un caddie chargé d’une guitare et d’un accordéon, devant un mannequin en chapeau de cowboy allongé sur un canapé en cuir, à côté d’une machine à laver.', kind: 'Pochette', title: 'Poupée de cire' },
+        { src: 'assets/garcon-printemps/ifbd.webp', w: 1600, h: 1600, kind: 'Pochette', title: 'Il fait beau dehors', alt: 'Pochette : Garçon Printemps assis dans l’herbe à côté d’une tondeuse, devant une haie fleurie.' },
+        { src: 'assets/garcon-printemps/nnvpl.webp', w: 1600, h: 1600, kind: 'Pochette', title: 'Non ne viens pas là', alt: 'Pochette : Garçon Printemps assis en tailleur sur fond blanc, chapeau de fête sur la tête, un ballon rouge attaché au poignet.' },
+        { src: 'assets/garcon-printemps/affiche-tournee.webp', w: 1080, h: 1350, kind: 'Affiche', title: 'En tournée', desc: 'Neuf dates de Dijon à Lille, dont Les Trois Baudets, La Gaîté Lyrique, Bars en Trans et Le Splendid.', alt: 'Affiche de tournée : Garçon Printemps en maillot numéro 17 et casquette rouge, penché vers l’objectif, avec la liste des neuf dates.' },
+        { src: 'assets/garcon-printemps/vinyle.webp', w: 879, h: 879, kind: 'Vinyle', title: 'Il fait beau dehors', alt: 'Pochette de vinyle façon collage : portrait découpé de Garçon Printemps sur fond vert, entouré d’étoiles.' },
+        { src: 'assets/garcon-printemps/merch.webp', w: 1500, h: 1061, kind: 'Merch', title: 'Le t-shirt', alt: 'Deux t-shirts blancs : un visage en casquette verte au recto, « Il fait beau dehors » en lettres vertes au verso.' }
+      ],
+      videos: [
+        { src: 'assets/garcon-printemps/video-baudets.mp4', w: 1280, h: 720, kind: 'Vidéo', title: 'Aux Trois Baudets' },
+        { src: 'assets/garcon-printemps/video-garage.mp4', w: 1280, h: 720, kind: 'Vidéo', title: 'Le garage' },
+        { src: 'assets/garcon-printemps/video-canape.mp4', w: 1280, h: 720, kind: 'Vidéo', title: 'Le canapé' },
+        { src: 'assets/garcon-printemps/video-machine.mp4', w: 1280, h: 720, kind: 'Vidéo', title: 'La machine à laver' },
+        { src: 'assets/garcon-printemps/video-accordeon.mp4', w: 1280, h: 720, kind: 'Vidéo', title: 'L’accordéon' }
       ]
     },
     'leila': {
@@ -2729,7 +2741,7 @@ window.GPTalk = (() => {
   const postMat = M({ map: woodTex, roughness: 0.9, emissive: 0x2a1c10, emissiveIntensity: 0.4 });
   const lineMat = M({ color: 0xeeeeee, roughness: 0.6 });
   const pegMat = M({ color: 0xc9a57a, roughness: 0.7 });
-  const LINES = [{ z: FZ - 8.6, y: 2.3, x0: -5.4, x1: 5.4, slots: [-3.7, -1.25, 1.25, 3.7] }, { z: FZ - 12.6, y: 2.55, x0: -6.6, x1: 6.6, slots: [-4.8, -1.6, 1.6, 4.8] }];
+  const LINES = [{ z: FZ - 8.6, y: 2.75, x0: -5.4, x1: 5.4 }, { z: FZ - 12.6, y: 3.3, x0: -6.6, x1: 6.6 }];
   const lineY = (L, x) => L.y + 0.2 - Math.sin(Math.PI * (x - L.x0) / (L.x1 - L.x0)) * 0.25;
   LINES.forEach(L => {
     [L.x0, L.x1].forEach(x => cyl(0.06, 0.07, L.y + 0.35, postMat, HOLE_X + x, (L.y + 0.35) / 2, L.z, field, 8));
@@ -2745,7 +2757,7 @@ window.GPTalk = (() => {
   }, { text: true });
   function hangPrint(parent, x, y, z, im, title, idx) {
     const pivot = new THREE.Group(); pivot.position.set(x, y, z); parent.add(pivot);
-    const H = 1.15, Wd = im ? H * im.w / im.h : H * 0.8;
+    const H = (im && im.H) || 1.15, Wd = im ? H * im.w / im.h : H * 0.8;
     const back = new THREE.Mesh(new THREE.PlaneGeometry(Wd + 0.1, H + 0.1), paperMat); back.position.y = -(H + 0.1) / 2; pivot.add(back);
     const photo = new THREE.Mesh(new THREE.PlaneGeometry(Wd, H), new THREE.MeshBasicMaterial({ map: im ? imgTexture(im.src) : placeholderTex(title, ['#f3e7c9', '#dfeccf', '#f3d6dc'][idx % 3]), side: THREE.DoubleSide }));
     photo.position.set(0, -(H + 0.1) / 2, 0.003); pivot.add(photo);
@@ -2756,14 +2768,16 @@ window.GPTalk = (() => {
   const W_GP = { id: 'garcon-printemps', prints: [], frames: [], startAt: 1.95, dur: 2.6, fog: [new THREE.Color(0xc9dbe8), 0.011] };
   {
     const ims = projectImages('garcon-printemps');
-    const slots = []; LINES.forEach(L => L.slots.forEach(sx => slots.push([L, sx])));
-    const order = [1, 2, 0, 3, 5, 6, 4, 7];
-    const count = Math.min(8, Math.max(ims.length, 5));
-    for (let i = 0; i < count; i++) {
-      const [L, sx] = slots[order[i]];
-      const pr = hangPrint(field, HOLE_X + sx, lineY(L, sx), L.z, ims[i], 'Garçon Printemps', i);
+    const GP_HANG = [[0, 0, 1.6], [0, -2.7, 1.6], [0, 2.7, 1.6], [1, -1.75, 1.35], [1, 1.75, 1.2], [1, -5.6, 1.05]];
+    ims.slice(0, GP_HANG.length).forEach((im, i) => {
+      const [li, sx, H] = GP_HANG[i], L = LINES[li];
+      const pr = hangPrint(field, HOLE_X + sx, lineY(L, sx), L.z, Object.assign({}, im, { H }), 'Garçon Printemps', i);
       W_GP.prints.push(pr); W_GP.frames.push(...pr.hit);
-    }
+    });
+    // son logo, en grand, planté au fond du champ
+    const gpLogoMat = new THREE.MeshBasicMaterial({ map: imgTexture('assets/garcon-printemps/logo.webp'), color: new THREE.Color(0.8, 0.045, 0.02), transparent: true, depthWrite: false, fog: false, toneMapped: false });
+    const gpLogo = new THREE.Mesh(new THREE.PlaneGeometry(9, 9 * 0.4194), gpLogoMat); gpLogo.position.set(HOLE_X, 7.3, FZ - 22); field.add(gpLogo);
+    gpLogo.userData.photo = gpLogo; gpLogo.userData.im = { kind: 'Identité visuelle', title: 'Le logo de Garçon Printemps' }; W_GP.frames.push(gpLogo);
   }
   // papillons
   const bflies = [];
@@ -2839,7 +2853,7 @@ window.GPTalk = (() => {
   const gVids = (window.LaboPanel.project('garcon-printemps') || {}).videos || [];
   let gVideo = null, gVideoTex = null, gIdx = 0;
   if (gVids[0]) {
-    gVideo = document.createElement('video'); gVideo.muted = true; gVideo.loop = false; gVideo.playsInline = true; gVideo.preload = 'auto';
+    gVideo = document.createElement('video'); gVideo.muted = true; gVideo.loop = false; gVideo.playsInline = true; gVideo.preload = 'metadata';
     gVideo.setAttribute('playsinline', ''); gVideo.src = gVids[0].src;
     gVideoTex = new THREE.VideoTexture(gVideo); gVideoTex.colorSpace = THREE.SRGBColorSpace;
   }
@@ -2940,11 +2954,11 @@ window.GPTalk = (() => {
   // le panneau en bois dans la prairie, qui indique le drive-in
   const signTex = canvasTex(512, 180, (c, w, h) => { c.fillStyle = '#c9a26a'; c.fillRect(0, 0, w, h); for (let i = 0; i < 40; i++) { c.fillStyle = 'rgba(90,60,30,.15)'; c.fillRect(0, Math.random() * h, w, rand(1, 3)); } c.fillStyle = '#2a1a0e'; c.textAlign = 'center'; c.font = '500 78px Geist, Arial, sans-serif'; c.fillText('DRIVE-IN →', w / 2, 120); }, { text: true });
   const signG = new THREE.Group(); signG.position.set(HOLE_X + 2.3, 0, FZ - 7.2); signG.rotation.y = -0.35; field.add(signG);
-  cyl(0.06, 0.07, 1.6, postMat, 0, 0.8, 0, signG, 8);
+  cyl(0.06, 0.07, 1.1, postMat, 0, 0.55, 0, signG, 8);
   const signBoard = new THREE.Mesh(new THREE.PlaneGeometry(1.25, 0.44), M({ map: signTex, roughness: 0.9, emissive: 0xffffff, emissiveMap: signTex, emissiveIntensity: 0.3, side: THREE.DoubleSide }));
-  signBoard.position.set(0.25, 1.4, 0.07); signBoard.rotation.z = -0.05; signG.add(signBoard);
+  signBoard.position.set(0.25, 0.92, 0.07); signBoard.rotation.z = -0.05; signG.add(signBoard);
   const hotMatG = new THREE.MeshBasicMaterial({ visible: false });
-  const hotSign = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.8, 0.6), hotMatG); hotSign.position.set(0.2, 0.9, 0); hotSign.userData.goView = 'cinema'; hotSign.userData.view = 'prairie'; signG.add(hotSign);
+  const hotSign = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.25, 0.6), hotMatG); hotSign.position.set(0.2, 0.62, 0); hotSign.userData.goView = 'cinema'; hotSign.userData.view = 'prairie'; signG.add(hotSign);
   W_GP.hotspots = [hotSign];
   // Garçon Printemps en carton, planté au bord de l'allée : on peut lui parler
   const SGH = 2.35, SGW = SGH * 453 / 955;
@@ -3032,10 +3046,10 @@ window.GPTalk = (() => {
   // le panneau dans la prairie, qui indique le jardin
   const jArrowTex = canvasTex(512, 180, (c, w, h) => { c.fillStyle = '#c9a26a'; c.fillRect(0, 0, w, h); for (let i = 0; i < 40; i++) { c.fillStyle = 'rgba(90,60,30,.15)'; c.fillRect(0, Math.random() * h, w, rand(1, 3)); } c.fillStyle = '#2a1a0e'; c.textAlign = 'center'; c.font = '500 50px Geist, Arial, sans-serif'; c.fillText('← JEU DES FLEURS', w / 2, 110); }, { text: true });
   const jSignG = new THREE.Group(); jSignG.position.set(HOLE_X - 2.3, 0, FZ - 7.2); jSignG.rotation.y = 0.35; field.add(jSignG);
-  cyl(0.06, 0.07, 1.6, postMat, 0, 0.8, 0, jSignG, 8);
+  cyl(0.06, 0.07, 1.1, postMat, 0, 0.55, 0, jSignG, 8);
   const jBoard = new THREE.Mesh(new THREE.PlaneGeometry(1.25, 0.44), M({ map: jArrowTex, roughness: 0.9, emissive: 0xffffff, emissiveMap: jArrowTex, emissiveIntensity: 0.3, side: THREE.DoubleSide }));
-  jBoard.position.set(-0.25, 1.4, 0.07); jBoard.rotation.z = 0.05; jSignG.add(jBoard);
-  const hotJ = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.8, 0.6), hotMatG); hotJ.position.set(-0.2, 0.9, 0); hotJ.userData.goView = 'jardin'; hotJ.userData.view = 'prairie'; jSignG.add(hotJ);
+  jBoard.position.set(-0.25, 0.92, 0.07); jBoard.rotation.z = 0.05; jSignG.add(jBoard);
+  const hotJ = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.25, 0.6), hotMatG); hotJ.position.set(-0.2, 0.62, 0); hotJ.userData.goView = 'jardin'; hotJ.userData.view = 'prairie'; jSignG.add(hotJ);
   W_GP.hotspots.push(hotJ);
 
   // le son : une petite note de cloche douce, faite à la main
@@ -3282,17 +3296,17 @@ window.GPTalk = (() => {
     c.font = '500 30px "Geist Mono", monospace'; c.fillText('VISUEL À VENIR', w / 2, 340);
     c.font = 'italic 400 44px "Instrument Serif", Georgia, serif'; c.fillText('soirée au sous-sol', w / 2, 420);
   }, { text: true });
-  const POSTERS = [[-1.15, 1.85, 0.03], [1.15, 1.8, -0.03], [-3.3, 1.75, -0.06], [3.3, 1.75, 0.05], [0, 1.95, 0.0]];
+  const POSTERS = [[-0.35, 1.68, 0.015], [1.15, 1.68, -0.012], [2.65, 1.68, 0.01]];
   {
     const ims = projectImages('leila');
     const wide = ims.filter(im => !im.hidden && im.w / im.h > 1.6), sq = ims.filter(im => !im.hidden && im.w / im.h <= 1.6);
-    const list = sq.slice(0, 4);
-    const count = Math.max(4, list.length);
+    const list = sq.slice(0, 2).concat(ims.filter(im => im.hidden && im.w / im.h <= 1.6).slice(0, 1));
+    const count = list.length;
     for (let i = 0; i < count; i++) {
       const [x, y, rz] = POSTERS[i]; const im = list[i];
-      const H = 1.0, Wd = im ? H * im.w / im.h : 0.8;
+      const H = 1.32, Wd = im ? H * im.w / im.h : 0.8;
       const g = new THREE.Group(); g.position.set(x, y + 0.15, -PZ + 0.02); g.rotation.z = rz; partyRoom.add(g);
-      const m = new THREE.Mesh(new THREE.PlaneGeometry(Wd, H), M({ map: im ? imgTexture(im.src) : flyerTex(i), roughness: 0.7, emissive: 0xffffff, emissiveIntensity: 0.25 }));
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(Wd, H), M({ map: im ? imgTexture(im.src) : flyerTex(i), roughness: 0.7, emissive: 0xffffff, emissiveIntensity: 0.6 }));
       m.material.emissiveMap = m.material.map; g.add(m); m.userData.im = im || null; m.userData.photo = m;
       [[-1, 1], [1, 1], [-1, -1], [1, -1]].forEach(([sx, sy]) => { const t2 = new THREE.Mesh(new THREE.PlaneGeometry(0.14, 0.05), tapeMat); t2.position.set(sx * (Wd / 2 - 0.02), sy * (H / 2 - 0.02), 0.004); t2.rotation.z = sx * sy * 0.6; g.add(t2); });
       W_LE.prints.push({ pivot: g, hit: [m], ph: rand(0, TAU), hover: 0, base: g.position.z, im }); W_LE.frames.push(m);
@@ -4082,7 +4096,8 @@ window.GPTalk = (() => {
     ['Graphisme', 0.52, 0.52, imgTexture(PMK + 'cover.webp'), { kind: 'Graphisme · M4DEN', title: 'Pochette de l’album Photomaton', desc: 'Toute la production visuelle de l’album : pochette, affiches, boîte de céréales, faux jeu PS4, photos.', link: 'https://open.spotify.com/intl-fr/album/2RN1nzo7OEUINrDT5wbKkV' }],
     ['Vidéo · montage', 0.92, 0.5175, imgTexture('assets/leila/footballeur-poster.webp'), { kind: 'Vidéo · Montage · Leila', title: 'Footballeur, le teaser' }],
     ['Graphisme', 0.52, 0.52, imgTexture('assets/leila/01.webp'), { kind: 'Graphisme · Leila', title: 'Actrice', link: 'https://open.spotify.com/intl-fr/track/6tI6Y8a8eKHyc571IOMgUH?si=0c02dd216ab04f13' }],
-    ['Management', 0.52, 0.52, imgTexture('assets/garcon-printemps/01.webp'), { kind: 'Management · Garçon Printemps', title: 'Son manager, et l’auteur de ses visuels' }],
+    ['Management', 0.416, 0.52, imgTexture('assets/garcon-printemps/affiche-tournee.webp'), { kind: 'Management · Garçon Printemps', title: 'La tournée', desc: 'Son manager, et l’auteur de ses visuels. Neuf dates de Dijon à Lille, dont La Gaîté Lyrique, Bars en Trans et Le Splendid.' }],
+    ['Pochette', 0.52, 0.52, imgTexture('assets/garcon-printemps/01.webp'), { kind: 'Graphisme · Garçon Printemps', title: 'Poupée de cire' }],
     ['Graphisme', 0.5, 0.5, imgTexture('assets/leila/02.webp'), { kind: 'Graphisme · Leila', title: 'Colors +', link: 'https://open.spotify.com/intl-fr/album/0dsB1R0BKnIoBk68w0nOjn?si=jTLiGb3wRNmSjH0XhjOJTg' }],
     ['Photo', 0.75, 0.5, imgTexture(PMK + 'feu.webp'), { kind: 'Photo · M4DEN', title: 'La voiture en feu' }],
     ['Objet', 0.78, 0.501, imgTexture(PMK + 'cereales.webp'), { kind: 'Graphisme · M4DEN', title: 'La boîte de céréales' }],
@@ -4105,15 +4120,15 @@ window.GPTalk = (() => {
   const buEmptyLight = new THREE.PointLight(0xffc890, 0, 3, 2); buEmptyLight.position.set(0, 0.5, 0.7); buEmptyG.add(buEmptyLight);
   buEmpty.userData.photo = buEmpty; buEmpty.userData.view = 'bureau'; W_BU.frames.push(buEmpty);
   buEmpty.userData.im = { kind: 'Cette place est libre', title: 'Ton projet ici.', desc: 'Un morceau à sortir, une image à construire, une carrière à lancer : dis-moi où tu en es, on regarde ça ensemble.', link: BU_IG, linkLabel: 'Écris-moi sur Insta' };
-  const BU_DESK = [[-2.05, 1.8], [-1.16, 1.8], [1.02, 1.8], [1.72, 1.8], [-2.05, 1.22], [-1.2, 1.22], [1.14, 1.22], [1.86, 1.24]];
-  const BU_PHONE = [[0, 0], [1, 0], [2, 0], [0, 1], [2, 1], [0, 2], [1, 2], [2, 2]];
+  const BU_DESK = [[-2.05, 1.8], [-1.16, 1.8], [0.9, 1.8], [1.42, 1.8], [1.96, 1.8], [-2.05, 1.22], [-1.2, 1.22], [1.14, 1.22], [1.86, 1.24]];
+  const BU_PHONE = [[0, 0], [1, 0], [2, 0], [0, 1], [2, 1], [0, 2], [1, 2], [2, 2], null];
   function buLayout() {
     if (portrait) {
-      buWorks.forEach((o, i) => { const [c, r] = BU_PHONE[i]; o.g.scale.setScalar(0.8); o.g.position.set(0.15 + (c - 1) * 0.66, 1.98 - r * 0.6, BUZ + 0.015); });
+      buWorks.forEach((o, i) => { o.g.visible = !!BU_PHONE[i]; if (!BU_PHONE[i]) return; const [c, r] = BU_PHONE[i]; o.g.scale.setScalar(0.8); o.g.position.set(0.15 + (c - 1) * 0.66, 1.98 - r * 0.6, BUZ + 0.015); });
       buEmptyG.scale.setScalar(0.5); buEmptyG.position.set(0.15, 1.38, BUZ + 0.02);
       collabNeon.scale.setScalar(0.56); collabNeon.position.set(0.15, 2.4, BUZ);
     } else {
-      buWorks.forEach((o, i) => { o.g.scale.setScalar(1); o.g.position.set(BU_DESK[i][0], BU_DESK[i][1], BUZ + 0.015); });
+      buWorks.forEach((o, i) => { o.g.visible = true; o.g.scale.setScalar(1); o.g.position.set(BU_DESK[i][0], BU_DESK[i][1], BUZ + 0.015); });
       buEmptyG.scale.setScalar(1); buEmptyG.position.set(0, 1.5, BUZ + 0.02);
       collabNeon.scale.setScalar(1); collabNeon.position.set(0, 2.25, BUZ);
     }
@@ -4344,7 +4359,7 @@ window.GPTalk = (() => {
   function focusFrame(mesh) { if (!(mesh && mesh.userData.talk) && window.GPTalk) window.GPTalk.close(); frameFocus = mesh; if (mesh) frameLast = mesh; dragYaw = dragPitch = 0; document.body.classList.toggle('zoomed', !!mesh); window.LaboPanel.zoomInfo(mesh && mesh.userData.im); requestRender(); }
   const fogBase = { c: scene.fog.color.clone(), d: scene.fog.density };
   window.LaboWorld = true;
-  function finishExit() { window.LaboPanel.setVideoBar(null); if (activeWorld && activeWorld.views) { activeWorld.view = activeWorld.baseView; activeWorld.trip = null; activeWorld.navShown = false; activeWorld.exitAfter = false; } window.LaboPanel.setNav(null); frameFocus = null; frameT = 0; document.body.classList.remove('zoomed'); window.LaboPanel.zoomInfo(null); activeWorld = null; pendingWorld = null; focusSpot = null; focusGoal = 0; gpHold = false; dragYaw = dragPitch = 0; }
+  function finishExit() { stopWorldVideos(true); window.LaboPanel.setVideoBar(null); if (activeWorld && activeWorld.views) { activeWorld.view = activeWorld.baseView; activeWorld.trip = null; activeWorld.navShown = false; activeWorld.exitAfter = false; } window.LaboPanel.setNav(null); frameFocus = null; frameT = 0; document.body.classList.remove('zoomed'); window.LaboPanel.zoomInfo(null); activeWorld = null; pendingWorld = null; focusSpot = null; focusGoal = 0; gpHold = false; dragYaw = dragPitch = 0; }
   function enterWorld(id, s) {
     const w = worldsById[id];
     if (quickExit) { quickCut(); labWipe.classList.remove('on'); }
@@ -4359,8 +4374,10 @@ window.GPTalk = (() => {
   let quickExit = false, quickTimer = 0;
   const labWipe = document.getElementById('labWipe');
   function quickCut() { quickExit = false; clearTimeout(quickTimer); worldT = 0; worldU = 0; worldGoal = 0; focusT = 0; focusGoal = 0; finishExit(); requestRender(); }
+  function stopWorldVideos(mute) { [W_GP, W_LE].forEach(w => { const v = w.video && w.video(); if (!v) return; if (mute) v.muted = true; if (!v.paused) v.pause(); }); }
   function exitWorld() {
     if (!activeWorld) return;
+    stopWorldVideos(true);
     if (window.GPTalk) window.GPTalk.close();
     if (window.LaboPong) window.LaboPong.close();
     window.LaboPanel.setNav(null);
