@@ -464,12 +464,12 @@ body.in-world .top,body.in-world .ctl-row,body.in-world .hud::before{opacity:0;v
 
 <div class="secretbar" id="secretBar" hidden><span class="sb-k">Graffitis trouvés</span><strong id="secretN">0/2</strong><button class="sb-go" id="secretGo" type="button" hidden>Lire le message <span aria-hidden="true">→</span></button></div>
 <div class="secrettoast" id="secretToast" role="status" aria-live="polite"></div>
-<button class="eggpill" id="eggPill" type="button" aria-label="Voir les easter eggs"><svg viewBox="0 0 24 30" aria-hidden="true"><path d="M12 1C6.5 1 2 11 2 18.5 2 25 6.5 29 12 29s10-4 10-10.500C22 11 17.500 1 12 1z" fill="currentColor"/><path d="M3.300 15l4.500-3 4.200 3 4.200-3 4.500 3" fill="none" stroke="#1a120c" stroke-width="1.800" stroke-linejoin="round"/></svg><span id="eggN">0/10</span></button>
+<button class="eggpill" id="eggPill" type="button" aria-label="Voir les easter eggs"><svg viewBox="0 0 24 30" aria-hidden="true"><path d="M12 1C6.5 1 2 11 2 18.5 2 25 6.5 29 12 29s10-4 10-10.500C22 11 17.500 1 12 1z" fill="currentColor"/><path d="M3.300 15l4.500-3 4.200 3 4.200-3 4.500 3" fill="none" stroke="#1a120c" stroke-width="1.800" stroke-linejoin="round"/></svg><span id="eggN">0/9</span></button>
 <div class="eggpop" id="eggPop" role="status" aria-live="polite"></div>
 <div class="fwmsg" id="fwMsg" role="status" aria-live="polite">Je te remercie du temps que tu as pris pour regarder mon site.</div>
 <div class="reward" id="eggList" role="dialog" aria-modal="true" aria-labelledby="eggListT" hidden>
   <div class="rw-card">
-    <div class="eyebrow" id="eggListN">0 sur 10</div>
+    <div class="eyebrow" id="eggListN">0 sur 9</div>
     <h2 id="eggListT">La chasse aux easter eggs</h2>
     <ul class="egg-list" id="eggItems"></ul>
     <button class="rw-x" id="eggListX" type="button" aria-label="Fermer">×</button>
@@ -477,10 +477,10 @@ body.in-world .top,body.in-world .ctl-row,body.in-world .hud::before{opacity:0;v
 </div>
 <div class="reward" id="reward" role="dialog" aria-modal="true" aria-labelledby="rwTitle" hidden>
   <div class="rw-card">
-    <div class="eyebrow" id="rwEb">10 easter eggs sur 10</div>
+    <div class="eyebrow" id="rwEb">9 easter eggs sur 9</div>
     <h2 id="rwTitle">T’as tout fouillé.</h2>
     <p>Personne ne regarde un site comme ça par hasard. Envoie-moi ce code sur Insta, je te réponds en personne.</p>
-    <div class="rw-code">LABO-10</div>
+    <div class="rw-code">LABO-9</div>
     <div class="rw-btns"><a class="btn rw-go" href="https://www.instagram.com/brian.gldt/" target="_blank" rel="noopener">Écrire à Brian sur Instagram <span aria-hidden="true">↗</span></a></div>
     <button class="rw-x" id="rwClose" type="button" aria-label="Fermer">×</button>
   </div>
@@ -586,7 +586,6 @@ window.LaboEggs = (() => {
     ['lampe', 'Le courant coupé', 'Quelque part, on peut éteindre tout le labo.'],
     ['graffitis', 'Les messages dans le noir', 'Coupe le courant, et promène la lampe partout.'],
     ['hamster', 'Le hamster', 'Quelqu’un fait tourner le labo. Va le déranger.'],
-    ['toit', 'Le toit', 'Trouve les 9 autres : le cadenas de la sortie tombera.'],
     ['blanche', 'La salle blanche', 'Passe le rideau de la cabine.'],
     ['fleurs', 'Le jeu des fleurs', 'Gagne les cinq manches dans le jardin.'],
     ['tondeuse', 'La tondeuse', 'Demande à Garçon Printemps pourquoi il en a une.'],
@@ -600,7 +599,7 @@ window.LaboEggs = (() => {
   const save = () => { try { localStorage.setItem('labo-eggs', JSON.stringify(found)); } catch (e) {} };
   const total = EGGS.length;
   const showN = () => { $('eggN').textContent = found.length + '/' + total; };
-  const others = () => found.filter(id => id !== 'toit').length, unlocked = () => others() >= 9;
+  const others = () => found.length, unlocked = () => found.length >= EGGS.length;
   const watchers = [];
   const queue = []; let popping = false;
   function pop(name, n, kicker) {
@@ -629,8 +628,7 @@ window.LaboEggs = (() => {
     const ul = $('eggItems'); ul.textContent = '';
     EGGS.forEach(([id, name, hint]) => { const li = document.createElement('li'), ok = found.includes(id), m = document.createElement('span'), t = document.createElement('span'); m.className = 'm'; m.textContent = ok ? '✓' : '?'; t.textContent = ok ? name : hint; if (!ok) t.className = 'todo'; li.append(m, t); ul.append(li); });
     $('eggListN').textContent = found.length + ' sur ' + total;
-    const old = ul.parentNode.querySelector('.rw-code'); if (old) old.remove();
-    if (found.length >= total) { const c = document.createElement('div'); c.className = 'rw-code'; c.textContent = 'LABO-10'; ul.after(c); }
+    { const li = document.createElement('li'), m = document.createElement('span'), t = document.createElement('span'); m.className = 'm'; m.textContent = '→'; t.textContent = found.length >= total ? 'Le cadenas est tombé : prends la sortie, la fin t’attend dehors.' : 'Trouve-les tous : le cadenas de la sortie tombera.'; li.append(m, t); ul.append(li); }
     $('eggList').hidden = false; $('eggListX').focus();
   }
   const closeList = () => { if ($('eggList').hidden) return; $('eggList').hidden = true; $('eggPill').focus({ preventScroll: true }); };
@@ -1148,8 +1146,8 @@ window.LeilaTalk = (() => {
     btn('Salut !', () => say(LINES.bye, () => setTimeout(close, 1300)));
     focusFirst();
   }
-  function invite() { if (window.LaboPong && window.LaboPong.playing && window.LaboPong.playing()) return; if (window.LaboPong) window.LaboPong.close(); show(); say(LINES.invite, () => { btn('▶ Jouer au gobelet pong', play, 'go'); btn('Discuter avec moi', () => say(LINES.talk, menu)); focusFirst(); }); }
-  function start() { if (window.LaboPong) window.LaboPong.close(); if (open) return; show(); say(LINES.talk, menu); }
+  function invite() { if (window.LaboPong && window.LaboPong.playing && window.LaboPong.playing()) return; if (window.LaboPong) window.LaboPong.close(); show(); say(LINES.invite, () => { btn('Jouer au gobelet pong', play, 'go'); btn('Parler à Leila', () => { eggFind('skate'); say(LINES.talk, menu); }, 'go'); root.tabIndex = -1; root.focus({ preventScroll: true }); }); }
+  function start() { eggFind('skate'); if (window.LaboPong) window.LaboPong.close(); if (open) return; show(); say(LINES.talk, menu); }
   function close() { if (!open) return; open = false; clearInterval(typing); root.hidden = true; document.body.classList.remove('talking'); av.setAttribute('src', G0.av); eb.textContent = G0.eb; nm.textContent = G0.nm; if (window.LaboView && window.LaboView.unzoom) window.LaboView.unzoom(); }
   root.addEventListener('keydown', e => { if (e.key === 'Escape' && open) { e.stopPropagation(); close(); } });
   return { invite, start, close, isOpen: () => open };
@@ -3895,10 +3893,10 @@ window.LeilaTalk = (() => {
       let i = 0; text.textContent = '';
       typing = setInterval(() => { i += 2; text.textContent = line.slice(0, i); if (i >= line.length) { clearInterval(typing); if (then) then(); } }, 22);
     }
-    function btns(list) { list.forEach(([label, fn, cls]) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn' + (cls ? ' ' + cls : ''); b.textContent = label; b.addEventListener('click', fn); choices.append(b); }); const f = choices.querySelector('button'); if (f) f.focus({ preventScroll: true }); }
+    function btns(list) { list.forEach(([label, fn, cls]) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn' + (cls ? ' ' + cls : ''); b.textContent = label; b.addEventListener('click', fn); choices.append(b); }); }
     function show(line, list) { if (!open) { open = true; root.hidden = false; document.body.classList.add('talking'); } say(line, () => btns(list)); }
     function setScore() { score.textContent = phase === 'idle' ? (best ? `Ton record : ${best} gobelet${best > 1 ? 's' : ''} sur 6` : 'Six gobelets · dix balles') : `Balles : ${balls} · Gobelets : ${sunk} sur 6`; }
-    function invite() { if (phase === 'play') return; phase = 'idle'; setScore(); show(L.intro, [['▶ Jouer', start, 'go'], ['Plus tard', close]]); }
+    function invite() { if (phase === 'play') return; phase = 'idle'; setScore(); show(L.intro, [['▶ Lancer la partie', start, 'go'], ['Parler à Leila', () => { close(); if (window.LeilaTalk) window.LeilaTalk.start(); }]]); }
     function start() {
       actx(); phase = 'play'; balls = NB; sunk = 0; resetCups(); setScore();
       say(L.aim, () => btns([['Arrêter', close]]));
@@ -4696,7 +4694,7 @@ window.LeilaTalk = (() => {
     return false;
   }
   function updateWorld(t, dt) {
-    if (activeWorld && worldT === 1 && worldGoal === 1) { if (activeWorld === W_RF) eggFind('toit'); else if (activeWorld === W_PM) eggFind('blanche'); }
+    if (activeWorld && worldT === 1 && worldGoal === 1) { if (activeWorld === W_PM) eggFind('blanche'); }
     if (pendingWorld && activeEvent && activeEvent === events[pendingWorld.id] && activeEvent.t >= pendingWorld.startAt) {
       pendingWorld.prepare(camera.position, target); worldGoal = 1; pendingWorld = null;
     }
@@ -4735,7 +4733,7 @@ window.LeilaTalk = (() => {
     if (w === W_BU && worldU >= 0.45 && !quickExit) W_BU.life(t, dt); else if (buVideo && !buVideo.paused) buVideo.pause();
     { const show = (w === W_BU || (w === W_RF && W_RF.fwDone && !fwActive)) && worldT >= 1 && worldGoal === 1; const el = document.getElementById('collab');
       if (el.hidden === show) {
-        if (show) { const roofCard = w === W_RF; document.getElementById('colEb').textContent = roofCard ? 'Merci' : 'Ouvert aux collabs'; document.getElementById('colTitle').textContent = roofCard ? 'Tu as trouvé les 10 easter eggs.' : 'Tu fais la musique. Je m’occupe du reste.'; document.getElementById('colText').textContent = roofCard ? 'Envoie-moi le code LABO-10 sur Insta, je te réponds en personne.' : 'Tout ce que tu vois sur ce mur, je l’ai fait pour de vrais artistes : pochettes, clips, photos, stratégie, management. Clique dessus, puis viens me parler de ton projet.'; document.getElementById('colGo').textContent = roofCard ? 'Envoyer le code sur Insta' : 'Écris-moi sur Insta'; }
+        if (show) { const roofCard = w === W_RF; document.getElementById('colEb').textContent = roofCard ? 'Merci' : 'Ouvert aux collabs'; document.getElementById('colTitle').textContent = roofCard ? 'Tu as trouvé les 9 easter eggs.' : 'Tu fais la musique. Je m’occupe du reste.'; document.getElementById('colText').textContent = roofCard ? 'Envoie-moi le code LABO-9 sur Insta, je te réponds en personne.' : 'Tout ce que tu vois sur ce mur, je l’ai fait pour de vrais artistes : pochettes, clips, photos, stratégie, management. Clique dessus, puis viens me parler de ton projet.'; document.getElementById('colGo').textContent = roofCard ? 'Envoyer le code sur Insta' : 'Écris-moi sur Insta'; }
         el.hidden = !show; document.body.classList.toggle('in-bureau', show);
       } }
     buHemi.intensity = inBureau ? 0.55 : 0; buLights.forEach(l => { if (l.visible !== inBureau) l.visible = inBureau; });
