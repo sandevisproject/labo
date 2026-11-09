@@ -226,6 +226,8 @@ body.dark #scene{cursor:none}
 body:has(#secretBar:not([hidden])) .secrettoast{top:calc(env(safe-area-inset-top,0px) + 124px)}
 @media (max-width:640px){#secretBar{top:calc(env(safe-area-inset-top,0px) + 104px)}body:has(#secretBar:not([hidden])) .secrettoast{top:calc(env(safe-area-inset-top,0px) + 150px)}}
 .bootmsg{position:fixed;z-index:3;inset:0;display:grid;place-items:center;pointer-events:none;font:400 1.5rem/1 var(--serif);font-style:italic;color:#ffd9ae}
+.zoomreset{position:fixed;z-index:6;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 132px);transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:999px;border:1px solid rgba(255,255,255,.35);background:rgba(14,10,7,.84);color:#fff;font:500 .9rem/1 var(--sans,Geist,Arial,sans-serif);white-space:nowrap;cursor:pointer}
+.zoomreset[hidden]{display:none}
 .fwmsg{position:fixed;z-index:6;left:50%;top:12%;width:min(860px,90vw);transform:translateX(-50%);text-align:center;pointer-events:none;font:400 clamp(1.9rem,5.2vw,4rem)/1.12 var(--serif);font-style:italic;color:#fff8ea;text-shadow:0 2px 26px rgba(0,0,0,.85),0 0 40px rgba(255,180,90,.45);opacity:0;transition:opacity .8s}
 .fwmsg.show{opacity:1}
 @media (max-width:640px){.fwmsg{top:19%}}
@@ -466,6 +468,7 @@ body.in-world .top,body.in-world .ctl-row,body.in-world .hud::before{opacity:0;v
 <div class="secretbar" id="secretBar" hidden><span class="sb-k">Graffitis trouvés</span><strong id="secretN">0/2</strong><button class="sb-go" id="secretGo" type="button" hidden>Lire le message <span aria-hidden="true">→</span></button></div>
 <div class="secrettoast" id="secretToast" role="status" aria-live="polite"></div>
 <button class="eggpill" id="eggPill" type="button" aria-label="Voir les easter eggs"><svg viewBox="0 0 24 30" aria-hidden="true"><path d="M12 1C6.5 1 2 11 2 18.5 2 25 6.5 29 12 29s10-4 10-10.500C22 11 17.500 1 12 1z" fill="currentColor"/><path d="M3.300 15l4.500-3 4.200 3 4.200-3 4.500 3" fill="none" stroke="#1a120c" stroke-width="1.800" stroke-linejoin="round"/></svg><span id="eggN">0/9</span></button>
+<button class="zoomreset" id="zoomReset" type="button" hidden><span id="zoomN">×1,5</span> · Vue normale</button>
 <div class="bootmsg" id="bootMsg" role="status">Le labo s’allume…</div>
 <div class="eggpop" id="eggPop" role="status" aria-live="polite"></div>
 <div class="fwmsg" id="fwMsg" role="status" aria-live="polite">Je te remercie du temps que tu as pris pour regarder mon site.</div>
@@ -2549,15 +2552,28 @@ window.LeilaTalk = (() => {
     const h = raycaster.intersectObjects(hitMeshes.concat([hamHit]), false)[0];
     return h ? (h.object === hamHit ? HAM : h.object.userData.spot) : null;
   }
-  const yawMax = () => activeWorld && worldT > 0.9 ? 0.55 : (portrait ? 0.62 : 0.32);
-  canvas.addEventListener('pointerdown', e => { if (window.LaboPong && window.LaboPong.grab(e)) return; dragging = true; moved = false; downX = lastX = e.clientX; downY = lastY = e.clientY; try { canvas.setPointerCapture(e.pointerId); } catch (err) {} });
+  const yawMax = () => (activeWorld && worldT > 0.9 ? 0.55 : (portrait ? 0.62 : 0.32)) * (0.75 + 0.25 * zoomCur);
+  // zoom : pincer avec deux doigts sur téléphone, molette ou pincement du pavé sur ordinateur
+  let zoomGoal = 1, zoomCur = 1, pinchD = 0, pinchZ = 1, pinching = false;
+  const ZOOM_MAX = 3, touches = new Map(), zoomBtn = document.getElementById('zoomReset');
+  const zoomOk = () => introT >= 1 && !frameFocus && !(window.LaboPong && window.LaboPong.playing && window.LaboPong.playing());
+  function setZoom(z) { zoomGoal = Math.max(1, Math.min(ZOOM_MAX, z)); if (zoomGoal < 1.03) zoomGoal = 1; zoomUi(); requestRender(); }
+  function zoomUi() { const on = zoomGoal > 1.03; if (zoomBtn.hidden === on) zoomBtn.hidden = !on; if (on) document.getElementById('zoomN').textContent = '×' + zoomGoal.toFixed(1).replace('.', ','); }
+  zoomBtn.addEventListener('click', () => setZoom(1));
+  const pinchDist = () => { const [a, b] = [...touches.values()]; return Math.hypot(a.x - b.x, a.y - b.y); };
+  canvas.addEventListener('pointerdown', e => { if (e.pointerType === 'mouse') return; touches.set(e.pointerId, { x: e.clientX, y: e.clientY }); if (touches.size === 2 && zoomOk()) { pinching = true; pinchD = pinchDist(); pinchZ = zoomGoal; endDrag(); } }, true);
+  canvas.addEventListener('pointermove', e => { if (!touches.has(e.pointerId)) return; touches.set(e.pointerId, { x: e.clientX, y: e.clientY }); if (pinching && touches.size === 2 && pinchD > 10) { e.stopImmediatePropagation(); setZoom(pinchZ * pinchDist() / pinchD); } }, true);
+  const pinchEnd = e => { touches.delete(e.pointerId); if (pinching) { e.stopImmediatePropagation(); if (touches.size === 0) pinching = false; endDrag(); moved = true; } };
+  canvas.addEventListener('pointerup', pinchEnd, true); canvas.addEventListener('pointercancel', pinchEnd, true);
+  canvas.addEventListener('wheel', e => { if (!zoomOk()) return; e.preventDefault(); setZoom(zoomGoal * Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0015))); }, { passive: false });
+  canvas.addEventListener('pointerdown', e => { if (window.LaboPong && window.LaboPong.grab(e)) return; if (pinching) return; dragging = true; moved = false; downX = lastX = e.clientX; downY = lastY = e.clientY; try { canvas.setPointerCapture(e.pointerId); } catch (err) {} });
   canvas.addEventListener('pointermove', e => {
     if (window.LaboPong && window.LaboPong.grab(e)) return;
     if (dragging) {
       if (!moved && Math.hypot(e.clientX - downX, e.clientY - downY) > 6) { moved = true; canvas.classList.add('dragging'); }
       if (moved) {
-        dragYaw = Math.max(-yawMax(), Math.min(yawMax(), dragYaw - (e.clientX - lastX) * 0.004));
-        dragPitch = Math.max(-0.15, Math.min(0.15, dragPitch + (e.clientY - lastY) * 0.002));
+        dragYaw = Math.max(-yawMax(), Math.min(yawMax(), dragYaw - (e.clientX - lastX) * 0.004 / zoomCur));
+        dragPitch = Math.max(-0.15 * zoomCur, Math.min(0.15 * zoomCur, dragPitch + (e.clientY - lastY) * 0.002 / zoomCur));
         requestRender();
       }
       lastX = e.clientX; lastY = e.clientY;
@@ -2625,6 +2641,9 @@ window.LeilaTalk = (() => {
     }
     if (shake > 0.001) { camera.position.x += (Math.random() - 0.5) * shake; camera.position.y += (Math.random() - 0.5) * shake; }
     camera.lookAt(target);
+    zoomCur += (zoomGoal - zoomCur) * Math.min(1, (dtReal || 0.016) * 14); if (Math.abs(zoomGoal - zoomCur) < 0.002) zoomCur = zoomGoal;
+    const fovZ = 2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(portrait ? 72 : 50) / 2) / zoomCur) * 180 / Math.PI;
+    if (Math.abs(camera.fov - fovZ) > 1e-3) { camera.fov = fovZ; camera.updateProjectionMatrix(); }
   }
 
   /* ---------- Réactions quand on ouvre un objet ---------- */
@@ -4680,11 +4699,12 @@ window.LeilaTalk = (() => {
     p.copy(t).addScaledVector(zN, dist);
     if (portrait && mesh === pmHero.m) { t.y -= 0.55; p.y -= 0.55; }
   }
-  function focusFrame(mesh) { if (mesh && mesh.userData.egg) eggFind(mesh.userData.egg); if (!(mesh && mesh.userData.talk) && window.GPTalk) window.GPTalk.close(); frameFocus = mesh; if (mesh) frameLast = mesh; dragYaw = dragPitch = 0; document.body.classList.toggle('zoomed', !!mesh); window.LaboPanel.zoomInfo(mesh && mesh.userData.im); requestRender(); }
+  function focusFrame(mesh) { if (mesh) { zoomGoal = 1; zoomCur = 1; zoomUi(); } if (mesh && mesh.userData.egg) eggFind(mesh.userData.egg); if (!(mesh && mesh.userData.talk) && window.GPTalk) window.GPTalk.close(); frameFocus = mesh; if (mesh) frameLast = mesh; dragYaw = dragPitch = 0; document.body.classList.toggle('zoomed', !!mesh); window.LaboPanel.zoomInfo(mesh && mesh.userData.im); requestRender(); }
   const fogBase = { c: scene.fog.color.clone(), d: scene.fog.density };
   window.LaboWorld = true;
-  function finishExit() { fwStop(); stopWorldVideos(true); window.LaboPanel.setVideoBar(null); if (activeWorld && activeWorld.views) { activeWorld.view = activeWorld.baseView; activeWorld.trip = null; activeWorld.navShown = false; activeWorld.exitAfter = false; } window.LaboPanel.setNav(null); frameFocus = null; frameT = 0; document.body.classList.remove('zoomed'); window.LaboPanel.zoomInfo(null); activeWorld = null; pendingWorld = null; focusSpot = null; focusGoal = 0; gpHold = false; dragYaw = dragPitch = 0; }
+  function finishExit() { zoomGoal = 1; zoomUi(); fwStop(); stopWorldVideos(true); window.LaboPanel.setVideoBar(null); if (activeWorld && activeWorld.views) { activeWorld.view = activeWorld.baseView; activeWorld.trip = null; activeWorld.navShown = false; activeWorld.exitAfter = false; } window.LaboPanel.setNav(null); frameFocus = null; frameT = 0; document.body.classList.remove('zoomed'); window.LaboPanel.zoomInfo(null); activeWorld = null; pendingWorld = null; focusSpot = null; focusGoal = 0; gpHold = false; dragYaw = dragPitch = 0; }
   function enterWorld(id, s) {
+    zoomGoal = 1; zoomUi();
     texRelease();
     const w = worldsById[id];
     if (quickExit) { quickCut(); labWipe.classList.remove('on'); }
@@ -4797,12 +4817,14 @@ window.LeilaTalk = (() => {
   function goView(id) {
     if (window.LaboPong && activeWorld && activeWorld.view !== id) { window.LaboPong.close(); if (window.LeilaTalk) window.LeilaTalk.close(); }
     const w = activeWorld; if (!w || !w.views || !w.views[id] || w.trip || w.view === id || worldT < 1) return;
+    zoomGoal = 1; zoomUi();
     focusFrame(null); window.LaboPanel.setVideoBar(null);
     const a = w.views[w.view], b = w.views[id], via = w.routes[w.view + '>' + id] || [];
     w.trip = { P: new THREE.CatmullRomCurve3([a.pos, ...via.map(v => v.pos), b.pos]), T: new THREE.CatmullRomCurve3([a.tgt, ...via.map(v => v.tgt), b.tgt]), k: 0, to: id };
     w.visited[id] = true; dragYaw = dragPitch = 0; navUpdate(); requestRender();
   }
   window.LaboView.goView = goView;
+  window.LaboView.zoom = z => { if (z != null) setZoom(z); return { goal: zoomGoal, cur: zoomCur, fov: camera.fov }; };
   window.LaboView.renderStats = () => ({ programs: renderer.info.programs.length, textures: renderer.info.memory.textures, geometries: renderer.info.memory.geometries, pr: PR, samples: rtScene.samples, warmed: texDone.size });
   window.LaboView.lockShake = () => { exShake = 1; requestRender(); };
   window.LaboView.gpMower = gpMower; window.LaboView.gpMowerStop = gpMowerStop;
@@ -4944,7 +4966,7 @@ window.LeilaTalk = (() => {
     renderAll();
     if (firstFrame) { firstFrame = false; last = performance.now(); if (introT >= 1) { preN = 0; const bm = document.getElementById('bootMsg'); if (bm) bm.remove(); } }
     const settling = darkGoal === 1 || dark > 0 || introT < 1 || anyBusy() || worldBusy() || focusT !== focusGoal || spots.some(s => Math.abs(s.hover - (hovered === s || focusSpot === s || selectedSpot === s ? 1 : 0)) > 0.01);
-    if (!raf && (running || dragging || settling || mwOn || exShake > 0 || (exFall >= 0 && exLock.visible) || fwActive || Math.abs(dragYaw - curYaw) > 1e-3 || Math.abs(hoverX - curHX) > 1e-3)) raf = requestAnimationFrame(frame);
+    if (!raf && (running || dragging || settling || zoomCur !== zoomGoal || mwOn || exShake > 0 || (exFall >= 0 && exLock.visible) || fwActive || Math.abs(dragYaw - curYaw) > 1e-3 || Math.abs(hoverX - curHX) > 1e-3)) raf = requestAnimationFrame(frame);
   }
   function requestRender() { if (!raf) { last = performance.now(); raf = requestAnimationFrame(frame); } }
 
